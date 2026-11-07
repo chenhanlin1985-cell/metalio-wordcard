@@ -1,0 +1,16 @@
+{
+  "source": "recharge-original.png",
+  "source_sha256": "739625e3e8a19637fd673db3c23ca469f2047a0bbaf32e818222c37710b11490",
+  "source_dimensions": [
+    841,
+    1870
+  ],
+  "gray_levels": 16,
+  "encoded_bytes": 484916,
+  "lossless_rle_roundtrip": true,
+  "rendering": "Native Canvas fits original aspect ratio, no crop or stretch; white margins",
+  "generated_with": "OpenAI image_gen",
+  "pronunciation_source": "https://dictionary.cambridge.org/pronunciation/english/recharge",
+  "usage_sentence": "Time to rest and recharge.",
+  "generated_header_sha256": "a64acf183aaf71ef6d99cf1b1632f275c8df0ec4f9d310658796c531db2521c0"
+}

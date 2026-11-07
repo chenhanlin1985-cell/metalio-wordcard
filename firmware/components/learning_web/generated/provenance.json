@@ -1,0 +1,60 @@
+{
+  "source": "src/legacy-course",
+  "scripts": {
+    "legacy-data.js": "7732968964fc5b1f8d151dc9b6571c5265a38e57f635e4925056eb90afeb1fd9",
+    "legacy-model.js": "bab8b03fa26280b2c9272584ec00d256840530f504be0417a53431711360d65a",
+    "curriculum.js": "7c55857729d4576a1e82b18137504bf83d0354e818c067dc201097536f72b818",
+    "unit2.js": "a6575b45b62a80cbb8bee9346c604be1a5b861d37b12f3559899ae2a75532b5d",
+    "data.js": "a2db43a53f38eb1f2baea7bb31e8d8fae9ea86ad5ed36a3adb3b07e151436058",
+    "audio-map.js": "bd3d1c9167ab6e23e5d6065ec443049397652da83b325de954eed9e9b5f11420",
+    "model.js": "79ebf16cf9332283e6f21dc4b2d737a8b0c1bde5ff0399e437d4d2c7789baac9",
+    "path-bank.js": "1ff1b3f5ccf6f2319372bdcf26f6d971af917cd95d3ad15e2f48aac7a05255a8",
+    "path-model-v1.js": "36b33470aaaaf9182c9673e73c1cb93529aa0af1861ece316d6d251d50123bba",
+    "adaptive-bank.js": "a46d56f5ca082044d9d4e765d217a195ddd5bd5195b2e468193451b79ffa1800",
+    "adaptive-engine.js": "ed58c2cb9d01285da7028565c266199b804a57013ecbd8d5af187514c8fc7952",
+    "path-practice.js": "6484ae74eea5a67c78515ace349f7403ef15c6b35635dfb84dd075c5e9f31bfb",
+    "word-batch.js": "fe9438049896beec802b5c42debec0b52518765e07b35afff28db38040d21886",
+    "word-training.js": "6267a7a19ad9e665346ce2e0e31a8f0f5aa37859723340d59797b3bef6204041",
+    "review-engine.js": "45c0be178acf18132d49b7c00dac570666b060e380de1574fc8bf1f87598c7dc",
+    "unified-model.js": "21a948adbaacd8d27a6be88780c890a3b9e3e0d7c0f269adfd521cc9391c8c88",
+    "adaptive-model.js": "1bb0f0c390aed2460b35c32309b27ed8c76ea1d25a1439ad02ccf501ec7ab3c4",
+    "daily-engine.js": "bc417cea9fac01a70c9d9c44d48341ea4ae62a521d343bbb00cfdd00546962ae",
+    "daily-model.js": "4af1d033014eec231a44413b4815fd3b2916367120b822c8137d5aa7d3786a22",
+    "daily-profile.js": "9da8885c059e493a26398784f7a7f191468f59ffc3a8ac0d357865413b31c564",
+    "path-ui.js": "e345b72b8b6f10bcb6966da8abef8a2b4c96638b3114038b3c8bd0e69ed0cbf5",
+    "adaptive-ui.js": "c9881589e87b178aa88029c129c117d057f9ec391d19c9cfff1340d0230e4b32",
+    "word-batch-ui.js": "54f225459cbcb34157b97d19a85178c51142a442a2768201feb1ded0dea46184",
+    "unified-ui.js": "59906bf798ef55a313882923dc7c7e8beebc0ef4aaddb28263d14d61d172a37e",
+    "review-ui.js": "e7d3a80389be47fb09803874974a6b516a56080a6aac875c708b5bd1280bdcce",
+    "daily-ui.js": "232aab4b9d73ccbe97b29f9face78f985b352eb55c8d8b4f8ca6a47edcbef386",
+    "app.js": "aa64ebe9969272fa1ed3f760b3ec7e01a7a03705244a7158f2bf6ba7997e8a6c"
+  },
+  "appHookOnly": false,
+  "transforms": [
+    "app native inspection hook",
+    "direct read/listen native semantic projection with pinned HTML oracle and error fallback",
+    "native browser-only scroll housekeeping removed; revision-scoped text extraction cache",
+    "single draft base transition with original intermediate and final validation; original retained as oracle",
+    "question-owned staged disposable prediction; exact HTML and native page checks; independent raster and hit-map cache",
+    "pinned lowercase lookup index; identical first-three substring candidates",
+    "native keyboard presence/submit projection; unchanged C++ keys and full web keyboard oracle",
+    "reuse rendered daily snapshot for native home information architecture; no extra scheduler call",
+    "immutable exact build-time course tasks; original retained for equivalence checks",
+    "word-batch ranked sort, indexed get, pinned gloss, bounded512 hash and bounded128 exact options caches; original algorithms retained as oracles"
+  ],
+  "taskTables": {
+    "legacy-model.js": {
+      "lessons": 5,
+      "tasks": 90,
+      "sha256": "8843390c4bbec8e3716c63ed3d57646fe1c05af973558eddadc17e8ab9c782fa"
+    },
+    "model.js": {
+      "lessons": 11,
+      "tasks": 246,
+      "sha256": "000dd6b2cf2197606a688f740bbb8e34e7378a37644c2183ef7ea4bea2d06d28"
+    }
+  },
+  "engine": "QuickJS-NG v0.17.0 / 6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "network": false,
+  "localEnginePatch": "context-owned cooperative interrupt interval: foreground 10000, speculative 256; exact vendor also used by host"
+}

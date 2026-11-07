@@ -1,0 +1,1 @@
+这里是旧课程兼容模块的构建输入。index.html 用于提取脚本清单；没有附带旧研究页面、音频和字体，不作为可独立试用的完整网页产品发布。请从仓库根目录运行 tools/native_learning_data.cjs 和 tools/web_firmware_bundle.cjs。当前分级背词主线在 firmware/components/native_learning。

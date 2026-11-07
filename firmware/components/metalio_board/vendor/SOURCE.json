@@ -1,0 +1,371 @@
+{
+  "repository": "https://github.com/CloudZao/Metalio-E-INK4-Plus",
+  "commit": "b400605e9a6a276a2c39864c0cff63798c78e8d8",
+  "files": [
+    {
+      "source": "main/boards/metalio-e-ink4-plus/config.h",
+      "destination": "firmware/components/metalio_board/vendor/config.h",
+      "sha256": "712b80437aaa5f90a8cd00da39ebe9c3eedd80b3d03df931e1b6cb02551bae21"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/board_specific.c",
+      "destination": "firmware/components/metalio_board/vendor/display/board_specific.c",
+      "sha256": "ae3e2fa066bce26aee229e49abc2054478e07bc51399fe35e6e05ea47fe8fce6"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/builtin_waveforms.c",
+      "destination": "firmware/components/metalio_board/vendor/display/builtin_waveforms.c",
+      "sha256": "a3e754ae00e0532e630fec62d8885d84e9dbfa9f3ba38f1e9563c1ca704754e0"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/displays.c",
+      "destination": "firmware/components/metalio_board/vendor/display/displays.c",
+      "sha256": "c584a45d18aec61d8b1945d67593234c34a1a30850d6361cb28f942ca10b7960"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/epdiy.c",
+      "destination": "firmware/components/metalio_board/vendor/display/epdiy.c",
+      "sha256": "146eb47407dd0013320fdfdd82c0710adf6f9328554b06fea3f0bb71c9416875"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/epdiy.h",
+      "destination": "firmware/components/metalio_board/vendor/display/epdiy.h",
+      "sha256": "19f466df050cb3a9c0ac75e5b9b41c7bf307c40db0f988a68bfbb51e42c41ff1"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/epdiy_riscv_ve_stub.c",
+      "destination": "firmware/components/metalio_board/vendor/display/epdiy_riscv_ve_stub.c",
+      "sha256": "df50f012d057a2a54dacc2bc173521675c33c9b5fcdfda0f30d8f5982aeaf9f6"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/epd_board.c",
+      "destination": "firmware/components/metalio_board/vendor/display/epd_board.c",
+      "sha256": "190db518d5d8f558eafdec8cd72dc99558e39a3c0cad03138bcd1be528618265"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/epd_board.h",
+      "destination": "firmware/components/metalio_board/vendor/display/epd_board.h",
+      "sha256": "07ef358a7817ba313daa04fa171d68508c6b4d0ba4848922568f04f43a334f02"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/epd_board_common.c",
+      "destination": "firmware/components/metalio_board/vendor/display/epd_board_common.c",
+      "sha256": "26a9891d37addeae9010f0607fed0b4440d39a1e69cbd61f57ee382a4b333bf5"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/epd_board_common.h",
+      "destination": "firmware/components/metalio_board/vendor/display/epd_board_common.h",
+      "sha256": "212fc9147a89077c49b49d424a1b2066b90bb448e26f37f5f90e3dbb9df4656c"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/epd_board_metalio_eink4_plus.c",
+      "destination": "firmware/components/metalio_board/vendor/display/epd_board_metalio_eink4_plus.c",
+      "sha256": "c3d7f3cb68b9c7daaae13f6c276ca0dc008e1d7bd714526901022d7df08bb626"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/epd_board_metalio_eink4_plus.h",
+      "destination": "firmware/components/metalio_board/vendor/display/epd_board_metalio_eink4_plus.h",
+      "sha256": "ff9a8c0c884ccfe270e72349b5c4d3feb782a0ae040a392d021b5c84ce286add"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/epd_board_specific.h",
+      "destination": "firmware/components/metalio_board/vendor/display/epd_board_specific.h",
+      "sha256": "4d7a6bb80dea715511bfb2dc5c4f271ee81b61ffcbc4eefba4c9b706ed7fd8e7"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/epd_display.h",
+      "destination": "firmware/components/metalio_board/vendor/display/epd_display.h",
+      "sha256": "8eaab91a726c9aeafd0c1615841aeeba3fc515e295fe72045b1c2020f72280d3"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/epd_highlevel.h",
+      "destination": "firmware/components/metalio_board/vendor/display/epd_highlevel.h",
+      "sha256": "15cb88cbbdde4355afe587bd283838bd6442c0eefb93571838553e19b6c907ee"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/epd_internals.h",
+      "destination": "firmware/components/metalio_board/vendor/display/epd_internals.h",
+      "sha256": "e44166bd9da995f852626d6f35e0a5c19acf18991b90f8a21cd9da0cf8feee8c"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/highlevel.c",
+      "destination": "firmware/components/metalio_board/vendor/display/highlevel.c",
+      "sha256": "588bea46426adf405f27eb97d9a556c1624dfcf34f84855e96ee4fa32bd75718"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/metalio_display_setup.h",
+      "destination": "firmware/components/metalio_board/vendor/display/metalio_display_setup.h",
+      "sha256": "b4877d7eae0eec6f2975262515eb40b898362a432e592b91bfd4cd4e5d66b3c4"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/metalio_epd.c",
+      "destination": "firmware/components/metalio_board/vendor/display/metalio_epd.c",
+      "sha256": "fdc5ff0fc430ec8cbc1e753b74285460de47250c580e7a4a962fe893b2dd8e20"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/metalio_epd.h",
+      "destination": "firmware/components/metalio_board/vendor/display/metalio_epd.h",
+      "sha256": "bfab6b9ee68bd2f37dc498398af728b3f9aad58cba4876a7a5e06121ee1f7f0f"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/metalio_touch.c",
+      "destination": "firmware/components/metalio_board/vendor/display/metalio_touch.c",
+      "sha256": "1dd9ddcdd05eabeae0d3fb931a4d0aafa97c4357d45a2014ca62885dbff5e38f"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/metalio_touch.h",
+      "destination": "firmware/components/metalio_board/vendor/display/metalio_touch.h",
+      "sha256": "e59771787bf2b9b00fcf02de12e3f44e9c0d91184e05ebc5f1f641bf9cfae895"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/metalio_touch_upgrade.h",
+      "destination": "firmware/components/metalio_board/vendor/display/metalio_touch_upgrade.h",
+      "sha256": "7308985d98db0c9b86cb7a9f8bde212206733c87e8e91e21f41265aef5f6e233"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/render.c",
+      "destination": "firmware/components/metalio_board/vendor/display/render.c",
+      "sha256": "3e5e71c59746880dedeff2a05533e659bf05e32dec07f4613f3fc051c5b24f83"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/render.h",
+      "destination": "firmware/components/metalio_board/vendor/display/render.h",
+      "sha256": "939700f0fdbb09a007c343753ec38b2612e3f5f0c438babe4fffee902a7a618c"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/output_common/line_queue.c",
+      "destination": "firmware/components/metalio_board/vendor/display/output_common/line_queue.c",
+      "sha256": "fb4cc05ca57cd96aa1beae52376e81f3d323f67c9f6bde5b2907a1818645c604"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/output_common/line_queue.h",
+      "destination": "firmware/components/metalio_board/vendor/display/output_common/line_queue.h",
+      "sha256": "4e0d4be4a7a3a4626cabe4dc5ee31bec042cefee6076bc3880cd238ea12afead"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/output_common/lut.c",
+      "destination": "firmware/components/metalio_board/vendor/display/output_common/lut.c",
+      "sha256": "7c3f5c1aeb3d299c64f5e71b9a5acfe149239cc826e9ff6077fe5c9714dbb38b"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/output_common/lut.h",
+      "destination": "firmware/components/metalio_board/vendor/display/output_common/lut.h",
+      "sha256": "cd8f1ba2648e4dca59760650fff01857280b21bc09218c14a5e3a44fc8bf2d24"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/output_common/render_context.c",
+      "destination": "firmware/components/metalio_board/vendor/display/output_common/render_context.c",
+      "sha256": "1728c866ceacb50e9ab9be2622d5b4e2fae8253a0585737ac7ed6bce5705b370"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/output_common/render_context.h",
+      "destination": "firmware/components/metalio_board/vendor/display/output_common/render_context.h",
+      "sha256": "79a0dffc9fb326efdef73552ba6277b4133e0ac2072cd7d6b22178feeb721b28"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/output_common/render_method.c",
+      "destination": "firmware/components/metalio_board/vendor/display/output_common/render_method.c",
+      "sha256": "251a3904cd2aa5eec5b37cfea86d609821c02fef453c83ae5349de3391e60c7f"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/output_common/render_method.h",
+      "destination": "firmware/components/metalio_board/vendor/display/output_common/render_method.h",
+      "sha256": "bc192f247a03b7821d3250acf0d309263348cce0d6b0e581068b78f3be31495b"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/output_lcd/epdiy_idf6_compat.h",
+      "destination": "firmware/components/metalio_board/vendor/display/output_lcd/epdiy_idf6_compat.h",
+      "sha256": "d9505c5ec1beffd37d029309c9d456f472b2c618c24a5c4e321debebd9ef8b46"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/output_lcd/idf-4-backports.h",
+      "destination": "firmware/components/metalio_board/vendor/display/output_lcd/idf-4-backports.h",
+      "sha256": "ae9a385cff2dd9b87105cef1e3399e22a3aff69dc950d8e0958c22a5cf103749"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/output_lcd/lcd_driver.c",
+      "destination": "firmware/components/metalio_board/vendor/display/output_lcd/lcd_driver.c",
+      "sha256": "32491bd2c7048ad6c4992e00996f8d90e82bc2774e21549c56280c1a0fc25b16"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/output_lcd/lcd_driver.h",
+      "destination": "firmware/components/metalio_board/vendor/display/output_lcd/lcd_driver.h",
+      "sha256": "248bab1b015a028b5760e0109ae2c42cda9fb8ecbd944ac848cd8f45298c9c17"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/output_lcd/render_lcd.c",
+      "destination": "firmware/components/metalio_board/vendor/display/output_lcd/render_lcd.c",
+      "sha256": "7a1466fa00d2531dd2ca39dc7caf6f0b8461e425bfe78fa793cd84d2ce1f21b3"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/output_lcd/render_lcd.h",
+      "destination": "firmware/components/metalio_board/vendor/display/output_lcd/render_lcd.h",
+      "sha256": "db4efbc7722b7578a82c120f95041640d4f2fa55c50849bf393cdce4c595da27"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/epdiy_ED047TC1.h",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/epdiy_ED047TC1.h",
+      "sha256": "b4c53d833b48cd19d23ade863bf32a83e2d100ca53ccdacae0e81b7105b0e808"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/epdiy_ED047TC2.h",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/epdiy_ED047TC2.h",
+      "sha256": "f27ac04a99a61172dcb61352a0a22ba0f8f93b6a3f18d58a023b5170e991fbee"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/epdiy_ED060SC4.h",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/epdiy_ED060SC4.h",
+      "sha256": "26b498654816f1a2bc6fcf09dfdfe4d4f666c6697ee5325a892088949c5b3c65"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/epdiy_ED060SCT.h",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/epdiy_ED060SCT.h",
+      "sha256": "b8540c470e9e5fca5b0c772cd764eae42127e981e9287327094a4a7c82599380"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/epdiy_ED060XC3.h",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/epdiy_ED060XC3.h",
+      "sha256": "37bc38f2c4df5a72ba0449eb11cb3a46ecddc306e357664ff4b7bd38f0a32903"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/epdiy_ED097OC4.h",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/epdiy_ED097OC4.h",
+      "sha256": "00aeb9d55613f76418cc671a7a69ebec0216531dea1a98f67c968cd7354c4768"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/epdiy_ED097TC2.h",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/epdiy_ED097TC2.h",
+      "sha256": "57fa19a8fbadfb4882288e3ea306e553649880ce44f0e0734700a657bfd2b91e"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/epdiy_ED133UT2.h",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/epdiy_ED133UT2.h",
+      "sha256": "23fd9bfb80351b985459c3acecb7802df82764adbed5a5f421f6f86c6d8cd74a"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/epdiy_NULL.h",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/epdiy_NULL.h",
+      "sha256": "00868d1fc642f90aa95f9096d294368e90d394f0aacd93c5aec01ce967ecbaa4"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/my_waveform.c",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/my_waveform.c",
+      "sha256": "edc61fc5cd75ab587ca664386c819c5c866a8d3d39975efc8e8f7a0b0fe49827"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/my_waveform.h",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/my_waveform.h",
+      "sha256": "7c6c463edd2789af616ae39218e61af2781b696debdddfbb911d936bc889e0fe"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/my_waveform_du.h",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/my_waveform_du.h",
+      "sha256": "d655fc27e436545fad9207d155a59a1232cbe4510dbcdb0f9dc8acc09ce05b08"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/my_waveform_gc.h",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/my_waveform_gc.h",
+      "sha256": "fc284d75d159d1224818e912100a75ef38126b1c6ae6ebfcb4f2c783e6c7b7b9"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/my_waveform_gl.h",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/my_waveform_gl.h",
+      "sha256": "c3db5070f102bbbc9750e1eccc12046d5dc39708279f1280d723b9e7f8605378"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/my_waveform_trim.c",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/my_waveform_trim.c",
+      "sha256": "f4231c63f8085e289e92981244b4d5b6d2540e2f3b1c30b9067ae1b323e1bb6e"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/display/waveforms/my_waveform_trim.h",
+      "destination": "firmware/components/metalio_board/vendor/display/waveforms/my_waveform_trim.h",
+      "sha256": "a0fe19340a4c2435139a7f3f1a96bc31c30806f407783752baba9147e1e20a7e"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/bus/metalio_i2c1.c",
+      "destination": "firmware/components/metalio_board/vendor/bus/metalio_i2c1.c",
+      "sha256": "7c02f034445c2a22c3ab7d83169ebf89dc0cde414b9a1c8eb1a31b0638a9f3a2"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/bus/metalio_i2c1.h",
+      "destination": "firmware/components/metalio_board/vendor/bus/metalio_i2c1.h",
+      "sha256": "11f1ce7302f530663a670d92659ea63eec0585e6e2606271c6b26f2358c94fe2"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/bus/pca9555.c",
+      "destination": "firmware/components/metalio_board/vendor/bus/pca9555.c",
+      "sha256": "da0103c6b3b2a04151b95b6fc2baf1724b750e73f1958c5ce984cb51be4e645b"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/bus/pca9555.h",
+      "destination": "firmware/components/metalio_board/vendor/bus/pca9555.h",
+      "sha256": "319c654692b95b332d463701100988db03eb62e4e17499ec8eda43e26f275602"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/bus/tps65185.c",
+      "destination": "firmware/components/metalio_board/vendor/bus/tps65185.c",
+      "sha256": "c5210ba679ed3a169e6543d5f677923ba86951baf4dea8cf1518142a09db85e0"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/bus/tps65185.h",
+      "destination": "firmware/components/metalio_board/vendor/bus/tps65185.h",
+      "sha256": "54331d34a702243b236ee60f1c6f406ea20b9d34c31c3822a97cc1317699f960"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/periph/frontlight.cc",
+      "destination": "firmware/components/metalio_board/vendor/periph/frontlight.cc",
+      "sha256": "a8dbac5edab21da87b109e9d5a295a52b305990403b28d983121099c8f73e3f3"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/periph/frontlight.h",
+      "destination": "firmware/components/metalio_board/vendor/periph/frontlight.h",
+      "sha256": "12158f906a086cd05b0efe8ca0ac89869ed659402c4375b088c88d0d4f191b69"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/input/metalio_vibe.cc",
+      "destination": "firmware/components/metalio_board/vendor/input/metalio_vibe.cc",
+      "sha256": "69e146d515be69f3fe716907ab46e1d95912d30cd46b98031d5c800fbfc80f7d"
+    },
+    {
+      "source": "main/boards/metalio-e-ink4-plus/input/metalio_vibe.h",
+      "destination": "firmware/components/metalio_board/vendor/input/metalio_vibe.h",
+      "sha256": "96b368c31644d2918343ebd81a646d5fe2daa084bd8a845f7f3b679a429b2512"
+    },
+    {
+      "source": "main/settings.cc",
+      "destination": "firmware/components/metalio_board/vendor/common/settings.cc",
+      "sha256": "25f2bda4824a77313cee1096418d849220c93fd02affca829492ce5586e5e3ac"
+    },
+    {
+      "source": "main/settings.h",
+      "destination": "firmware/components/metalio_board/vendor/common/settings.h",
+      "sha256": "9c7037b20c34ec0511bf0271be597c5657f5b8dd38693fd2a2421ea4913df9d3"
+    },
+    {
+      "source": "main/display/epd_font24/epd_font24.h",
+      "destination": "firmware/components/metalio_board/vendor/common/epd_font24.h",
+      "sha256": "a4a2cb2c3f346d2a2343e3fa307ebd0af49ca13c5dae5515af6577a24e96c2f8"
+    },
+    {
+      "source": "main/boards/common/sensor/pcf8563.cc",
+      "destination": "firmware/components/metalio_board/vendor/common/pcf8563.cc",
+      "sha256": "c7bb31017950237b3e2eb555f5dc7a943b6e8e63c20abec2a4bed2f906f6c8aa"
+    },
+    {
+      "source": "main/boards/common/sensor/pcf8563.h",
+      "destination": "firmware/components/metalio_board/vendor/common/pcf8563.h",
+      "sha256": "7b555aee369275c59f390d8ddf2445527f2251eccd1400ee10d7523a5db307c9"
+    },
+    {
+      "source": "main/boards/common/power/power_i2c.c",
+      "destination": "firmware/components/metalio_board/vendor/common/power_i2c.c",
+      "sha256": "70c6a0254ad25744379f0bc8eaab709762185ff2b6492e6b9deca7abe8e0f6f5"
+    },
+    {
+      "source": "main/boards/common/power/power_i2c.h",
+      "destination": "firmware/components/metalio_board/vendor/common/power_i2c.h",
+      "sha256": "6a050ab063dea0c335f77e367ea6a76c045460086c6d45f9b5624c645a55d033"
+    }
+  ]
+}

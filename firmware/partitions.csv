@@ -1,0 +1,6 @@
+# First prototype: independent app and raw EFNT partition; no factory offsets assumed.
+# Name, Type, SubType, Offset, Size
+nvs,data,nvs,0x9000,0x4000
+phy_init,data,phy,0xf000,0x1000
+factory,app,factory,0x20000,0x5e0000
+font_data,data,0x40,0x600000,0x500000
