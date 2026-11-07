@@ -2,16 +2,32 @@
 
 ## 网盘下载
 
-**尚未发布网盘地址。维护者上传后直接更新下表；当前没有可用下载链接。**
+**[下载 fix55h 完整配套包（百度网盘）](https://pan.baidu.com/s/1LFhJ1OKthrljqOejNbFNOw?pwd=xbct)**，提取码：`xbct`。
 
 | 项目 | 内容 |
 | --- | --- |
-| 网盘地址 | 待补充 |
-| 提取码 | 待补充（如需要） |
-| 对应源码 | fix55h-recovery |
-| 首次安装包 | 待补充：固件、字库、SD 资源、许可证与清单 |
-| 已安装设备升级包 | 待补充：应用固件及本次必要资源变更 |
-| 文件大小 / SHA-256 | 上传后填写 |
+| 文件名 | `Metalio-Wordcard-fix55h-install-resources.zip` |
+| 固件版本 | fix55h-recovery |
+| 整理日期 | 2026-11-07 |
+| 文件大小 | 618,157,952 字节（约 618 MB / 590 MiB） |
+| 对应源码 | [`675880e`](https://github.com/chenhanlin1985-cell/metalio-wordcard/tree/675880e4f5bd1484d24ad2c8e427fe2156180b26) |
+| 包内内容 | 固件、启动文件、分区表、字库、完整 SD 资源、最新词典、许可与校验清单 |
+| 首次安装 | 解压后按包内 `README-先读我.md` 操作 |
+| 已安装设备 | 同一包内提供升级说明；按已有版本更新应用与必要资源，保留学习记录 |
+
+SHA-256（来自打包时的本地校验记录，供下载后核对）：
+
+```text
+abcce42a0d625afb43f972ef843642ffa81def38184428c8e859db72f2d277f9
+```
+
+Windows 可在下载目录运行：
+
+```powershell
+Get-FileHash -Algorithm SHA256 -LiteralPath '.\Metalio-Wordcard-fix55h-install-resources.zip'
+```
+
+这个包已合入 look after 等词典修正，不含个人进度、生词本或用户词表。已经运行 fix55h 的设备，无须仅为此次打包重新刷机。
 
 不要以网上任意同名模型或词库替代配套包：文件格式、音频采样格式和缓存身份都与当前实现有关。
 
@@ -28,6 +44,7 @@ SD 根目录中，学习资源的基础目录是：
 metalio/e-ink/wordcards/
   vocabulary/          分级词库及其 audio/ 子目录
   dictionary/          离线词典
+  audio/               通用单词发音
   web-course-v1/       更多学习的课程及发音资源
   tts/
     amy-small-en-us/    Amy Small 模型
@@ -42,12 +59,12 @@ metalio/e-ink/wordcards/
 
 **已安装同一分区布局的本项目设备，通常只升级应用，不擦除整片 Flash。** 若配套资源有变更，再按包内清单更新相应资源。不要使用全盘镜像覆盖用户 SD。
 
-刷写示例只用于已经安装本项目、布局一致的设备，先替换串口：
+网盘包用户先按包内 `README-先读我.md` 操作，文件名和目录以包内说明为准。下面示例用于从源码构建后、已经安装本项目且布局一致的设备，只更新应用；先替换串口：
 
 ```powershell
 $env:PYTHONUTF8='1'
 $env:PYTHONIOENCODING='utf-8'
-python -m esptool --chip esp32s31 --port COMx write-flash 0x20000 build/metalio_wordcard.bin
+python -m esptool --chip esp32s31 --port COMx --baud 460800 --no-stub write-flash --flash-mode dio --flash-size 16MB --flash-freq 80m 0x20000 build/metalio_wordcard.bin
 ```
 
 需要支持 ESP32-S31 的 esptool；串口缺失时先确认 USB 数据线和下载模式，不执行 erase-flash。先备份 SD 中个人记录、词表和生词本；升级不要覆盖 `learning-web/` 等运行记录目录，也不要删除已有发音缓存。设备正在 U 盘模式时，不同时在设备端学习；复制后安全弹出，再返回学习。

@@ -17,11 +17,13 @@
 
 ## 下载与使用
 
-**本仓库提供源码，不附带完整 SD 资源、字库、模型或成品固件安装包。** 首次安装需要配套资源；只有源码或只刷应用，不能保证词典、课程和发音完整可用。
+源码保存在本仓库；固件、完整 SD 资源、字库和模型通过网盘单独提供。首次安装请使用配套包，并按包内说明安装。
+
+**[下载 fix55h 完整配套包（约 618 MB）](https://pan.baidu.com/s/1LFhJ1OKthrljqOejNbFNOw?pwd=xbct)** · 提取码：`xbct`。文件校验值及首次安装、升级说明见[资源下载与安装](docs/RESOURCES.md)。
 
 | 需求 | 文档 |
 | --- | --- |
-| 获取固件与 SD 资源 | [资源下载与安装](docs/RESOURCES.md)（网盘链接待补充） |
+| 获取固件与 SD 资源 | [资源下载与安装](docs/RESOURCES.md) |
 | 从源码编译 | [构建说明](docs/BUILD.md) |
 | 导入自己的英文词表 | [自定义词表](docs/WORDLISTS.md) |
 | SD 无法写入或导入失败 | [SD 诊断工具](tools/sd-diagnostics/先读我.md) |
