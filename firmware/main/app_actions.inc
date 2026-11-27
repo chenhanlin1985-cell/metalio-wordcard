@@ -11,6 +11,7 @@ void App::date_editor() {
     view_.screen = Screen::Date;
 }
 void App::leave_player() {
+    example_pending_=false;
     web_audio_pending_=false;web_audio_playing_=false;
     web_audio_note_.clear();
     if(web_.ready())web_.cancel_audio();

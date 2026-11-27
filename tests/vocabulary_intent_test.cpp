@@ -383,7 +383,8 @@ int main(int argc, char **argv) {
             if ((unsigned char)c < 128) c = char(std::toupper((unsigned char)c));
         auto alias = externalPayload(aliasSpelling);
         catalog.install_external(alias);
-        const auto aliasId = str(alias, "id");
+        const auto aliasId = catalog.entries.back().id;
+        alias["id"]=aliasId;
         const auto aliasCount = catalog.entries.size();
         check(aliasId != str(spellingTask, "id") && !catalog.entry(aliasId)->eligible,
               "Exposure alias is an independent personal dictionary record");
@@ -432,8 +433,9 @@ int main(int argc, char **argv) {
         while (str(meaningExposure["session"], "phase") == "learn") meaningExposure = step(meaningExposure);
         const auto meaningTask = engine.current(meaningExposure);
         const auto meaningWord = catalog.entry(str(meaningTask, "id"))->word;
-        const auto meaningAlias = externalPayload(meaningWord);
+        auto meaningAlias = externalPayload(meaningWord);
         catalog.install_external(meaningAlias);
+        meaningAlias["id"]=catalog.entries.back().id;
         const auto meaningAudio = act(meaningExposure, VJ{{"type", "audio"}, {"id", meaningAlias["id"]}});
         check(!flag(engine.current(meaningAudio), "hint") &&
               !flag(engine.current(meaningAudio), "audioHint"),
@@ -442,8 +444,9 @@ int main(int argc, char **argv) {
         check(flag(engine.current(meaningLookup), "lookupHint"),
               "Alias definition lookup marks assistance in a meaning question");
 
-        const auto apostropheWord = externalPayload("study-flow's-probe");
+        auto apostropheWord = externalPayload("study-flow's-probe");
         catalog.install_external(apostropheWord);
+        apostropheWord["id"]=catalog.entries.back().id;
         auto apostropheState = learning;
         for (auto &task : apostropheState["session"]["tasks"])
             if (task["uid"] == apostropheState["session"]["current"]) task["id"] = apostropheWord["id"];

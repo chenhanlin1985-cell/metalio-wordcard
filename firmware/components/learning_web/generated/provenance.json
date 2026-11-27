@@ -1,5 +1,5 @@
 {
-  "source": "src/legacy-course",
+  "source": "outputs/daily-plan-2026-11-01",
   "scripts": {
     "legacy-data.js": "7732968964fc5b1f8d151dc9b6571c5265a38e57f635e4925056eb90afeb1fd9",
     "legacy-model.js": "bab8b03fa26280b2c9272584ec00d256840530f504be0417a53431711360d65a",

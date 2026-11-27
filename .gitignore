@@ -2,7 +2,13 @@
 /work/
 /outputs/
 /dist/
-/resources/
+/resources/*
+!/resources/stories/
+!/resources/vocabulary/
+/resources/vocabulary/*
+!/resources/vocabulary/word-*.tsv
+!/resources/vocabulary/word-formation-license.md
+!/resources/vocabulary/word-parts-ECDICT-LICENSE.txt
 /firmware/managed_components/
 /firmware/sdkconfig
 /firmware/sdkconfig.old
@@ -23,3 +29,6 @@ __pycache__/
 .vscode/
 .idea/
 .device-qa*
+node_modules/
+
+/assets/*.fontpack

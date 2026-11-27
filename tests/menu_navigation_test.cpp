@@ -1,5 +1,6 @@
 // Actual menu dispatcher + real native/legacy engines + production Canvas.
 #include "wordcard_ui.hpp"
+#include "dictionary_keyboard.hpp"
 #include "native_json.hpp"
 #include "web_frame_cache.hpp"
 #include <filesystem>
@@ -16,7 +17,7 @@ class App{
  Screen previous_=Screen::Home;std::string notice_;int stops=0;
  void menu_push(Screen);bool menu_return();bool menu_dispatch(Event);void menu_finish(Event,Screen);
  void leave_player(){++stops;}
- void page(){if(view_.screen==Screen::WebLearning)require(web_.page(view_.web),web_.error());}
+ void page(){view_.settings_origin=!menu_stack_.empty();if(view_.screen==Screen::WebLearning)require(web_.page(view_.web),web_.error());}
  void press(Action a,int n=0){const auto before=view_.screen;Event e{a,n};
   if(!menu_dispatch(e))switch(a){
    case Action::Back:require(web_.back(),web_.error());break;
@@ -46,6 +47,26 @@ int main(int argc,char**argv){try{
   captures.push_back({{"name",name},{"screen",int(a.view_.screen)},{"buttons",buttons}});
  };
  frame("01-home");auto settings=std::find_if(ui.buttons().begin(),ui.buttons().end(),[](auto&b){return b.label=="设置";});require(settings!=ui.buttons().end()&&settings->event.action==Action::DeviceMenu,"single settings entry uses menu");
+ auto tap=[&](const std::string &label){
+  for(const auto &b:ui.buttons())if(b.label==label){
+   const auto hit=ui.hit(b.rect.x+b.rect.w/2,b.rect.y+b.rect.h/2);
+   a.press(hit.action,hit.value);return;
+  }
+  throw std::runtime_error("Missing visible control: "+label);
+ };
+ tap("困难模式");frame("10-mode-picker");tap("简单");frame("11-selection");tap("使用简单模式");
+ a.view_.battery_percent=95;frame("12-home-simple");
+ require(a.view_.web.route=="home","Home mode shortcut returns directly after confirmation");
+ auto has_block=[&](const std::string &role,const std::string &text){
+  return std::any_of(a.view_.web.blocks.begin(),a.view_.web.blocks.end(),[&](const auto &b){return b.role==role&&b.text.find(text)!=std::string::npos;});
+ };
+ require(has_block("vocab-home-mode","简单模式")&&has_block("vocab-home-next","先选适合你水平的词库"),"First visit reflects the selected mode and guides the learner to choose a starting deck");
+ tap("前光 关");frame("13-frontlight");tap("回首页");
+ require(a.view_.web.route=="home"&&a.menu_stack_.empty(),"Finish light settings in one tap");
+ frame("14-home-return");tap("设置");frame("15-flat-settings");tap("SD 卡与 USB 传输");frame("16-storage");
+ tap("回首页");require(a.view_.web.route=="home"&&a.menu_stack_.empty(),"Storage has direct home exit");
+ frame("home-from-storage");tap("设置");frame("settings-from-home");tap("背词设置");frame("training-from-home");
+ tap("回首页");require(a.view_.web.route=="home"&&a.menu_stack_.empty()&&!a.menu_training_,"Training footer exits the settings overlay in one tap");
  // A real search draft and pagination survive overlay navigation, without engine calls.
  require(a.web_.command("v-go","search")&&a.web_.type("appointment"),"prepare main query");a.page();a.view_.web_page=2;auto key=a.view_.web.key;
  auto scripts=a.web_.script_calls();
@@ -60,6 +81,16 @@ int main(int argc,char**argv){try{
  for(auto&b:a.view_.web.blocks)require(b.text.find("原课程")==std::string::npos,"training contains no old-course exit");
  a.press(Action::Back);require(a.view_.screen==Screen::WebTools,"training returns settings");
  a.press(Action::Back);require(a.view_.screen==Screen::WebLearning&&a.view_.web.typed=="appointment"&&a.view_.web_page==2,"query + pagination restored");require(a.web_.script_calls()==scripts,"device settings do not run legacy engine");
+ auto enterKeyboardSettings=[&](bool search){
+  for(const auto &button:ui.buttons())if(button.label=="设置"){
+   const auto &r=button.rect;
+   const auto touch=dictionary_keyboard_hit(r.x+r.w/2,r.y+r.h/2,false,false,true,0,!search,0,!search,search);
+   require(touch.event.action==Action::DeviceMenu,"Keyboard touch worker handles the visible settings entry");
+  }
+  tap("设置");
+ };
+ frame("lookup-before-settings");enterKeyboardSettings(true);a.press(Action::LearningSettings);frame("training-from-search");tap("回查词");
+ require(a.view_.screen==Screen::WebLearning&&a.view_.web.key==key&&a.view_.web.typed=="appointment"&&a.view_.web_page==2&&a.menu_stack_.empty(),"Training exit returns directly to original lookup and text");
  // Secondary courses retain their own home; returning resumes the main view exactly.
  a.press(Action::DeviceMenu);a.press(Action::MoreLearning);frame("05-more");
  a.press(Action::WebImport);a.press(Action::Back);require(a.view_.screen==Screen::MoreLearning,"import cancellation returns more");
@@ -82,6 +113,8 @@ int main(int argc,char**argv){try{
  std::string beforeTask,afterTask;require(a.web_.status(beforeTask),"task status");key=a.view_.web.key;
  frame("08-spelling-before");a.press(Action::DeviceMenu);a.press(Action::MoreLearning);a.press(Action::LegacyCourses);a.press(Action::MoreLearning);a.press(Action::Back);a.press(Action::Back);frame("09-spelling-restored");
  require(a.web_.status(afterTask)&&beforeTask==afterTask&&a.view_.web.key==key&&a.view_.web.typed=="dra","real spelling session, revision, task, draft unchanged");
+ enterKeyboardSettings(false);a.press(Action::Settings);a.press(Action::SelfTest);frame("diagnostics-from-question");tap("回原题");
+ require(a.web_.status(afterTask)&&beforeTask==afterTask&&a.view_.web.key==key&&a.view_.web.typed=="dra"&&a.menu_stack_.empty(),"Single exit from nested diagnostics preserves the exact question and draft");
  a.press(Action::DeviceMenu);a.press(Action::MoreLearning);a.press(Action::LegacyCourses);
  require(a.web_.eval("nativeDebug.model.commit(s=>{s.navigationSentinel={answers:37,word:'previous',futureField:'retain'};});nativeDebug.go('home');"),"write existing-course progress");a.page();
  require(a.view_.web.secondary&&a.view_.web.key.rfind("vocabulary:",0)!=0,"course progress stays in secondary context");
@@ -92,6 +125,8 @@ int main(int argc,char**argv){try{
  require(a.web_.status(afterTask)&&afterTask==beforeTask,"main task unchanged by old-course progress");
  WebFrameCache cache;cache.configure(font);auto cached=a.view_.web;cached.secondary=true;require(cache.build(cached,[]{return false;}),"prepare secondary frame");
  View target=a.view_;target.web_page=0;require(!cache.take(target,pixels.data(),ui),"never reuse secondary frame for main scope");target.web=cached;require(cache.take(target,pixels.data(),ui),"matching secondary pre-render remains usable");
+ a.press(Action::Home);frame("home-with-active-group");tap("困难模式");frame("change-active-group");tap("简单");frame("pending-simple");tap("使用简单模式");
+ require(a.view_.web.route=="home"&&has_block("vocab-home-mode","简单模式")&&has_block("vocab-home-next","本组困难"),"Home distinguishes next-group preference and unfinished group difficulty");
  std::ofstream(out/"captures.json")<<captures.dump(2);std::ofstream(out/"checks.json")<<J{{"passed",true},{"checks",checks},{"deviceTouched",false}}.dump(2);
  std::cout<<"PASS navigation "<<checks<<" checks\n";return 0;
  }catch(const std::exception&e){std::cerr<<e.what()<<"\n";return 1;}}

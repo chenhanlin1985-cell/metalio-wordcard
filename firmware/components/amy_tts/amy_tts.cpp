@@ -10,6 +10,7 @@
 #ifdef ESP_PLATFORM
 #include <esp_heap_caps.h>
 #include <esp_attr.h>
+#include <esp_rom_crc.h>
 #endif
 namespace {
 using Block=std::unique_ptr<void,decltype(&std::free)>;
@@ -51,6 +52,31 @@ bool amy_resample_parallel(const int16_t *input,size_t n,int16_t *output,size_t 
  auto stop=[](void *context)->int{return (*(const std::function<bool()>*)context)()?1:0;};
  return amy_blocks_run(fir_worker,&fir_job,int((total+63)/64),stop,(void*)&cancel)==0;
 }
+// Each model starts on a 16-byte boundary, as in the original PSRAM loader.
+static constexpr size_t decoder_offset=(AMY_SMALL_ASSETS[0].bytes+15u)&~size_t(15);
+#ifdef ESP_PLATFORM
+bool AmyTts::map_weights(){
+ const auto *part=esp_partition_find_first(ESP_PARTITION_TYPE_DATA,esp_partition_subtype_t(0x41),"amy_weights");
+ const size_t length=decoder_offset+AMY_SMALL_ASSETS[1].bytes;
+ const void *address=nullptr;
+ if(!part || part->size<length || esp_partition_mmap(part,0,length,ESP_PARTITION_MMAP_DATA,&address,&mapping_)!=ESP_OK)return false;
+ const auto *base=static_cast<const uint8_t*>(address);
+ if(esp_rom_crc32_le(0,base,AMY_SMALL_ASSETS[0].bytes)!=AMY_SMALL_ASSETS[0].crc ||
+    esp_rom_crc32_le(0,base+decoder_offset,AMY_SMALL_ASSETS[1].bytes)!=AMY_SMALL_ASSETS[1].crc){
+  esp_partition_munmap(mapping_);
+  return false;
+ }
+ mapped_=base;
+ std::printf("AMY_WEIGHTS flash_mapped=%u\n",unsigned(length));
+ return true;
+}
+#endif
+void AmyTts::release(){
+#ifdef ESP_PLATFORM
+ if(mapped_)esp_partition_munmap(mapping_);
+#endif
+ mapped_=nullptr;front_.reset();decoder_.reset();
+}
 bool AmyTts::render(OfflineTts &espeak,const std::string &ef,const std::string &mf,const std::string &text,const OfflineTts::Cancel &cancel,AmyPcm &out,std::string &error,int64_t budget){
  out={};error.clear();const auto start=amy_now_us();Run run{cancel,start+budget};
  auto fail=[&](const char *reason){error=cancel()?"Amy 已停止":amy_now_us()>=run.deadline?"Amy 合成超时，请换短句":reason;out.data.reset();out.count=0;return false;};
@@ -63,6 +89,9 @@ bool AmyTts::render(OfflineTts &espeak,const std::string &ef,const std::string &
   wordcard::load_resource_cache(mf+"/.verified-v2",cache_);
 #endif
  }
+#ifdef ESP_PLATFORM
+ if(!initialized())map_weights();
+#endif
  if(!initialized()){
   auto front=allocate(assets[0].bytes),decoder=allocate(assets[1].bytes);
   if(!front || !decoder)return fail("Amy 模型内存不足");
@@ -74,8 +103,10 @@ bool AmyTts::render(OfflineTts &espeak,const std::string &ef,const std::string &
   front_=std::move(front);decoder_=std::move(decoder);
  }
  snt_front_model fm{};snt_piperlite_model dm{};
- if(snt_front_init(&fm,front_.get(),568,(const float *)((const char *)front_.get()+568),(assets[0].bytes-568)/4) ||
-    snt_piperlite_init(&dm,decoder_.get(),416,(const float *)((const char *)decoder_.get()+416),(assets[1].bytes-416)/4))return fail("Amy 模型结构不符");
+ const auto *front=mapped_?mapped_:static_cast<const uint8_t*>(front_.get());
+ const auto *decoder=mapped_?mapped_+decoder_offset:static_cast<const uint8_t*>(decoder_.get());
+ if(snt_front_init(&fm,front,568,reinterpret_cast<const float*>(front+568),(assets[0].bytes-568)/4) ||
+    snt_piperlite_init(&dm,decoder,416,reinterpret_cast<const float*>(decoder+416),(assets[1].bytes-416)/4))return fail("Amy 模型结构不符");
  if(ids.size()>265)return fail("Amy 文本过长，请分句");
 #ifdef ESP_PLATFORM
  std::printf("AMY_FRONTEND ids=");for(size_t i=0;i<ids.size();++i)std::printf("%s%ld",i?",":"",(long)ids[i]);std::printf("\n");

@@ -9,7 +9,7 @@ using namespace wordcard;namespace fs=std::filesystem;
 int checks=0;constexpr int64_t Now=1793836800000LL;
 void ck(bool b,const char*s){++checks;if(!b)throw std::runtime_error(s);}
 std::string read(const fs::path&p){std::ifstream f(p,std::ios::binary);return {std::istreambuf_iterator<char>(f),{}};}
-VJ state(const fs::path&p){auto f=VJ::parse(str(VJ::parse(read(p/"vocabulary/state.json")),"data"));auto s=f["state"];std::ifstream in(p/"vocabulary/events.ndjson",std::ios::binary);if(in){in.seekg(num(f,"journalOffset"));std::string l;while(std::getline(in,l))s=s.patch(VJ::parse(str(VJ::parse(l),"data"))["patch"]);}return s;}
+VJ state(const fs::path&p){auto f=VJ::parse(str(VJ::parse(read(p/"vocabulary-v2/state.json")),"data"));auto s=f["state"];std::ifstream in(p/"vocabulary-v2/events.ndjson",std::ios::binary);if(in){in.seekg(num(f,"journalOffset"));std::string l;while(std::getline(in,l))s=s.patch(VJ::parse(str(VJ::parse(l),"data"))["patch"]);}return s;}
 void little(std::ostream &s,uint32_t n){for(int i=0;i<4;++i)s.put(char(n>>(8*i)));}
 void dictionary(const fs::path&p){fs::create_directories(p);std::string row="quizzacious\tquizzacious\tkwɪˈzeɪʃəs\t测试词义；第二义\tSynthetic fixture only\t";std::ofstream idx(p/"index.bin",std::ios::binary),dat(p/"entries.bin",std::ios::binary);idx.write("WCDICT1\0",8);little(idx,1);little(idx,uint32_t(row.size()));little(idx,0);little(idx,uint32_t(row.size()));dat<<row;}
 int main(int argc,char**argv){try{
@@ -17,7 +17,7 @@ int main(int argc,char**argv){try{
  ck(!fs::exists(out),"never overwrite a user profile");fs::create_directories(out/"vocabulary");fs::create_directories(profile);
  for(auto n:{"catalog.json","catalog.tsv","catalog.ndjson"})fs::copy_file(fs::path(argv[1])/n,out/"vocabulary"/n);
  dictionary(out/"dictionary");
- auto model=std::make_unique<NativeVocabulary>(profile.generic_string());ck(model->enter(VJ(),Now),"enter native");
+ auto model=std::make_unique<NativeVocabulary>(profile.generic_string());ck(model->enter(Now),"enter native");
  auto run=[&](VJ a){ck(model->dispatch(a.dump()),"dispatch handled");ck(str(VJ::parse(model->status()),"courseError").empty(),"action succeeded");};
  auto click=[&](const std::string &label){auto p=model->page();for(auto b:p.blocks)if(b.kind=="button"&&b.text==label&&b.enabled){run(VJ::parse(p.actions.at(b.action)));return;}throw std::runtime_error("Missing button: "+label);};
  auto write=[&](std::string s){std::ofstream f(out/"my-words.txt",std::ios::binary);f<<s;};
@@ -38,7 +38,7 @@ int main(int argc,char**argv){try{
  {std::vector<uint8_t> pixels(Canvas::bytes);Canvas c(pixels.data(),font);View v;v.screen=Screen::WebLearning;v.web=model->page();UI ui;ui.render(c,v);bool found=false;for(auto b:ui.buttons())if(b.label=="学习这些生词"&&b.enabled&&b.rect.y>=1000)found=true;ck(found,"notebook can start immediately without paging through its words");}
  click("查看和整理单词");capture("04-manage");run(VJ{{"action","v-back"}});
  run(save);ck(state(profile)==added,"stale double tap cannot append revision");
- std::string external="dict:"+personal_word_id("quizzacious");ck(added["externalWords"].contains(external),"offline dictionary used for external word");
+ std::string external;for(const auto &w:added["externalWords"].items())if(str(w.value(),"word")=="quizzacious")external=w.key();ck(added["externalWords"].contains(external),"offline dictionary used for external word");
  ck(str(added["externalWords"][external],"ipa")=="词典 /kwɪˈzeɪʃəs/","IPA retained");
  // Reordered source and repeat reading neither resets nor creates duplicate sessions.
  run(VJ{{"action","v-go"},{"value","notebook-add"}});click("从单词表添加");write("quizzacious\nit\nIT\nC++\nAPI\napple\n");click("读取单词表");ck(state(profile)==added,"rereading and reordering is nonmutating");click("返回单词本");ck(model->page().route=="notebook","zero-new bottom action reaches notebook through real add-page stack");
@@ -52,10 +52,10 @@ int main(int argc,char**argv){try{
  // Removal and reboot keep FSRS and paused task references intact.
  run(VJ{{"action","u-notebook"}});run(VJ{{"action","v-open"},{"value",external}});click("移出生词本");
  auto removed=state(profile);ck(!has(removed["notebook"],external),"membership removed");ck(removed["cards"]==paused["cards"],"FSRS cards retained on removal");ck(removed["session"]["draft"]==paused["session"]["draft"],"draft retained on removal");
- model.reset();model=std::make_unique<NativeVocabulary>(profile.generic_string());ck(model->enter(VJ(),Now),"reboot reads records");ck(state(profile)==removed,"replay retains custom words and original progress");
+ model.reset();model=std::make_unique<NativeVocabulary>(profile.generic_string());ck(model->enter(Now),"reboot reads records");ck(state(profile)==removed,"replay retains custom words and original progress");
  run(VJ{{"action","v-go"},{"value","word-list"}});write("quizzacious\n");click("读取单词表");click("加入我的单词本");ck(state(profile)["cards"]==removed["cards"],"re-add uses original FSRS cards");
  // Save failure must roll back dictionary installation as well as JSON state.
- run(VJ{{"action","v-go"},{"value","word-list"}});write("C#\n");click("读取单词表");const auto preFailure=state(profile);const auto journal=profile/"vocabulary/events.ndjson";fs::rename(journal,journal.string()+".held");fs::create_directory(journal);auto p=model->page();VJ failedSave;for(auto b:p.blocks)if(b.text=="加入我的单词本")failedSave=VJ::parse(p.actions[b.action]);ck(!model->dispatch(failedSave.dump()),"failed journal append reports failure");fs::remove(journal);fs::rename(journal.string()+".held",journal);ck(state(profile)==preFailure,"failed save changed no durable progress");run(VJ{{"action","v-close-error"}});run(failedSave);ck(state(profile)["notebook"].size()==preFailure["notebook"].size()+1,"retry after IO recovery succeeds once");
+ run(VJ{{"action","v-go"},{"value","word-list"}});write("C#\n");click("读取单词表");const auto preFailure=state(profile);const auto journal=profile/"vocabulary-v2/events.ndjson";fs::rename(journal,journal.string()+".held");fs::create_directory(journal);auto p=model->page();VJ failedSave;for(auto b:p.blocks)if(b.text=="加入我的单词本")failedSave=VJ::parse(p.actions[b.action]);ck(!model->dispatch(failedSave.dump()),"failed journal append reports failure");fs::remove(journal);fs::rename(journal.string()+".held",journal);ck(state(profile)==preFailure,"failed save changed no durable progress");run(VJ{{"action","v-close-error"}});run(failedSave);ck(state(profile)["notebook"].size()==preFailure["notebook"].size()+1,"retry after IO recovery succeeds once");
  auto stable=state(profile);run(VJ{{"action","v-go"},{"value","word-list"}});write(std::string(32769,'a'));ck(!model->prepare_word_list(),"oversize file rejected");ck(state(profile)==stable,"oversize keeps all state");run(VJ{{"action","v-close-error"}});
  write("");ck(!model->prepare_word_list(),"empty file rejected");run(VJ{{"action","v-close-error"}});
  std::string many;for(int i=0;i<201;++i)many+="apple\n";write(many);ck(!model->prepare_word_list(),"line limit rejects entire preview");ck(state(profile)==stable,"limit does not partially save");

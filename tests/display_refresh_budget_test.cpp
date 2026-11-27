@@ -34,6 +34,24 @@ int main(){try{unsigned checks=0;auto check=[&](bool x){++checks;if(!x)throw std
  check(study_refresh_reason(listen,"summary||||||||||false|tail/0",0)==StudyRefreshReason::Summary);
  check(study_refresh_reason(q,"home||||||||||false|tail/0",1)==StudyRefreshReason::Question);
  check(study_refresh_reason("books||||||||||false|tail/0","unit||||||||||false|tail/0",5)==StudyRefreshReason::None);
+ // Real native keys contain colons inside session/task IDs. Only the known
+ // route prefix is inspected; no fragile fixed-position task parsing.
+ const std::string nh="vocabulary:home:new:session:tasks:new:session:retry:id:question:0:/0";
+ const std::string nc="vocabulary:collection:new:session:tasks:new:session:retry:id:question:0::0:0:/0";
+ check(study_refresh_reason("",nh,0)==StudyRefreshReason::Journey); // boot -> home
+ check(study_refresh_reason(nh,nc,0)==StudyRefreshReason::Journey);
+ check(study_refresh_reason(nc,nh,0)==StudyRefreshReason::Journey);
+ check(study_refresh_reason(nc,nc,20)==StudyRefreshReason::None);
+ for(const auto*route:{"home","collection","stamp","gallery","word"}){
+  const std::string a=std::string("vocabulary:")+route+":session:learn::question:0::0/0";
+  const std::string b=std::string("vocabulary:")+route+":session:learn::question:0::1/1";
+  check(study_refresh_reason(nh,a,1)==StudyRefreshReason::Journey);
+  check(study_refresh_reason(a,b,0)==StudyRefreshReason::Journey);
+  check(study_refresh_reason(a,a,31)==StudyRefreshReason::None);
+ }
+ check(study_refresh_reason(nc,"vocabulary:word-batch:s:tasks:s:retry:1:question:0:/0",1)==StudyRefreshReason::None);
+ check(study_refresh_reason(nh,"vocabulary:search:s:tasks:s:retry:1:question:0:/0",1)==StudyRefreshReason::None);
+ check(study_refresh_reason(nh,"vocabulary:settings:s:tasks:s:retry:1:question:0:/0",1)==StudyRefreshReason::None);
  // Keyboard geometry alone must not grant the 32-update allowance to a
  // changed candidate list or a different question; only the input-only diff.
  b.completed(true,true,123015);for(unsigned i=0;i<5;++i)b.completed(false,true,123016+i);

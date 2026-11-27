@@ -1,0 +1,9 @@
+{
+  "format": "wordcard-pack",
+  "schema": 2,
+  "type": "story",
+  "id": "after-twenty-years",
+  "version": "1.0.0",
+  "title": "二十年后",
+  "requires": "pet-2024@1.0.0"
+}

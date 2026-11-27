@@ -8,7 +8,11 @@ const J &NativeStudy::data() {
     return value;
 }
 NativeStudy::NativeStudy(Write writer, const std::string &directory) : writer_(std::move(writer)), model_(data()) {
-    if(!directory.empty()) vocabulary_=std::make_unique<NativeVocabulary>(directory);
+    if(!directory.empty()){
+        vocabulary_=std::make_unique<NativeVocabulary>(directory);
+        model_.shared_words=course_ledger();
+        if(model_.shared_words)vocabulary_->bind_course(data().at("catalog"),str(data(),"version"));
+    }
 }
 bool NativeStudy::supported(const std::string &r) {
     return r == "word-batch" || r == "word-result" || r == "quiz" || r == "focus-summary" || r == "summary" ||
@@ -29,6 +33,7 @@ bool NativeStudy::enter(const std::string &raw) {
             return false;
         require(model_.validate(c.at("course")), "原生学习记录校验未通过");
         model_.state = c["course"];
+        if(course_ledger())vocabulary_->project_course(model_.state);
         profile_ = c["profile"];
         ui_ = c["ui"];
         model_.now = num(c, "now");
@@ -40,7 +45,7 @@ bool NativeStudy::enter(const std::string &raw) {
         pendingAudio_ = nullptr;
         active_ = true;
         if(vocabulary_) {
-            if(route=="home" && vocabulary_enabled_) vocabulary_->enter(J{{"course",model_.state},{"profile",profile_}},model_.now);
+            if(route=="home" && vocabulary_enabled_) vocabulary_->enter(model_.now);
             else vocabulary_->leave();
         }
         return true;
@@ -50,7 +55,9 @@ bool NativeStudy::enter(const std::string &raw) {
     }
 }
 std::string NativeStudy::context() const {
-    return J{{"course", model_.state},
+    auto course=model_.state;
+    if(course_ledger())vocabulary_->project_course(course);
+    return J{{"course", std::move(course)},
              {"profile", profile_},
              {"ui", ui_},
              {"now", model_.now},
@@ -67,6 +74,7 @@ bool NativeStudy::commit(const std::string &method, const J &args) {
         require(model_.mutate(draft, method, args), "原生学习动作不存在");
         require(model_.validate(draft), "学习记录未通过校验");
         require(writer_("wordcard-adult-web-v2", draft.dump()), "SD 保存失败，进度未前进，请重试。");
+        if(course_ledger())vocabulary_->project_course(draft);
         model_.state = std::move(draft);
         error_.clear();
         return true;

@@ -1,4 +1,20 @@
 #include "vocabulary.hpp"
+#include "pack_paths.hpp"
+#ifdef ESP_PLATFORM
+#include <psa/crypto.h>
+#elif defined(_WIN32)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#include <bcrypt.h>
+#pragma comment(lib,"bcrypt.lib")
+#else
+#include <openssl/sha.h>
+#endif
+#include "bookshop.hpp"
+#include "vocabulary_journey.hpp"
+#include <algorithm>
 #include <cctype>
 #include <ctime>
 #include <fstream>
@@ -8,6 +24,9 @@ namespace wordcard {
 namespace {
 constexpr int64_t Day = 86400000, Gap = 900000;
 const char *Hash = "0dc7757d42a0c544871b688883dfb0f3b7dc4f0ceec5546a618b6a06f4081b6a";
+bool partial_word(const std::string &word) {
+    return std::count_if(word.begin(),word.end(),[](unsigned char c){return (c>='a'&&c<='z')||(c>='A'&&c<='Z');})>=2;
+}
 uint32_t hash(const std::string &s) {
     uint32_t h = 2166136261;
     for (size_t i = 0; i < s.size();) {
@@ -64,6 +83,12 @@ std::set<std::string> reserved_words(const VJ &s) {
     };
     reserve(field(s, "session"));
     for (const auto &session : field(s, "paused")) reserve(session);
+    const auto &chapter = field(s, "bookshop");
+    const auto &plan = field(chapter, "ids");
+    if (plan.is_array() && plan.size() == 10) {
+        const size_t first = 5 * std::clamp<int64_t>(num(chapter, "groups"), 0, 2);
+        for (size_t i = first; i < plan.size(); ++i) ids.insert(str(plan[i]));
+    }
     return ids;
 }
 void activate_session(VJ &s, const VJ &target) {
@@ -99,6 +124,8 @@ std::vector<std::string> senses(const std::string &s) {
     return out;
 }
 } // namespace
+#include "deck_catalog.inc"
+#include "story_catalog.inc"
 bool VocabularyCatalog::load(const std::string &dir) {
     std::ifstream meta(dir + "/catalog.json", std::ios::binary),
         idx(dir + "/catalog.tsv", std::ios::binary);
@@ -106,7 +133,8 @@ bool VocabularyCatalog::load(const std::string &dir) {
         return false;
     metadata = VJ::parse(meta);
     require(str(metadata, "version") == "vocabulary-complete-2026-11-04-v1" ||
-            str(metadata, "version") == "vocabulary-independent-2026-11-04-v1", "词库版本不支持");
+            str(metadata, "version") == "vocabulary-independent-2026-11-04-v1" ||
+            str(metadata, "version") == "vocabulary-gre-2026-11-17-v1", "词库版本不支持");
     directory = dir;
     entries.clear();
     index_.clear();
@@ -129,7 +157,24 @@ bool VocabularyCatalog::load(const std::string &dir) {
         index_[e.id] = entries.size();
         entries.push_back(std::move(e));
     }
-    require(entries.size() == (str(metadata, "version") == "vocabulary-independent-2026-11-04-v1" ? 4598u : 2479u), "词库数量不完整");
+    const size_t expected = str(metadata, "version") == "vocabulary-gre-2026-11-17-v1" ? 4738u :
+        (str(metadata, "version") == "vocabulary-independent-2026-11-04-v1" ? 4598u : 2479u);
+    require(entries.size() == expected, "词库数量不完整");
+    load_decks(dir.substr(0,dir.find_last_of("/\\"))+"/packs");
+    shopCues=nullptr;
+    std::ifstream story(dir+"/bookshop-v1.json",std::ios::binary|std::ios::ate);
+    if(story && story.tellg()>0 && story.tellg()<=65536){
+        story.seekg(0);auto file=VJ::parse(story,nullptr,false);
+        if(file.is_object()&&num(file,"version")==1){
+            const auto &cues=field(file,"cues");bool ok=cues.is_object()&&cues.size()>=10;
+            for(auto i=cues.begin();ok&&i!=cues.end();++i){
+                const auto *e=entry(i.key());
+                ok=e&&e->stage=="gre-trial"&&i.value().is_array()&&i.value().size()==3;
+                if(ok)for(const auto &cue:i.value())ok=ok&&cue.is_string()&&!str(cue).empty();
+            }
+            if(ok)shopCues=cues;
+        }
+    }
     return true;
 }
 const VocabularyCatalog::Entry *VocabularyCatalog::entry(const std::string &id) const {
@@ -143,6 +188,7 @@ VJ VocabularyCatalog::get(const std::string &id) const {
     auto e = entry(id);
     require(e != nullptr, "词条不存在");
     if (external.contains(id)) return external[id];
+    if (auto w=deck_word(id); !w.is_null()) return w;
     std::ifstream in(directory + "/catalog.ndjson", std::ios::binary);
     require(bool(in), "SD词库无法读取");
     in.seekg(e->offset);
@@ -181,7 +227,7 @@ VJ VocabularyEngine::empty_card(int64_t now) {
               {"pendingRelearn", false}};
 }
 VJ VocabularyEngine::session(VJ &s, const VJ &ids, const std::string &source, int64_t now,
-                             const std::string &mode) const {
+                             const std::string &mode, bool associative) const {
     s["serial"] = num(s, "serial") + 1;
     auto id = "s" + str(s, "serial") + "-" + std::to_string(now);
     VJ v{{"id", id},
@@ -200,30 +246,36 @@ VJ VocabularyEngine::session(VJ &s, const VJ &ids, const std::string &source, in
          {"newCount", 0},
          {"deferrals", VJ::array()},
          {"retryKeys", VJ::array()},
-         {"lastWords", VJ::array()}};
+         {"lastWords", VJ::array()},
+         {"journeyAttempts", 0}};
     if (source != "review") {
         std::vector<std::string> kinds = {"meaning"};
         if (mode == "staged")
             kinds.push_back("gap");
-        if (mode != "meaning")
-            kinds.push_back("spelling");
+        if (mode == "partial") kinds.push_back("partial");
+        if (mode != "meaning" && mode != "partial")
+            kinds.push_back(associative ? "recall" : "spelling");
         for (const auto &k : kinds) {
             auto sorted = ids;
             std::stable_sort(sorted.begin(), sorted.end(), [&](const VJ &a, const VJ &b) {
                 return hash(id + k + str(a)) < hash(id + k + str(b));
             });
-            for (const auto &wid : sorted)
+            for (const auto &wid : sorted) {
+                if(k=="partial"&&!partial_word(catalog.entry(str(wid))->word))continue;
                 v["tasks"].push_back(VJ{{"uid", id + ":" + std::to_string(v["tasks"].size())},
                                         {"id", wid},
                                         {"kind", k},
                                         {"followup", false},
                                         {"done", false},
                                         {"requiresGap", true}});
+            }
         }
     }
+    if(source=="new"||source=="review")v["deckStage"]=str(s,"selectedStage");
+    if (associative) v["associative"] = true;
     return v;
 }
-VJ VocabularyEngine::create(int64_t now, const VJ &legacy) const {
+VJ VocabularyEngine::create(int64_t now) const {
     VJ s{{"schema", 1},
          {"contentVersion", catalog.metadata["version"]},
          {"revision", 0},
@@ -244,116 +296,7 @@ VJ VocabularyEngine::create(int64_t now, const VJ &legacy) const {
          {"exposures", VJ::object()},
          {"recentExposures", VJ::array()},
          {"commandIds", VJ::array()},
-         {"legacy", legacy}};
-    if (legacy.is_null())
-        return s;
-    const auto &c = field(legacy, "course"), &map = catalog.metadata["legacyMap"];
-    auto mode = str(c, "wordMode");
-    if (mode == "staged" || mode == "full" || mode == "meaning")
-        s["settings"]["mode"] = mode;
-    auto mapped = [&](const std::string &id) { return str(map, id); };
-    std::set<std::string> ids;
-    for (const auto &k : {"memory", "batchMemory"})
-        for (const auto &id : keys(field(c, k)))
-            ids.insert(str(id));
-    for (const auto &id : ids) {
-        auto nid = mapped(id);
-        if (!catalog.entry(nid))
-            continue;
-        s["seen"][nid] = num(field(field(field(c, "batchMemory"), id), "meaning"), "last", now);
-        for (const auto &k : {"meaning", "spelling"}) {
-            auto old = field(field(field(c, "batchMemory"), id), k);
-            if (old.is_null() && std::string(k) == "meaning")
-                old = field(field(c, "memory"), id);
-            if (old.is_null())
-                continue;
-            auto card = empty_card(now);
-            card["due"] = card["fsrsDue"] = num(old, "due", now);
-            card["legacy"] = old;
-            s["cards"][nid][k] = card;
-        }
-    }
-    for (const auto &k : {"notebook", "extraNotebook"})
-        for (const auto &id : field(c, k)) {
-            auto nid = mapped(str(id));
-            if (catalog.entry(nid))
-                addUnique(s["notebook"], nid);
-        }
-    for (const auto &k : {"batch", "dailyPausedBatch"}) {
-        auto b = field(c, k);
-        if (!b.is_object() || !field(b, "ids").is_array())
-            continue;
-        VJ group = VJ::array();
-        bool valid = true;
-        for (const auto &id : b["ids"]) {
-            auto nid = mapped(str(id));
-            if (!catalog.entry(nid)) {
-                valid = false;
-                break;
-            }
-            group.push_back(nid);
-        }
-        if (!valid || group.empty())
-            continue;
-        auto ss = session(s, group, "legacy", now,
-                          str(b, "practiceMode").empty() ? str(s["settings"], "mode")
-                                                         : str(b, "practiceMode"));
-        ss["legacySource"] = b;
-        ss["learnAt"] = std::min(num(b, "learnAt"), int64_t(group.size() - 1));
-        if (str(b, "phase") != "overview" && str(b, "phase") != "learn") {
-            ss["phase"] = "tasks";
-            ss["tasks"] = VJ::array();
-            auto queue = field(b, "queue");
-            for (size_t i = size_t(std::max(int64_t(0), num(b, "at"))); i < queue.size(); ++i) {
-                auto q = queue[i];
-                auto nid = mapped(str(q, "id"));
-                if (!catalog.entry(nid))
-                    continue;
-                const auto kind = str(q, "kind");
-                ss["tasks"].push_back(VJ{
-                    {"uid", str(ss, "id") + ":legacy:" + std::to_string(ss["tasks"].size())},
-                    {"id", nid},
-                    {"kind", kind},
-                    {"followup", flag(q, "followup")},
-                    {"done", false},
-                    {"requiresGap", flag(q, "followup")},
-                    {"options", kind == "meaning"
-                                    ? field(field(field(b, "choices"), str(q, "id")), "options")
-                                    : VJ()},
-                    {"legacyAnswer", kind == "meaning"
-                                         ? field(field(field(b, "choices"), str(q, "id")), "answer")
-                                         : VJ()},
-                    {"legacyGap", kind == "gap" ? field(field(b, "gaps"), str(q, "id")) : VJ()}});
-            }
-            ss["current"] = ss["tasks"].empty() ? VJ() : ss["tasks"][0]["uid"];
-            ss["draft"] = VJ{{"taskId", ss["current"]}, {"value", str(b, "typed")}};
-            if (flag(b, "checked") && !ss["tasks"].empty()) {
-                auto &t = ss["tasks"][0];
-                t["done"] = true;
-                ss["feedback"] = b["checked"];
-                for (auto key : {"id", "kind", "uid"})
-                    ss["feedback"][key] = t[key];
-                ss["feedback"]["imported"] = true;
-            }
-        }
-        if (s["session"].is_null()) {
-            s["session"] = ss;
-            for (const auto &id : field(b, "learned")) {
-                auto nid = mapped(str(id));
-                if (!nid.empty())
-                    s["recentExposures"].push_back(nid);
-            }
-            for (size_t i = 0; i < field(b, "queue").size() &&
-                               i < size_t(num(b, "at") + (flag(b, "checked") ? 1 : 0));
-                 ++i) {
-                auto nid = mapped(str(b["queue"][i], "id"));
-                if (!nid.empty())
-                    s["recentExposures"].push_back(nid);
-            }
-        } else
-            s["paused"].push_back(ss);
-        s["stageChosen"] = true;
-    }
+         {"storyRuns", VJ::object()}};
     return s;
 }
 VJ VocabularyEngine::current(const VJ &s) const {
@@ -378,7 +321,7 @@ void VocabularyEngine::touch(VJ &s, const std::string &id, int64_t now, VJ &even
     recent.push_back(id);
     if (recent.size() > 400)
         recent.erase(recent.begin());
-    if (!s["session"].is_null()) {
+    if (type!="story_answer" && type!="story_exposure" && type!="course_answer" && !s["session"].is_null()) {
         auto &last = s["session"]["lastWords"];
         last.push_back(id);
         if (last.size() > 200)
@@ -393,17 +336,17 @@ bool VocabularyEngine::enough(const VJ &s, const std::string &id, int64_t now) c
     if (!e.is_null() && now - num(e, "at") >= Gap)
         return true;
     std::set<std::string> others;
+    const auto *target=catalog.entry(id);
     const auto &r = field(s, "recentExposures");
     for (auto it = r.rbegin(); it != r.rend(); ++it) {
         if (*it == id)
             return others.size() >= 3;
-        others.insert(str(*it));
+        const auto *word=catalog.entry(str(*it));
+        if(word&&(!target||norm(word->word)!=norm(target->word)))others.insert(norm(word->word));
     }
     return true;
 }
 VJ VocabularyEngine::gap(const VJ &t) const {
-    if (!field(t, "legacyGap").is_null())
-        return t["legacyGap"];
     auto word = catalog.entry(str(t, "id"))->word;
     std::vector<size_t> positions;
     for (size_t i = 0; i < word.size(); ++i)
@@ -437,8 +380,10 @@ VJ VocabularyEngine::choices(const VJ &t, const VJ &ss) const {
     pool.reserve(catalog.entries.size());
     auto seed = str(ss, "id") + w->id;
     auto target = senses(w->meaning);
+    const bool story=ss.contains("shopRole");
     for (const auto &e : catalog.entries) {
-        if (!e.eligible || catalog.external.contains(e.id) || e.id == w->id || e.meaning == w->meaning)
+        if(story && (e.stage!="gre-trial" || e.word==w->word))continue;
+        if (!e.eligible || catalog.external.contains(e.id) || e.id == w->id || norm(e.word) == norm(w->word) || e.meaning == w->meaning)
             continue;
         bool distinct = true;
         for (const auto &a : senses(e.meaning))
@@ -455,10 +400,10 @@ VJ VocabularyEngine::choices(const VJ &t, const VJ &ss) const {
             return a->pos == w->pos;
         return ra.second < rb.second;
     });
-    VJ result = VJ::array({w->meaning});
+    VJ result = VJ::array({story?w->word:w->meaning});
     for (const auto &ranked : pool) {
         const auto *e = ranked.first;
-        addUnique(result, e->meaning);
+        addUnique(result, story?e->word:e->meaning);
         if (result.size() == 3)
             break;
     }
@@ -475,7 +420,9 @@ VJ VocabularyEngine::due(const VJ &s, int64_t now) const {
     for (auto it = s["cards"].begin(); it != s["cards"].end(); ++it)
         for (auto c = it.value().begin(); c != it.value().end(); ++c) {
             if (!catalog.entry(it.key()) ||
-                (c.key() == "spelling" && str(s["settings"], "mode") == "meaning"))
+                (c.key() != "meaning" && str(s["settings"], "mode") == "meaning") ||
+                (c.key() != "meaning" && c.key() != "partial" && str(s["settings"], "mode") == "partial") ||
+                (c.key() == "partial" && str(s["settings"], "mode") != "partial"))
                 continue;
             if (num(c.value(), "due") <= now)
                 result.push_back(
@@ -504,14 +451,64 @@ VJ VocabularyEngine::available_due(const VJ &s, int64_t now) const {
     }), result.end());
     return result;
 }
+VJ VocabularyEngine::shop_due(const VJ &s,int64_t now) const {
+    auto rows=available_due(s,now);
+    rows.erase(std::remove_if(rows.begin(),rows.end(),[&](const VJ&t){
+        const auto id=str(t,"id");const auto *e=catalog.entry(id);
+        return !e||e->stage!="gre-trial"||!enough(s,id,now);
+    }),rows.end());
+    return rows;
+}
+VJ VocabularyEngine::review_tasks(const VJ &s, int64_t now, const std::string &scope) const {
+    require(scope == "current" || scope == "all" || scope == "notebook", "复习范围无效");
+    const auto matches = [&](const std::string &id) {
+        const auto *e = catalog.entry(id);
+        return e && (scope == "all" || (scope == "notebook" ? has(s["notebook"], id)
+                                                      : catalog.contains_word(str(s,"selectedStage"),id)));
+    };
+    auto result = available_due(s, now);
+    result.erase(std::remove_if(result.begin(), result.end(), [&](const VJ &q) {
+        return !matches(str(q, "id"));
+    }), result.end());
+    // Old listening/spelling records do not establish productive recall. Only
+    // completed learning groups may seed this new channel; listing is read-only.
+    if (str(s["settings"], "mode") != "meaning") {
+        const auto skill=str(s["settings"],"mode")=="partial"?"partial":"recall";
+        const auto reserved = reserved_words(s);
+        for (auto it = s["seen"].begin(); it != s["seen"].end(); ++it) {
+            if (!matches(it.key()) || reserved.count(it.key()) ||
+                !field(field(s["cards"], it.key()), skill).is_null()) continue;
+            if(std::string(skill)=="partial"&&!partial_word(catalog.entry(it.key())->word))continue;
+            result.push_back(VJ{{"id", it.key()}, {"kind", skill}, {"due", now}, {std::string(skill)=="partial"?"firstPartial":"firstRecall", true}});
+        }
+    }
+    return result;
+}
 VJ VocabularyEngine::available_new(const VJ &s) const {
     const auto reserved = reserved_words(s);
     VJ ids = VJ::array();
+    auto deck=catalog.decks.find(str(s,"selectedStage"));
+    if(deck!=catalog.decks.end()){
+        for(const auto &id:deck->second.ids)if(!s["seen"].contains(id)&&!reserved.count(id))ids.push_back(id);
+        return ids;
+    }
     for (const auto &entry : catalog.entries)
-        if (entry.eligible && entry.stage == str(s, "selectedStage") &&
+        if (entry.eligible && catalog.contains_word(str(s, "selectedStage"),entry.id) &&
             !s["seen"].contains(entry.id) && !reserved.count(entry.id))
             ids.push_back(entry.id);
     return ids;
+}
+VJ VocabularyEngine::practice(const VJ &ids,const std::string &mode,int64_t now) const {
+    require(ids.is_array()&&!ids.empty()&&ids.size()<=5,"请选择一至五个词");
+    for(const auto &id:ids)require(catalog.entry(str(id))!=nullptr,"重练词条不可用");
+    auto training=create(now);
+    training["settings"]["mode"]=mode=="staged"?"full":mode;
+    auto group=session(training,ids,"practice",now,str(training["settings"],"mode"),true);
+    // A single selected word still gets both regular rounds. Corrections keep the usual spacing.
+    for(auto &task:group["tasks"])task["requiresGap"]=false;
+    training["session"]=std::move(group);
+    VJ events=VJ::array();advance(training,now,events);
+    return training;
 }
 VJ VocabularyEngine::available_notebook(const VJ &s) const {
     const auto reserved = reserved_words(s);
@@ -535,11 +532,24 @@ VJ VocabularyEngine::continue_preview(const VJ &s, int64_t now) const {
               {"followup", flag(task, "followup")},
               {"source", field(next["session"], "source")}};
 }
-VJ VocabularyEngine::resumable(const VJ &s, const std::string &intent) const {
+VJ VocabularyEngine::resumable(const VJ &s, const std::string &intent, const std::string &scope) const {
     auto matches = [&](const VJ &session, bool active) {
         if (!unfinished(session)) return false;
+        if(session.contains("shopRole"))return intent=="bookshop";
         const auto source = str(session, "source");
-        if (intent == "review" || intent == "notebook") return source == intent;
+        if (intent == "notebook") return source == intent;
+        if (intent == "review") {
+            if (source != intent) return false;
+            if (scope == "all") return true;
+            if(scope=="current"&&session.contains("deckStage")&&str(session,"deckStage")!=str(s,"selectedStage"))return false;
+            if (field(session, "ids").empty()) return false;
+            for (const auto &id : session["ids"]) {
+                const auto *e = catalog.entry(str(id));
+                if (!e || (scope == "notebook" ? !has(s["notebook"], id)
+                                               : !catalog.contains_word(str(s,"selectedStage"),str(id)))) return false;
+            }
+            return true;
+        }
         if (intent != "new") return false;
         // Only a native intent switch records a legacy group's selected stage.
         // Older parked legacy groups without that evidence require explicit resume.
@@ -549,9 +559,10 @@ VJ VocabularyEngine::resumable(const VJ &s, const std::string &intent) const {
                 str(stages, str(session, "id")) == str(s, "selectedStage"));
         }
         if (source != "new" || field(session, "ids").empty()) return false;
+        if(session.contains("deckStage"))return str(session,"deckStage")==str(s,"selectedStage");
         for (const auto &id : session["ids"]) {
             const auto *entry = catalog.entry(str(id));
-            if (!entry || entry->stage != str(s, "selectedStage")) return false;
+            if (!entry || !catalog.contains_word(str(s,"selectedStage"),str(id))) return false;
         }
         return true;
     };
@@ -571,7 +582,7 @@ void VocabularyEngine::advance(VJ &s, int64_t now, VJ &events) const {
     // kind merely because an earlier task is still inside its exposure gap.
     const auto rank = [](const VJ &t) {
         return (flag(t, "followup") ? 3 : 0) +
-               (str(t, "kind") == "meaning" ? 0 : str(t, "kind") == "gap" ? 1 : 2);
+               (str(t, "kind") == "meaning" ? 0 : (str(t, "kind") == "gap" || str(t,"kind")=="partial") ? 1 : 2);
     };
     int round = 6;
     for (const auto &t : ss["tasks"]) if (!flag(t, "done")) round = std::min(round, rank(t));
@@ -620,8 +631,9 @@ void VocabularyEngine::memory(VJ &s, const VJ &t, bool correct, bool assisted, i
     auto &c = s["cards"][id][k];
     if (c.is_null())
         c = empty_card(now);
+    if(flag(t,"followup") && num(t,"origin",-1)!=num(c,"generation"))return;
     bool initial = c["memory"].is_null(),
-         early = (!initial || !field(c, "legacy").is_null()) && now < num(c, "due"),
+         early = !initial && now < num(c, "due"),
          actual = correct && !assisted, updated = false;
     VJ rating, elapsed;
     if (!flag(t, "followup") && (!early || !actual)) {
@@ -649,13 +661,14 @@ void VocabularyEngine::memory(VJ &s, const VJ &t, bool correct, bool assisted, i
         c["pendingRelearn"] = !actual;
         c["due"] = actual ? std::max(num(c, "fsrsDue"), now + Gap) : now + Gap;
     }
-    if (str(s["session"], "source") == "review")
+    if(updated||flag(t,"followup"))c["generation"]=num(c,"generation")+1;
+    if (!flag(t,"contentAnswer") && str(s["session"], "source") == "review")
         addUnique(day(s, now)["reviews"], id + "|" + k);
     events.push_back(VJ{{"type", "memory_update"},
                         {"wordId", id},
                         {"senseId", id},
                         {"skill", k},
-                        {"taskType", k == "meaning" ? "meaning_recognition" : "full_spelling"},
+                        {"taskType", k == "meaning" ? "meaning_recognition" : k == "partial" ? "partial_spelling" : k == "recall" ? "meaning_to_word_recall" : "full_spelling"},
                         {"at", now},
                         {"initial", initial},
                         {"early", early},
@@ -668,6 +681,44 @@ void VocabularyEngine::memory(VJ &s, const VJ &t, bool correct, bool assisted, i
                         {"scheduler", str(c, "scheduler").empty() ? "legacy" : str(c, "scheduler")},
                         {"parameterHash", Hash}});
 }
+void VocabularyEngine::change_study_mode(VJ &s,VJ &group,const std::string &mode,int64_t now) const {
+    const auto source=str(group,"source");
+    if(!unfinished(group)||(source!="new"&&source!="notebook"&&source!="review")||group.contains("shopRole")||str(group,"mode")==mode)return;
+    VJ seed={{"serial",0}};
+    auto plan=session(seed,group["ids"],source=="review"?"new":source,now,mode,true);
+    auto &tasks=group["tasks"];const auto current=str(group,"current");
+    const std::string productive=mode=="partial"?"partial":mode=="full"?"recall":"";
+    tasks.erase(std::remove_if(tasks.begin(),tasks.end(),[&](const VJ &t){
+        return !flag(t,"done")&&str(t,"uid")!=current&&str(t,"kind")!="meaning"&&str(t,"kind")!=productive;
+    }),tasks.end());
+    for(auto t:plan["tasks"]){
+        const auto id=str(t,"id"),k=str(t,"kind");
+        if(source=="review"){
+            const auto &memory=field(field(s["cards"],id),k);
+            if(memory.is_null()?(k=="meaning"||!s["seen"].contains(id)):num(memory,"due")>now)continue;
+        }
+        if(std::none_of(tasks.begin(),tasks.end(),[&](const VJ &a){return str(a,"id")==id&&str(a,"kind")==k&&!flag(a,"followup");})){
+            t["uid"]=str(group,"id")+"/mode/"+k+"/"+id;tasks.push_back(t);
+        }
+    }
+    group["mode"]=mode;group["associative"]=true;
+}
+void VocabularyEngine::content_answer(VJ &s,const VJ &a,const std::string &source,VJ &corrections,int64_t now,VJ &events) const {
+        const auto &answer=field(a,"answer");
+        if(!answer.is_null()){
+            const auto id=str(answer,"id"),skill=str(answer,"skill");
+            require(catalog.entry(id)&&(skill=="meaning"||skill=="partial"||skill=="recall"),"词义或技能无效");
+            const bool retry=flag(answer,"retry"),correct=flag(answer,"correct"),hint=flag(answer,"assisted");
+            const auto &origins=field(corrections,id);
+            VJ task={{"id",id},{"kind",skill},{"contentAnswer",true},{"followup",retry},{"origin",num(origins,skill,-1)}};
+            const bool applicable=!retry||num(task,"origin")==num(field(field(field(s,"cards"),id),skill),"generation");
+            if(!s["seen"].contains(id)){s["seen"][id]=now;addUnique(day(s,now)["new"],id);}
+            memory(s,task,correct,hint,now,events);
+            touch(s,id,now,events,source+"_answer",{{"content",str(a,"edition")},{"skill",skill},{"correct",correct},{"assisted",hint},{"retry",retry},{"applicable",applicable}});
+            if(applicable&&(!correct||hint))corrections[id][skill]=num(s["cards"][id][skill],"generation");
+            else if((retry||!flag(field(field(s["cards"],id),skill),"pendingRelearn"))&&corrections.contains(id))corrections[id].erase(skill);
+        }
+}
 VJ VocabularyEngine::reduce(const VJ &original, const VJ &a, int64_t now, VJ &events) const {
     if (!(now >= 1704067200000LL && now <= 4102444800000LL &&
           now >= num(original, "lastClock") - 300000))
@@ -678,18 +729,42 @@ VJ VocabularyEngine::reduce(const VJ &original, const VJ &a, int64_t now, VJ &ev
     auto &ss = s["session"];
     auto t = current(s);
     auto type = str(a, "type");
-    if (type == "begin" && a.contains("intent")) {
+    if(type=="courseSave"){
+        VJ corrections=field(s,"courseCorrections");
+        if(str(a,"group")!=str(s,"courseGroup"))corrections=nullptr;
+        content_answer(s,a,"course",corrections,now,events);
+        s["courseCorrections"]=std::move(corrections);
+        s["courseGroup"]=str(a,"group");s["courseCursor"]=a.at("run");
+        return s;
+    }
+    if(type=="storySave"){
+        const auto edition=str(a,"edition");
+        auto record=field(field(s,"storyRuns"),edition);
+        require(num(a,"rev",-1)==num(record,"rev"),"故事进度已更新，请重新打开");
+        if(a.contains("exposed"))touch(s,str(a,"exposed"),now,events,"story_exposure");
+        VJ corrections=field(record,"corrections");
+        content_answer(s,a,"story",corrections,now,events);
+        record["corrections"]=std::move(corrections);
+        record["rev"]=num(a,"rev")+1;record["run"]=a.at("run");record["stamps"]=a.at("stamps");
+        s["storyRuns"][edition]=std::move(record);
+        return s;
+    }
+    if (type == "shopBegin" || type == "shopDecor" || type == "shopPostcard") {
+        #include "bookshop_engine.inc"
+    } else if (type == "begin" && a.contains("intent")) {
         const auto intent = str(a, "intent");
         require(intent == "new" || intent == "review", "背词入口无效");
         if (intent == "new") require(flag(s, "stageChosen"), "请先选择词汇阶段");
-        const auto saved = resumable(s, intent);
+        const auto scope = a.contains("scope") ? str(a, "scope") : "all";
+        require(scope == "current" || scope == "all" || scope == "notebook", "复习范围无效");
+        const auto saved = resumable(s, intent, scope);
         if (!saved.is_null()) {
             if (field(saved, "id") == field(ss, "id")) return s;
             activate_session(s, saved);
             events.push_back(VJ{{"type", "session_resume"}, {"sessionId", s["session"]["id"]},
                                 {"intent", intent}, {"at", now}});
         } else if (intent == "review") {
-            auto candidates = available_due(s, now);
+            auto candidates = flag(a, "associative") ? review_tasks(s, now, scope) : available_due(s, now);
             require(!candidates.empty(), "暂无可开始的到期复习，当前词组进度已保留");
             if (candidates.size() > 10) candidates.erase(candidates.begin() + 10, candidates.end());
             VJ ids = VJ::array();
@@ -716,7 +791,7 @@ VJ VocabularyEngine::reduce(const VJ &original, const VJ &a, int64_t now, VJ &ev
             auto ids = available_new(s);
             if (int64_t(ids.size()) > limit) ids.erase(ids.begin() + limit, ids.end());
             require(!ids.empty(), "本阶段新词已学完，暂停词组仍可继续");
-            auto next = session(s, ids, "new", now, str(s["settings"], "mode"));
+            auto next = session(s, ids, "new", now, str(s["settings"], "mode"), flag(a, "associative"));
             activate_session(s, next);
             events.push_back(VJ{{"type", "session_start"}, {"sessionId", s["session"]["id"]},
                                 {"intent", intent}, {"at", now}, {"ids", ids}, {"mode", s["session"]["mode"]}});
@@ -787,13 +862,19 @@ VJ VocabularyEngine::reduce(const VJ &original, const VJ &a, int64_t now, VJ &ev
             ps.push_back(ss);
         ss = saved;
         s["summary"] = nullptr;
-    } else if (type == "learnNext") {
+    } else if (type == "learnNext" || type == "learnPrev") {
         if (a.contains("learnAt") && field(a, "learnAt") != field(ss, "learnAt"))
             return s; // An already rendered button cannot consume the following word.
         require(!ss.is_null() && str(ss, "phase") == "learn" && field(a, "sessionId") == ss["id"],
                 "学习位置已改变");
-        auto id = str(ss["ids"][size_t(num(ss, "learnAt"))]);
+        const auto at = num(ss, "learnAt");
+        if (type == "learnPrev" && at == 0) return s;
+        auto id = str(ss["ids"][size_t(at)]);
         touch(s, id, now, events, "presentation", VJ{{"sessionId", ss["id"]}});
+        if (type == "learnPrev") {
+            ss["learnAt"] = at - 1;
+            return s;
+        }
         if (!s["seen"].contains(id)) {
             s["seen"][id] = now;
             day(s, now)["new"].push_back(id);
@@ -813,17 +894,18 @@ VJ VocabularyEngine::reduce(const VJ &original, const VJ &a, int64_t now, VJ &ev
         if (kind == "meaning") {
             auto opts = choices(t, ss);
             require(unknown || has(opts, typed), "答案选项无效");
-            correct = !unknown && typed == (field(t, "legacyAnswer").is_null()
-                                                ? catalog.entry(id)->meaning
-                                                : str(opts[size_t(num(t, "legacyAnswer"))]));
+            correct = !unknown && typed == (ss.contains("shopRole")?catalog.entry(id)->word:catalog.entry(id)->meaning);
         } else
-            correct = !unknown && norm(typed) == norm(kind == "gap" ? str(gap(t), "answer")
+            correct = !unknown && norm(typed) == norm((kind == "gap" || kind=="partial") ? str(gap(t), "answer")
                                                                     : catalog.entry(id)->word);
         bool assisted = flag(t, "hint");
         for (auto &row : ss["tasks"])
-            if (row["uid"] == t["uid"])
+            if (row["uid"] == t["uid"]) {
                 row["done"] = true;
+                if(kind=="recall") {row["responseCorrect"]=correct;row["responseAssisted"]=assisted;}
+            }
         ss["answered"] = num(ss, "answered") + 1;
+        if(!unknown) ss["journeyAttempts"] = num(ss,"journeyAttempts") + 1;
         auto counter = correct && !assisted ? "correct" : "wrong";
         ss[counter] = num(ss, counter) + 1;
         day(s, now)["answers"] = num(day(s, now), "answers") + 1;
@@ -834,13 +916,15 @@ VJ VocabularyEngine::reduce(const VJ &original, const VJ &a, int64_t now, VJ &ev
                             {"senseId", id},
                             {"skill", kind},
                             {"taskType", kind == "meaning" ? "meaning_recognition"
-                                         : kind == "gap"   ? "partial_spelling"
-                                                           : "full_spelling"},
+                                         : (kind == "gap" || kind=="partial") ? "partial_spelling"
+                                         : kind == "recall" ? "meaning_to_word_recall" : "full_spelling"},
                             {"at", now},
                             {"timezoneOffset", 480},
                             {"clockTrust", "device_wall_clock_checked"},
                             {"correct", correct},
                             {"assisted", assisted},
+                            {"promptMode", kind=="recall" ?
+                                (str(ss,"source")=="review" && num(field(field(s["cards"],id),"recall"),"successes")>0 ? "meaning_only" : "meaning_context") : "legacy"},
                             {"unknown", unknown},
                             {"value", typed},
                             {"answerVisibleBeforeResponse", flag(t, "answerRevealed") || flag(t, "lookupHint")},
@@ -865,6 +949,7 @@ VJ VocabularyEngine::reduce(const VJ &original, const VJ &a, int64_t now, VJ &ev
             ss["tasks"].push_back(VJ{{"id", id},
                                      {"kind", kind},
                                      {"uid", str(ss, "id") + ":retry:" + key},
+                                     {"origin",num(s["cards"][id][kind],"generation")},
                                      {"done", false},
                                      {"followup", true},
                                      {"requiresGap", true}});
@@ -874,6 +959,15 @@ VJ VocabularyEngine::reduce(const VJ &original, const VJ &a, int64_t now, VJ &ev
                     field(a, "taskId") == ss["feedback"]["uid"],
                 "请先完成当前题目");
         advance(s, now, events);
+    } else if (type == "associationHint") {
+        require(str(t, "kind") == "recall" && ss["feedback"].is_null() && field(a, "taskId") == t["uid"],
+                "题目已改变，暂不显示线索");
+        if (flag(t, "associationHint")) return s;
+        for (auto &row : ss["tasks"]) if (row["uid"] == t["uid"]) {
+            row["hint"] = true;
+            row["associationHint"] = true;
+        }
+        touch(s, str(t, "id"), now, events, "association_hint", VJ{{"skill", "recall"}, {"answerVisible", false}});
     } else if (type == "hint") {
         require(!t.is_null() && ss["feedback"].is_null() && field(a, "taskId") == t["uid"],
                 "当前无法提示");
@@ -956,7 +1050,7 @@ VJ VocabularyEngine::reduce(const VJ &original, const VJ &a, int64_t now, VJ &ev
             auto ids = available_notebook(s);
             if (ids.size() > 5) ids.erase(ids.begin() + 5, ids.end());
             require(!ids.empty(), "生词已在当前词组或到期复习中");
-            auto next = session(s, ids, "notebook", now, str(s["settings"], "mode"));
+            auto next = session(s, ids, "notebook", now, str(s["settings"], "mode"), flag(a, "associative"));
             activate_session(s, next);
         }
     } else if (type == "learnNotebook") {
@@ -972,9 +1066,13 @@ VJ VocabularyEngine::reduce(const VJ &original, const VJ &a, int64_t now, VJ &ev
     } else if (type == "settings") {
         auto mode = str(a, "mode");
         auto count = num(a, "dailyNew");
-        require((mode == "staged" || mode == "full" || mode == "meaning") &&
+        require((mode == "staged" || mode == "full" || mode == "meaning" || mode=="partial") &&
                     (count == 5 || count == 10 || count == 20),
                 "设置无效");
+        if(flag(a,"applyStudy")){
+            change_study_mode(s,s["session"],mode,now);
+            for(auto &group:s["paused"])change_study_mode(s,group,mode,now);
+        }
         s["settings"] = VJ{{"mode", mode}, {"dailyNew", count}};
         events.push_back(
             VJ{{"type", "settings"}, {"at", now}, {"mode", mode}, {"dailyNew", count}});
@@ -985,6 +1083,16 @@ VJ VocabularyEngine::reduce(const VJ &original, const VJ &a, int64_t now, VJ &ev
         ss["draft"] = VJ{{"taskId", t["uid"]}, {"value", str(a, "value")}};
     } else
         throw std::runtime_error("未知背词操作");
+    const auto &finished=field(s,"session");
+    if(finished.contains("shopRole")&&str(finished,"phase")=="summary"&&
+       !(str(field(original,"session"),"phase")=="summary"&&field(field(original,"session"),"id")==field(finished,"id"))){
+        const auto role=str(finished,"shopRole");
+        if(role=="mission"&&num(finished,"shopGroup")==num(field(s,"bookshop"),"groups")){
+            const auto groups=num(finished,"shopGroup")+1;s["bookshop"]["groups"]=groups;
+            if(groups==2)s["bookshop"]["finished"]=now;
+        }else if(role=="visit")s["bookshop"]["visit"]=date(now);
+    }
+    vocabulary_award(s, original, now, events);
     return s;
 }
 } // namespace wordcard

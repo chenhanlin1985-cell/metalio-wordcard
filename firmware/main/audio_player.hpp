@@ -46,6 +46,7 @@ class AudioPlayer {
 
   private:
     struct Request {
+        int64_t submitted_us=0;
         uint32_t client_token=0;
         int mode = 0;
         bool reuse=false;
@@ -82,6 +83,7 @@ class AudioPlayer {
     std::atomic<bool> clear_cache_{false};
     std::vector<int16_t> clip_, cached_audio_;
     std::string cached_path_;
+    std::string cached_fallback_request_;
     uint32_t cached_gain_=65536;
     std::string streamed_gain_path_;
     uint32_t streamed_gain_=65536;
@@ -96,6 +98,8 @@ class AudioPlayer {
     bool ready_ = false, uart_rx_ = false;
     bool storage_mounted_=false;
     uint32_t active_client_token_=0;
+    int64_t request_began_us_=0;
+    bool first_write_=false;
     bool submit(int, const std::string &path = "", const std::string &text = "",int test_engine=0,int test_phrase=0,uint32_t test_id=0,bool reuse=false,uint32_t client_token=0);
     void run_benchmark(const Request &);
     static void task(void *);

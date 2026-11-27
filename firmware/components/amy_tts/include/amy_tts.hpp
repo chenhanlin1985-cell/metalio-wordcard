@@ -3,6 +3,9 @@
 #include "resource_cache.hpp"
 #include <cstdlib>
 #include <memory>
+#ifdef ESP_PLATFORM
+#include <esp_partition.h>
+#endif
 /* Reserve is total free memory; it need not adjoin the decoder arena. */
 inline int amy_chunk_frames(size_t required24,size_t largest,size_t free_bytes){
  constexpr size_t reserve=512u*1024u;
@@ -12,9 +15,15 @@ struct AmyPcm {std::unique_ptr<int16_t,decltype(&std::free)> data{nullptr,&std::
 class AmyTts {
 public:
  bool render(OfflineTts &,const std::string &espeak_folder,const std::string &model_folder,const std::string &text,const OfflineTts::Cancel &,AmyPcm &,std::string &error,int64_t budget_us=120000000);
- bool initialized()const{return bool(front_) && bool(decoder_);}
- void release(){front_.reset();decoder_.reset();}
+ bool initialized()const{return mapped_ || (front_ && decoder_);}
+ void release();
+ ~AmyTts(){release();}
 private:
+ const uint8_t *mapped_=nullptr;
+#ifdef ESP_PLATFORM
+ bool map_weights();
+ esp_partition_mmap_handle_t mapping_=0;
+#endif
  std::unique_ptr<void,decltype(&std::free)> front_{nullptr,&std::free},decoder_{nullptr,&std::free};
  std::string folder_;wordcard::ResourceCache cache_;
 };

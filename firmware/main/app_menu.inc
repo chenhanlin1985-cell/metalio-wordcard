@@ -1,6 +1,14 @@
 // Settings are an overlay. Device pages never replace the learning engine.
 void App::menu_push(Screen target){
  if(view_.screen==target)return;
+ if(menu_stack_.empty()){
+  const auto &page=view_.web;
+  view_.settings_return=View::SettingsReturn::Home;
+  if(view_.screen==Screen::WebLearning && !page.secondary && page.route!="home"){
+   view_.settings_return=page.route=="word-batch"?View::SettingsReturn::Question:
+                         page.route=="search"?View::SettingsReturn::Search:View::SettingsReturn::Previous;
+  }
+ }
  auto found=std::find(menu_stack_.begin(),menu_stack_.end(),target);
  if(target!=Screen::WebLearning&&found!=menu_stack_.end())menu_stack_.erase(found,menu_stack_.end());
  else menu_stack_.push_back(view_.screen);
@@ -13,6 +21,20 @@ bool App::menu_return(){
 bool App::menu_dispatch(Event e){
  if(!web_.ready())return false;
  const auto screen=view_.screen;
+ if(e.action==Action::CloseSettings){
+  if(menu_stack_.empty() || view_.settings_return==View::SettingsReturn::Home)return menu_dispatch({Action::Home});
+  if(!web_.resume_main())return true;
+  if(menu_training_){
+   if(view_.web.route=="paused" && !web_.back())return true;
+   if(!web_.back())return true;
+  }
+  leave_player();view_.screen=menu_stack_.front();menu_stack_.clear();
+  menu_training_=false;view_.more_learning_scope=false;view_.legacy_home=false;
+  return true;
+ }
+ if(screen==Screen::WebLearning && view_.web.route=="home" && e.action==Action::Settings){
+  menu_push(Screen::Settings);return true;
+ }
  if(e.action==Action::Home){
   if(!web_.home()){notice_="无法返回背词，进度已保留";return true;}
   leave_player();menu_stack_.clear();menu_training_=false;view_.more_learning_scope=false;view_.legacy_home=false;

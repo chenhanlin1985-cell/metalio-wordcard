@@ -1,0 +1,14 @@
+{
+  "format": "wordcard-pack",
+  "schema": 3,
+  "type": "story",
+  "id": "pocket-receipt",
+  "version": "1.1.0",
+  "title": "口袋里的收据",
+  "requires": "pet-2024@1.0.0",
+  "files": {
+    "content.json": "7216d7bbaecc71399ef5b90cad9827215a8130d0ec9c00eefd499f4468ed3f8f",
+    "pages.wpix": "c6c73aa4cc96f9d5ac27907df66edfcf5b053130b4294ad2931b4a50cc8439e9"
+  },
+  "storyType": "vocabulary"
+}

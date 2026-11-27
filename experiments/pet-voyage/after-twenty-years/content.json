@@ -1,0 +1,266 @@
+{
+  "style": "read-first",
+  "author": "O. Henry",
+  "englishTitle": "After Twenty Years",
+  "source": "https://en.wikisource.org/wiki/The_Four_Million/After_Twenty_Years",
+  "attribution": "据欧·亨利 1906 年短篇改写 · PET 分级试读",
+  "intro": "二十年前，他们在纽约一家餐馆道别。今晚十点，约定还算数吗？",
+  "terms": {
+    "appointment": {
+      "id": "pet-1458",
+      "example": "He crossed the country to keep an appointment with an old friend.",
+      "distractors": [
+        "旅途的终点",
+        "一次偶遇"
+      ],
+      "meaning": "n. 事先约好的会面"
+    },
+    "restaurant": {
+      "id": "pet-1164",
+      "example": "Their favourite restaurant had closed. They could no longer eat there.",
+      "distractors": [
+        "商店",
+        "旅馆"
+      ],
+      "meaning": "n. 餐馆"
+    },
+    "light": {
+      "id": "pet-0781",
+      "example": "There was just enough light to see the mark on his cheek.",
+      "distractors": [
+        "浅色的",
+        "重量轻的"
+      ],
+      "meaning": "n. 光，光亮"
+    },
+    "watch": {
+      "id": "pet-0080",
+      "example": "He took out his watch. There were still three minutes to go.",
+      "distractors": [
+        "注视",
+        "值夜班"
+      ],
+      "meaning": "n. 表，随身的报时工具"
+    },
+    "collar": {
+      "id": "pet-0047",
+      "example": "She pulled her collar up to keep the cold off her neck.",
+      "distractors": [
+        "帽檐",
+        "袖口"
+      ],
+      "meaning": "n. 衣领"
+    },
+    "face": {
+      "id": "pet-0604",
+      "example": "I knew his voice, but in the dark I couldn't see his face.",
+      "distractors": [
+        "面对",
+        "表盘"
+      ],
+      "meaning": "n. 脸，面孔"
+    },
+    "nose": {
+      "id": "pet-0622",
+      "example": "His coat covered his mouth, but I could still see the shape of his nose.",
+      "distractors": [
+        "眉毛",
+        "下巴"
+      ],
+      "meaning": "n. 鼻子"
+    },
+    "on time": {
+      "id": "pet-1561",
+      "example": "The train was late, but my friend arrived at the station on time.",
+      "distractors": [
+        "偶尔",
+        "提前很久"
+      ],
+      "meaning": "短语　准时，按约定时间"
+    },
+    "doorway": {
+      "meaning": "n. 门口，门道"
+    },
+    "match": {
+      "meaning": "n. 火柴"
+    },
+    "scar": {
+      "meaning": "n. 疤痕"
+    },
+    "made my money": {
+      "meaning": "在这里指挣下了自己的家产"
+    },
+    "arm in arm": {
+      "meaning": "臂挽着臂"
+    },
+    "under arrest": {
+      "meaning": "已被逮捕"
+    },
+    "note": {
+      "meaning": "n. 便条，短笺"
+    },
+    "wanted": {
+      "meaning": "在这里指警方正在通缉"
+    },
+    "plain clothes": {
+      "meaning": "便衣，日常穿着的衣服"
+    }
+  },
+  "chapters": [
+    {
+      "title": "门口的人",
+      "pages": [
+        {
+          "en": "A police officer walked along a New York street, trying the shop doors. It was nearly ten. The wind had driven almost everyone indoors. Halfway down the street, a man stood in a dark [[doorway]]. He had a cigar in his mouth, but it wasn't lit.",
+          "zh": "快十点了。一名巡警走在纽约街上，挨家推推店门。风把行人都赶进了屋。走到街道中段，只见一名男子站在黑洞洞的门口，嘴里叼着一支没点着的雪茄。"
+        },
+        {
+          "en": "Before the officer could ask a question, the man began to explain. “I have an [[appointment]] here tonight. A rather old one. When we made it, this shop was a [[restaurant]].”\n\n“Big Joe Brady's,” he added.\n\n“Yes,” said the officer. “They pulled it down five years ago.”",
+          "zh": "巡警还没开口，那人就解释起来。“我今晚约了人在这儿见面。约得有点早。我们定下日子的时候，这家店还是间餐馆呢。”\n\n“大乔·布雷迪开的。”他又说。\n\n“对，”巡警说，“五年前拆的。”"
+        }
+      ],
+      "questions": [
+        {
+          "en": "Why is the man waiting outside a closed shop?",
+          "zh": "这家关门的店为什么值得他等？",
+          "options": [
+            "He promised to meet someone at this spot.",
+            "He expects the owner to open the shop.",
+            "He has arranged to meet the officer."
+          ],
+          "answer": 0,
+          "reason": "餐馆已经拆了，约定见面的地点却仍是这里。",
+          "evidence": 1
+        }
+      ]
+    },
+    {
+      "title": "差三分十点",
+      "pages": [
+        {
+          "en": "The man struck a [[match]]. For a second its [[light]] showed a white [[scar]] near his right eyebrow and a diamond at his throat.\n\n“Jimmy Wells and I grew up here together,” he said. “At our last dinner I was eighteen. Jimmy was twenty. Next morning I went west. Jimmy wouldn't leave New York for anything.”",
+          "zh": "那人划了根火柴。火光闪了一下，照见他右眉旁一道白疤，还有领口的一颗钻石。\n\n“吉米·韦尔斯跟我是在这儿一块儿长大的。最后一次同桌吃饭，我十八，他二十。第二天我就去了西部。吉米呢，说什么也不肯离开纽约。”"
+        },
+        {
+          "en": "“We gave ourselves twenty years. Then we'd come back and see how life had turned out.” They wrote for a year or two. After that, nothing.\n\nHe opened his fine [[watch]]. “Nine fifty-seven. We said goodbye at ten.”\n\n“And if he's late?” asked the officer.\n\n“I've come a thousand miles. I'll wait at least another half hour.” The officer wished him good night and walked on.",
+          "zh": "“我们给了彼此二十年。到时候再回来，看看对方过得怎样。”头一两年他们还通信，后来就断了。\n\n他掀开那块精致的表。“九点五十七。我们那晚十点道的别。”\n\n“要是他迟到了呢？”巡警问。\n\n“一千英里我都来了。少说也再等半个钟头。”巡警道了晚安，继续往前走。"
+        }
+      ],
+      "questions": [
+        {
+          "en": "What lets the officer see the man's face?",
+          "zh": "巡警是借着什么看清那张脸的？",
+          "options": [
+            "A light inside the shop.",
+            "A match the man uses for his cigar.",
+            "The glass on the man's watch."
+          ],
+          "answer": 1,
+          "reason": "男子自己点雪茄，脸才在那一瞬间亮了起来。",
+          "evidence": 0
+        },
+        {
+          "en": "What makes his decision to wait remarkable?",
+          "zh": "他肯继续等，这件事为什么格外有分量？",
+          "options": [
+            "Jimmy wrote to him that morning.",
+            "He lives next door and has time to spare.",
+            "They lost touch years ago, yet he made the journey."
+          ],
+          "answer": 2,
+          "reason": "两人早已断了音信。他仍为那个老约定走了一千英里。",
+          "evidence": 1
+        }
+      ]
+    },
+    {
+      "title": "街对面",
+      "pages": [
+        {
+          "en": "A cold rain began to fall. About twenty minutes later, a tall man hurried across the street. The [[collar]] of his long coat came up almost to his ears.\n\n“Bob?” he called.\n\n“Jimmy Wells!” said the man in the doorway. The tall man took both his hands.",
+          "zh": "冷雨落了下来。约莫二十分钟后，一个高个子快步穿过街道，长外套的领子竖得几乎碰到了耳朵。\n\n“鲍勃？”他喊道。\n\n门口的人叫了起来：“吉米·韦尔斯！”高个子握住了他的双手。"
+        },
+        {
+          "en": "“If only the old place were still here,” the tall man said. “We could have dinner again. How was the West?”\n\n“I [[made my money]] there. But look at you, Jimmy. I don't remember you being this tall.”\n\n“A man can still grow a little after twenty.” He offered Bob his arm. They walked off [[arm in arm]], Bob eager to tell him about his life.",
+          "zh": "“老店要是还在就好了，咱俩还能再吃上一顿。西部怎么样？”高个子问。\n\n“我在那儿挣下了家业。可是吉米，我记得你没这么高啊。”\n\n“过了二十岁，也还会再长一点嘛。”他把胳膊递给鲍勃。两人挽着手臂往前走，鲍勃急着讲这些年的经历。"
+        }
+      ],
+      "questions": [
+        {
+          "en": "Which detail surprises Bob even while he welcomes the man?",
+          "zh": "鲍勃高兴归高兴，有哪个细节让他觉得奇怪？",
+          "options": [
+            "The man seems taller than he remembers.",
+            "The man has forgotten his name.",
+            "The man refuses to talk about their old restaurant."
+          ],
+          "answer": 0,
+          "reason": "对方叫得出他的名字，也提起了老餐馆。鲍勃记忆里对不上的，是身高。",
+          "evidence": 1
+        }
+      ]
+    },
+    {
+      "title": "药店的灯",
+      "pages": [
+        {
+          "en": "On the corner, a drugstore window lit up the pavement. The two men turned to look at each other. Now Bob could see the stranger's whole [[face]]. He dropped the man's arm.\n\n“You aren't Jimmy. Twenty years might change a lot. They wouldn't give a man a different [[nose]].”",
+          "zh": "街角药店的橱窗把人行道照得通亮。两人转过头看对方。鲍勃这才看清身旁那人的整张脸。他一下子松开了手。\n\n“你不是吉米。二十年能改变不少事，可不会把一个人的鼻子换个样子。”"
+        },
+        {
+          "en": "“They can change an honest man,” the other man said. “You've been [[under arrest]] for ten minutes, Bob. The Chicago police have been looking for you.”\n\nBefore taking him to the police station, the man handed Bob a folded [[note]]. He told him he could read it there, by the window. It was from an officer named Wells.",
+          "zh": "“二十年也能改变一个正派人。”对方说，“鲍勃，十分钟前你就已经被捕了。芝加哥警方一直在找你。”\n\n去警局前，那人递给鲍勃一张折好的便条，让他就着橱窗的灯读。写便条的是一位姓韦尔斯的警官。"
+        }
+      ],
+      "questions": [
+        {
+          "en": "Why does Bob let go at the drugstore?",
+          "zh": "在药店门口，鲍勃为什么突然松手？",
+          "options": [
+            "He sees the Chicago police waiting inside.",
+            "He can finally see a feature that doesn't fit his memory.",
+            "He has already read what is in the note."
+          ],
+          "answer": 1,
+          "reason": "先有橱窗的光，鲍勃才看清鼻子的样子。便条是他松手之后才收到的。",
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "title": "窗前",
+      "pages": [
+        {
+          "en": "Bob opened the piece of paper. His hand was perfectly still.\n\n“Dear Bob, I kept our appointment. I was there [[on time]]. In the flash of your match I saw the man [[wanted]] by the Chicago police. I couldn't bring myself to arrest you. I found another officer in [[plain clothes]] and asked him to do it for me.\n\nJimmy”\n\nBy the time Bob reached the name at the bottom, the paper was shaking a little in his hand.",
+          "zh": "鲍勃展开纸条，手稳稳的。\n\n“鲍勃，我赴约了，准时到的。你的火柴一亮，我就认出了芝加哥警方通缉的那个人。我实在没法亲手逮捕你，就找了个穿便衣的警官，让他替我办这件事。\n\n吉米”\n\n读到末尾的署名时，那张纸在鲍勃手里微微抖了起来。"
+        }
+      ],
+      "questions": [
+        {
+          "en": "Did Jimmy keep his appointment with Bob?",
+          "zh": "当年的约定，吉米究竟赴了吗？",
+          "options": [
+            "No. He only sent a note from Chicago.",
+            "Yes. He was the tall man outside the drugstore.",
+            "Yes. He had already spoken to Bob as the first officer."
+          ],
+          "answer": 2,
+          "reason": "吉米在便条里说自己准时到了，还提到火柴亮起的一刻。当时站在鲍勃面前的，正是第一位巡警。",
+          "evidence": 0
+        },
+        {
+          "en": "Why did Jimmy ask someone else to make the arrest?",
+          "zh": "为什么吉米要找另一个人来？",
+          "options": [
+            "He recognised his friend and could not bear to arrest him himself.",
+            "He needed someone to tell him whether the man was Bob.",
+            "He hoped the second officer would let Bob go."
+          ],
+          "answer": 0,
+          "reason": "纸条里，吉米承认自己认出了鲍勃，也承认自己下不了手。他还是请同事履行了警察的职责。",
+          "evidence": 0
+        }
+      ]
+    }
+  ]
+}

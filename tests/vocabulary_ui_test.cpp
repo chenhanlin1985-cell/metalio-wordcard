@@ -1,6 +1,7 @@
 #include "learning_web.hpp"
 #include "vocabulary.hpp"
 #include "wordcard_ui.hpp"
+#include "web_word_card.hpp"
 #include <chrono>
 #include <cctype>
 #include <filesystem>
@@ -21,10 +22,10 @@ std::string read(const fs::path &p) {
     return std::string(std::istreambuf_iterator<char>(f), {});
 }
 VJ state(const fs::path &dir) {
-    auto e = VJ::parse(read(dir / "vocabulary/state.json"));
+    auto e = VJ::parse(read(dir / "vocabulary-v2/state.json"));
     auto frame = VJ::parse(str(e, "data"));
     auto s = frame["state"];
-    std::ifstream log(dir / "vocabulary/events.ndjson", std::ios::binary);
+    std::ifstream log(dir / "vocabulary-v2/events.ndjson", std::ios::binary);
     log.seekg(num(frame, "journalOffset"));
     std::string line;
     while (std::getline(log, line)) {
@@ -127,14 +128,14 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
     };
     auto open = [&](const std::string &name, const VJ &s) {
         const auto dir = out / ("learning-web-layout-" + name);
-        fs::create_directories(dir / "vocabulary");
+        fs::create_directories(dir / "vocabulary-v2");
         const auto data = VJ{{"state", s}, {"journalOffset", 0}}.dump();
         uint32_t hash = 2166136261u;
         for (const unsigned char c : data) hash = (hash ^ c) * 16777619u;
-        std::ofstream(dir / "vocabulary/state.json", std::ios::binary)
+        std::ofstream(dir / "vocabulary-v2/state.json", std::ios::binary)
             << VJ{{"data", data}, {"checksum", hash}}.dump() << '\n';
         auto model = std::make_unique<NativeVocabulary>(dir.generic_string());
-        check(model->enter(VJ(), now), "Open synthetic layout " + name);
+        check(model->enter(now), "Open synthetic layout " + name);
         check(str(VJ::parse(model->status()), "courseError").empty(), "Layout fixture loads " + name);
         return model;
     };
@@ -158,24 +159,30 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
                     const std::string &next, bool enabled = true) {
         auto model = open(name, s);
         const auto dir = out / ("learning-web-layout-" + name);
-        const auto checkpoint = read(dir / "vocabulary/state.json");
+        const auto checkpoint = read(dir / "vocabulary-v2/state.json");
         const auto p = model->page();
         render(p, name);
         check(ui.answer_pages() == 1, "Home never paginates " + name);
+        const auto &day = field(field(s, "days"), VocabularyEngine::date(now));
+        check(p.home_new_words == int(field(day, "new").size()) &&
+                  p.home_new_target == num(s["settings"], "dailyNew"),
+              "Home progress matches the saved day and personal target " + name);
         const auto primary = button(label);
         check(primary.primary && primary.rect.y == 980 && primary.rect.w == 636 &&
                   primary.rect.h == 100 && primary.enabled == enabled, "Home single bottom CTA " + name);
         const auto primaryAction = VJ::parse(p.actions.at(size_t(primary.event.value)));
-        check(label == "选择下一词库" || label == "查看暂停词组" || label == "返回生词本"
-                  ? str(primaryAction, "action") == "v-go" &&
-                    str(primaryAction, "value") == (label == "选择下一词库" ? "levels" : label == "返回生词本" ? "notebook" : "paused")
-                  : str(primaryAction, "action") == "v-start" && str(primaryAction, "intent") == "new" && flag(primaryAction, "allowExtra"), "Home CTA explicitly starts or resumes new learning " + name);
+        const auto primaryName=str(primaryAction,"action");
+        if(label=="选择学习内容")check(primaryName=="pack-library","New learner opens content library");
+        else if(label=="选择下一词库")check(primaryName=="pack-decks","Completed deck opens the deck shelf");
+        else if(label=="查看暂停词组"||label=="返回生词本")
+            check(primaryName=="v-go"&&str(primaryAction,"value")==(label=="返回生词本"?"notebook":"paused"),"Return to the owning group");
+        else check(primaryName=="v-start"&&str(primaryAction,"intent")=="new"&&flag(primaryAction,"allowExtra"),"Start or resume this learning group");
         check(std::count_if(ui.buttons().begin(), ui.buttons().end(),
                   [](const Button &b) { return b.primary; }) == 1, "Exactly one home primary " + name);
         check(std::count_if(ui.buttons().begin(), ui.buttons().end(),
                   [](const Button &b) { return b.label == "设置"; }) == 1, "One home settings entry " + name);
-        check(button("设置").rect.y == 12 && ui.buttons().size() == 6,
-              "Home exposes settings, primary and four destinations " + name);
+        check(button("设置").rect.y == 12 && button("已学单词").enabled,
+              "Home exposes mode and frontlight shortcuts, settings, collection, primary and four destinations " + name);
         if (!next.empty()) check(role(p, "vocab-home-next") == next, "Home next-step copy " + name);
         const auto hit = ui.hit(primary.rect.x + 12, primary.rect.y + 12);
         check(enabled ? hit.action == Action::WebAction : hit.action == Action::None,
@@ -185,23 +192,21 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
             model->page();
         }
         model->page();
-        check(state(dir) == s && read(dir / "vocabulary/state.json") == checkpoint &&
-                  !fs::exists(dir / "vocabulary/events.ndjson"),
+        check(state(dir) == s && read(dir / "vocabulary-v2/state.json") == checkpoint &&
+                  !fs::exists(dir / "vocabulary-v2/events.ndjson"),
               "Render and navigation preserve every progress byte " + name);
         return model;
     };
-    home("layout-home-fresh", fresh, "选择起点", "每组几个词，学完再一起检查");
-    home("layout-home-ready", chosen, "开始背词", "每组几个词，学完再一起检查");
+    home("layout-home-fresh", fresh, "选择学习内容", "从故事书或词库开始学习");
+    home("layout-home-ready", chosen, "开始背词", "记场景 → 辨词义 → 想英文");
     home("layout-home-paused", paused, "继续学习", "认识单词 · 3/5");
     home("layout-home-meaning", meaning, "继续学习", "词义检查 · 1/5");
     home("layout-home-feedback", feedback, "继续学习", "词义检查 · 1/5 · 查看反馈");
     home("layout-home-complete", completed, "再学一组", "已达今日目标，还可以再学一组");
     auto dueHome = home("layout-home-due", due, "再学一组", "已达今日目标，还可以再学一组");
-    home("layout-home-unchosen-complete", unchosenComplete, "选择起点", "");
-    auto exhaustedModel = home("layout-home-exhausted", exhausted, "选择下一词库",
+    home("layout-home-unchosen-complete", unchosenComplete, "选择学习内容", "从故事书或词库开始学习");
+    home("layout-home-exhausted", exhausted, "选择下一词库",
                                "本档新词已学完，可以选择下一档");
-    dispatch(*exhaustedModel, "v-go", "value", "levels");
-    check(exhaustedModel->page().route == "levels", "Exhaustion opens levels without begin error");
     dispatch(*dueHome, "v-start", "intent", "new");
     check(str(state(out / "learning-web-layout-layout-home-due")["session"], "source") == "new",
           "Home starts another new group even when a review is due and the daily goal is reached");
@@ -213,7 +218,7 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
         {"new", VJ::array({newWords[0], newWords[1], newWords[2]})},
         {"reviews", VJ::array()}, {"answers", 0}};
     for (size_t i = 0; i < 3; ++i) almostGoal["seen"][str(newWords[i])] = now;
-    auto softGoalHome = home("layout-home-soft-goal", almostGoal, "开始背词", "每组几个词，学完再一起检查");
+    auto softGoalHome = home("layout-home-soft-goal", almostGoal, "开始背词", "记场景 → 辨词义 → 想英文");
     const auto softGoalDir = out / "learning-web-layout-layout-home-soft-goal";
     dispatch(*softGoalHome, "v-start", "intent", "new");
     check(state(softGoalDir)["session"]["ids"].size() == 5,
@@ -229,12 +234,12 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
 
     auto choiceModel = open("stage-choice", paused);
     const auto choiceDir = out / "learning-web-layout-stage-choice";
-    const auto choiceSnapshot = read(choiceDir / "vocabulary/state.json");
-    dispatch(*choiceModel, "v-go", "value", "levels");
+    const auto choiceSnapshot = read(choiceDir / "vocabulary-v2/state.json");
+    check(choiceModel->dispatch(VJ{{"action","v-go"},{"value","levels"}}.dump()),"Open native stage-choice fixture");
     dispatch(*choiceModel, "v-stage", "value", "everyday");
     check(choiceModel->page().route == "levels" && state(choiceDir) == paused &&
-              read(choiceDir / "vocabulary/state.json") == choiceSnapshot &&
-              !fs::exists(choiceDir / "vocabulary/events.ndjson"),
+              read(choiceDir / "vocabulary-v2/state.json") == choiceSnapshot &&
+              !fs::exists(choiceDir / "vocabulary-v2/events.ndjson"),
           "Choosing a different level only changes the local selection until confirmation");
     render(choiceModel->page(), "layout-level-selection");
     check(button("使用所选词库").primary && button("使用所选词库").rect.y == 980,
@@ -242,13 +247,13 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
     dispatch(*choiceModel, "v-back");
     check(choiceModel->page().route == "home" && state(choiceDir) == paused,
           "Canceling level selection returns home without parking the current group or writing progress");
-    dispatch(*choiceModel, "v-go", "value", "levels");
+    check(choiceModel->dispatch(VJ{{"action","v-go"},{"value","levels"}}.dump()),"Open native stage-choice fixture");
     dispatch(*choiceModel, "v-stage", "value", "foundation");
     dispatch(*choiceModel, "v-use-stage", "value", "foundation");
     check(choiceModel->page().route == "home" && state(choiceDir) == paused &&
-              !fs::exists(choiceDir / "vocabulary/events.ndjson"),
+              !fs::exists(choiceDir / "vocabulary-v2/events.ndjson"),
           "Confirming the current level does not write a revision or park the active group");
-    dispatch(*choiceModel, "v-go", "value", "levels");
+    check(choiceModel->dispatch(VJ{{"action","v-go"},{"value","levels"}}.dump()),"Open native stage-choice fixture");
     dispatch(*choiceModel, "v-stage", "value", "everyday");
     dispatch(*choiceModel, "v-use-stage", "value", "everyday");
     const auto changedChoice = state(choiceDir);
@@ -265,7 +270,7 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
     const auto wordAudio = button("听单词"), exampleAudio = button("听例句");
     check(wordAudio.rect.y == exampleAudio.rect.y && wordAudio.rect.w == 312 &&
               exampleAudio.rect.x == 348, "Learning audio actions share one footer row");
-    check(button("下一个").rect.y == 1080 && button("下一个").primary,
+    check(button("下一个词").rect.y == 1080 && button("下一个词").primary,
           "Learning continuation is the full-width bottom action");
     dispatch(*model, "lookup");
     check(model->type("appointment") && model->input("submit", ""), "Open native detail fixture");
@@ -277,7 +282,7 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
           "Dictionary keeps audio paired above bottom notebook action");
     const auto beforeNavigation = state(out / "learning-web-layout-footers");
     auto longPage = detailPage;
-    for (auto &b : longPage.blocks) if (b.role == "example") {
+    for (auto &b : longPage.blocks) if (b.role == "meaning") {
         // Deliberately long projection fixture, rather than a modified catalog.
         for (int i = 0; i < 22; ++i) b.text += " Please remember the appointment tomorrow morning.";
     }
@@ -289,11 +294,10 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
         check(button("听单词").rect.y == button("听例句").rect.y,
               "Paginated detail retains paired audio");
         if (i + 1 < total) {
-            check(button("下一屏").rect.y == 1080 && button("下一屏").primary,
-                  "Pagination replaces final action at bottom");
-            check(std::none_of(ui.buttons().begin(), ui.buttons().end(), [](const Button &b) {
-                return b.label == "加入生词本";
-            }), "Pagination hides final notebook action until last screen");
+            check(button("下一屏").enabled && button("下一屏").rect.y < button("听单词").rect.y,
+                  "Text pagination stays above the word actions");
+            check(button("加入生词本").rect.y == 1080 && button("加入生词本").primary,
+                  "Dictionary action stays available on every page");
         } else check(button("加入生词本").rect.y == 1080, "Last screen restores notebook action");
     }
     check(state(out / "learning-web-layout-footers") == beforeNavigation,
@@ -346,8 +350,8 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
         auto searchPage = navigation->page();
         render(searchPage, "layout-search-" + std::to_string(std::string(query).size()));
         const auto fullDictionary = button("完整词典");
-        check(fullDictionary.event.action == Action::Dictionary && fullDictionary.rect.x == 224 &&
-                  fullDictionary.rect.y == 12 && fullDictionary.rect.w == 228,
+        check(fullDictionary.event.action == Action::Dictionary && fullDictionary.rect.x == 216 &&
+                  fullDictionary.rect.y == 12 && fullDictionary.rect.w == 172,
               "Full dictionary is a stable native top action regardless of suggestion count");
         check(std::count_if(ui.buttons().begin(), ui.buttons().end(), [](const Button &b) {
                   return b.event.action == Action::Dictionary;
@@ -475,12 +479,17 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
     render(spellingControls->page(), "layout-spelling-unknown-feedback");
     auto longFeedback = spellingControls->page();
     check(std::any_of(longFeedback.blocks.begin(), longFeedback.blocks.end(), [&](const WebBlock &b) {
-        return b.text == str(fullWord, "example") && b.role == "detail";
-    }), "Feedback moves the repeated example into optional detail");
+        return b.text == str(fullWord, "example") && b.role == "card-example" && b.detail == str(fullWord, "exampleZh");
+    }), "Feedback supplies the bilingual example for listening");
+    const int feedbackPages = ui.answer_pages();
+    WebBlock extraDefinition;extraDefinition.kind="text";extraDefinition.area="body";extraDefinition.role="detail";
+    longFeedback.blocks.push_back(extraDefinition);
     for (auto &block : longFeedback.blocks) if (block.role == "detail")
         for (int i = 0; i < 20; ++i) block.text += " Optional example remains in the explanation.";
     render(longFeedback, "layout-feedback-long-explanation");
-    check(ui.answer_pages() == 1 && button("说明").enabled,
+    auto disclosed = longFeedback;
+    const auto detailLabel = layout_word_card(disclosed, false);
+    check(ui.answer_pages() == feedbackPages && detailLabel && button(detailLabel).enabled,
           "Long optional feedback explanations do not add an acknowledgement page");
 
     auto revealedState = reduce(fullSpelling,
@@ -495,7 +504,7 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
     const auto revealedSession = state(out / "learning-web-layout-saved-reveal")["session"];
     revealed.reset();
     revealed = std::make_unique<NativeVocabulary>((out / "learning-web-layout-saved-reveal").generic_string());
-    check(revealed->enter(VJ(), now), "Reopen persisted revealed draft");
+    check(revealed->enter(now), "Reopen persisted revealed draft");
     dispatch(*revealed, "v-start", "intent", "new");
     check(state(out / "learning-web-layout-saved-reveal")["session"] == revealedSession,
           "Reopening preserves the old revealed task, assistance and draft exactly");
@@ -580,14 +589,14 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
     dispatch(*failedAudio, "v-start", "intent", "new");
     const auto failedAudioSerial = requestAudio(*failedAudio);
     const auto audioBeforeFailure = state(failedAudioDir);
-    fs::rename(failedAudioDir / "vocabulary", failedAudioDir / "vocabulary-held");
+    fs::rename(failedAudioDir / "vocabulary-v2", failedAudioDir / "vocabulary-held");
     check(failedAudio->dispatch(VJ{{"action", "w-unknown"}}.dump()), "Attempt answer with unavailable journal");
     check(!str(VJ::parse(failedAudio->status()), "courseError").empty() &&
               !failedAudio->take_audio(pendingPath, pendingSerial, pendingStop, nullptr),
           "Failed answer save shows an error without canceling current playback");
     check(failedAudio->playback(failedAudioSerial, true),
           "Original playback completion remains valid after a failed save");
-    fs::rename(failedAudioDir / "vocabulary-held", failedAudioDir / "vocabulary");
+    fs::rename(failedAudioDir / "vocabulary-held", failedAudioDir / "vocabulary-v2");
     check(state(failedAudioDir) == audioBeforeFailure, "Failed answer save preserves the whole prior state");
     dispatch(*failedAudio, "v-check-recovery");
 
@@ -626,14 +635,14 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
     dispatch(*failedLookup, "lookup");
     check(failedLookup->type("zzzz-unrelated"), "Keep harmless query before failed exposure");
     const auto lookupBeforeFailure = state(failedLookupDir);
-    fs::rename(failedLookupDir / "vocabulary", failedLookupDir / "vocabulary-held");
+    fs::rename(failedLookupDir / "vocabulary-v2", failedLookupDir / "vocabulary-held");
     check(!failedLookup->type(fullAnswer), "Candidate exposure waits for a durable save");
     const auto failedCandidatePage = failedLookup->page();
     check(std::none_of(failedCandidatePage.blocks.begin(), failedCandidatePage.blocks.end(), [&](const WebBlock &b) {
         return b.text == fullAnswer || b.detail == str(fullWord, "meaning");
     }), "Failed exposure save never publishes the answer suggestion");
     render(failedCandidatePage, "layout-lookup-exposure-save-error");
-    fs::rename(failedLookupDir / "vocabulary-held", failedLookupDir / "vocabulary");
+    fs::rename(failedLookupDir / "vocabulary-held", failedLookupDir / "vocabulary-v2");
     check(state(failedLookupDir) == lookupBeforeFailure, "Failed exposure leaves original task and memory intact");
     dispatch(*failedLookup, "v-check-recovery");
     check(failedLookup->page().typed == "zzzz-unrelated", "Retry preserves the last safely displayed query");
@@ -710,7 +719,7 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
         }
     }
     check(!retainedSearchAction.empty(), "Home has an actual dictionary destination");
-    fs::rename(retainedFailureDir / "vocabulary", retainedFailureDir / "vocabulary-held");
+    fs::rename(retainedFailureDir / "vocabulary-v2", retainedFailureDir / "vocabulary-held");
     check(!retainedFailure->dispatch(retainedSearchAction), "Reject retained-query entry with unavailable journal");
     const auto blockedSearch = retainedFailure->page();
     check(blockedSearch.route == "recovery" && str(VJ::parse(retainedFailure->status()), "route") == "home" && !blockedSearch.keyboard &&
@@ -718,7 +727,7 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
               std::none_of(blockedSearch.blocks.begin(), blockedSearch.blocks.end(), [&](const WebBlock &b) {
                   return b.text == fullAnswer || b.detail == str(fullWord, "meaning");
               }), "Failed retained-query exposure stays on the original route without showing answer candidates");
-    fs::rename(retainedFailureDir / "vocabulary-held", retainedFailureDir / "vocabulary");
+    fs::rename(retainedFailureDir / "vocabulary-held", retainedFailureDir / "vocabulary-v2");
     check(state(retainedFailureDir) == retainedBeforeFailure,
           "Failed retained-query entry keeps the current task, memory and exposure records intact");
     dispatch(*retainedFailure, "v-check-recovery");
@@ -790,6 +799,8 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
     dispatch(*switching, "v-go", "value", "home");
     dispatch(*switching, "v-start", "intent", "new");
     auto switched = state(switchDir);
+    if(switched["session"] != savedNew || switched["paused"].size()!=1 || switched["paused"][0]!=savedReview || switching->page().typed!="ab")
+        std::ofstream(out/"resume-difference.json")<<VJ{{"expectedNew",savedNew},{"actualNew",switched["session"]},{"expectedReview",savedReview},{"actualPaused",switched["paused"]},{"typed",switching->page().typed}}.dump(2);
     check(switched["session"] == savedNew && switching->page().typed == "ab" &&
               switched["paused"].size() == 1 && switched["paused"][0] == savedReview,
           "Home restores exact new task/draft and parks exact review task/draft");
@@ -1033,10 +1044,11 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
           "Open exhausted summary");
     render(exhaustedSummary->page(), "layout-summary-exhausted");
     check(footerButton("选择下一词库").primary, "Truly exhausted summary offers level selection");
-    dispatch(*exhaustedSummary, "v-go", "value", "levels");
-    check(exhaustedSummary->page().route == "levels" &&
-              state(out / "learning-web-layout-summary-exhausted") == exhaustedSummaryState,
-          "Exhausted summary opens selection without rewriting completion");
+    const auto summaryActions=exhaustedSummary->page().actions;
+    check(std::any_of(summaryActions.begin(),summaryActions.end(),[](const std::string &a){
+              return str(VJ::parse(a),"action")=="pack-decks";
+          })&&state(out/"learning-web-layout-summary-exhausted")==exhaustedSummaryState,
+          "Exhausted summary offers the deck shelf without rewriting completion");
 
     // Capture real engine boundary states, then exercise each visible footer.
     auto boundaryFlow = chosen;
@@ -1157,6 +1169,37 @@ void layout_checks(const fs::path &resources, const fs::path &out, const Font &f
 }
 int main(int argc, char **argv) {
     try {
+        const auto analysis = word_formation("UNPREDICTABLE");
+        check(analysis.parts.size()==4 && analysis.formula=="un- + pre- + dict + -able",
+              "Nested prefixes, bound root and suffix stay ordered");
+        check(word_formation("backpack").formula=="back + pack" &&
+              word_formation("drawer").parts.empty() && word_formation("until").parts.empty() &&
+              word_formation("look after").parts.empty(), "Compounds, opaque words and phrases");
+        const auto compound = word_formation("Backpack");
+        check(compound.compound && compound.parts[0].line()=="组成词    back    背、背部" &&
+              compound.parts[1].line()=="组成词    pack    包、行囊", "Compound constituents carry their local senses");
+        const auto negative = word_formation("impossible"), inward = word_formation("import");
+        check(negative.parts.front().line()!=inward.parts.front().line(), "Negative and directional im- are separate");
+        check(word_formation("ice cream").compound && word_formation("well-known").compound &&
+              word_formation("look at").parts.empty(), "Reviewed open and hyphenated compounds only");
+        check(word_formation("kilometre (km)").spelling_note.find("kilometre")!=std::string::npos &&
+              word_formation("restart").parts.front().line()=="前缀    re-    再、回" &&
+              word_formation("jellyfish").compound, "CSV study decks and teaching forms");
+        WebPage prompt;
+        prompt.blocks={card_line("unpredictable","word"),card_line("选出词义","question")};
+        check(!layout_word_card(prompt,false) && prompt.blocks.size()==2,
+              "Recall prompts cannot reveal word formation");
+        WebPage card;
+        card.blocks={card_line("unpredictable","card-word"),card_line("难以预测的","meaning"),
+                     card_line("复习时间","detail")};
+        auto back=card;
+        check(layout_word_card(card,false) && card.blocks.size()==6, "Word and sense precede four parts on the front");
+        auto parts=word_formation("unpredictable").parts;
+        for(size_t i=0;i<parts.size();++i)
+            check(card.blocks[2+i].role=="card-part" && card.blocks[2+i].text==parts[i].line(),
+                  "Each visible part has its own role, form and Chinese meaning");
+        check(layout_word_card(back,true) && back.title=="词根卡" && back.blocks.size()==7 &&
+              back.blocks.back().text=="复习时间", "Reverse keeps components and original memory details");
         check(argc == 4, "resources, font, fresh output required");
         const fs::path resources = argv[1], out = argv[3], dir = out / "learning-web";
         check(!fs::exists(out), "Fresh QA directory required");
@@ -1237,11 +1280,15 @@ int main(int argc, char **argv) {
                                      " on " + page.route);
         };
         paint("01-home");
-        act("v-start");
+        act("pack-library");
+        auto shelfAction=[&](const std::string &name){
+            check(m->page(page),"Open shelf");
+            const auto it=std::find(page.actions.begin(),page.actions.end(),name);
+            check(it!=page.actions.end()&&m->action(int(it-page.actions.begin())),"Shelf action "+name);
+        };
+        shelfAction("category/deck");
         paint("02-levels");
-        act("v-stage", "value", "foundation");
-        act("v-use-stage", "value", "foundation");
-        act("v-start");
+        shelfAction("builtin/foundation");
         paint("03-learn");
         auto initial = state(dir);
         check(m->command("next"), "Ignore stale legacy next on vocabulary boundary");
@@ -1335,12 +1382,15 @@ int main(int argc, char **argv) {
                     check(samePrompt, "Audio status never covers the spelling definition");
                     gapSeen = true;
                 }
-                if (kind == "spelling" && !fullSeen) {
-                    paint("07-spelling");
+                if (kind == "recall" && !fullSeen) {
+                    paint("07-productive-recall");
                     check(std::none_of(page.actions.begin(), page.actions.end(), [](const std::string &raw) {
                         const auto action = VJ::parse(raw);
                         return str(action, "action") == "v-do" && str(action, "type") == "hint";
-                    }), "New full-spelling UI has no reveal-and-copy action");
+                    }), "New productive-recall UI has no reveal-and-copy action");
+                    check(std::none_of(page.actions.begin(), page.actions.end(), [](const std::string &raw) {
+                        return str(VJ::parse(raw), "action") == "v-audio";
+                    }), "Productive recall starts without an audio shortcut");
                     fullSeen = true;
                 }
                 if (!restarted) {
@@ -1378,11 +1428,11 @@ int main(int argc, char **argv) {
         m->back(); m->page(page);
         check(page.route == "notebook", "List returns to notebook");
         auto before = state(dir);
-        fs::rename(dir / "vocabulary", dir / "vocabulary-held");
+        fs::rename(dir / "vocabulary-v2", dir / "vocabulary-held");
         act("v-do", "type", "learnNotebook");
         m->status(stat);
         check(!str(VJ::parse(stat), "courseError").empty(), "Storage failure surfaced");
-        fs::rename(dir / "vocabulary-held", dir / "vocabulary");
+        fs::rename(dir / "vocabulary-held", dir / "vocabulary-v2");
         check(state(dir) == before, "Failed append cannot change persisted progress");
         act("v-check-recovery");
         act("v-do", "type", "learnNotebook");
@@ -1394,27 +1444,27 @@ int main(int argc, char **argv) {
         m->page(page);
         check(state(dir) == saved, "All committed events recover");
         m.reset();
-        const auto committedLog = read(dir / "vocabulary/events.ndjson");
-        { std::ofstream f(dir / "vocabulary/events.ndjson", std::ios::binary | std::ios::app); f << "{\"data\":\"interrupted"; }
+        const auto committedLog = read(dir / "vocabulary-v2/events.ndjson");
+        { std::ofstream f(dir / "vocabulary-v2/events.ndjson", std::ios::binary | std::ios::app); f << "{\"data\":\"interrupted"; }
         m = std::make_unique<LearningWeb>();
         check(m->init(dir.generic_string()), "Torn-write reopen");
         m->page(page);
         check(state(dir) == saved, "Torn tail keeps all committed progress");
-        check(read(dir / "vocabulary/events.ndjson") == committedLog, "Only uncommitted tail removed");
+        check(read(dir / "vocabulary-v2/events.ndjson") == committedLog, "Only uncommitted tail removed");
         bool tailKept = false;
-        for (const auto &f : fs::directory_iterator(dir / "vocabulary"))
+        for (const auto &f : fs::directory_iterator(dir / "vocabulary-v2"))
             if (f.path().extension() == ".tail") tailKept = read(f.path()) == "{\"data\":\"interrupted";
         check(tailKept, "Interrupted bytes retained for recovery");
         m.reset();
-        const auto checkpoint = read(dir / "vocabulary/state.json");
-        { std::ofstream f(dir / "vocabulary/state.json", std::ios::binary); f << "{\"checksum\":0,\"data\":\"{}\"}"; }
+        const auto checkpoint = read(dir / "vocabulary-v2/state.json");
+        { std::ofstream f(dir / "vocabulary-v2/state.json", std::ios::binary); f << "{\"checksum\":0,\"data\":\"{}\"}"; }
         m = std::make_unique<LearningWeb>();
         check(m->init(dir.generic_string()), "Corrupt checkpoint has a visible error page");
         m->page(page); m->status(stat);
         check(!str(VJ::parse(stat), "courseError").empty(), "Corrupt checkpoint is blocked");
-        check(read(dir / "vocabulary/events.ndjson") == committedLog, "Corruption never resets journal");
+        check(read(dir / "vocabulary-v2/events.ndjson") == committedLog, "Corruption never resets journal");
         m.reset();
-        { std::ofstream f(dir / "vocabulary/state.json", std::ios::binary); f << checkpoint; }
+        { std::ofstream f(dir / "vocabulary-v2/state.json", std::ios::binary); f << checkpoint; }
         std::ofstream(out / "checks.json")
             << VJ{{"passed", checks},           {"timings", timings},
                   {"oldCourseUnchanged", true}, {"oldProfileUnchanged", true},

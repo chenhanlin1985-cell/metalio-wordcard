@@ -1,0 +1,14 @@
+{
+  "format": "wordcard-pack",
+  "schema": 3,
+  "type": "story",
+  "id": "last-book-ferry",
+  "version": "1.1.0",
+  "title": "末班书船",
+  "files": {
+    "content.json": "1871d00510aff94e50e6a0ab358346f27fcead1471a694685764d9bc58a7001d",
+    "scenes.wpix": "9be13cf5c0b9bd24b711ca60874f4014a40e17d50cac8a2fa585843f9b800154"
+  },
+  "requires": "pet-2024@1.0.0",
+  "storyType": "adventure"
+}

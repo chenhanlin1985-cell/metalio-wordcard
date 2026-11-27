@@ -27,6 +27,19 @@ class NativeStudy {
     WebPage page();
     std::string context() const;
     std::string status() const;
+    J library_rows() const { return vocabulary_active()?vocabulary_->library_rows():J::array(); }
+    bool course_ledger() const {return vocabulary_&&vocabulary_->available();}
+    void prepare_profile(int64_t now) {
+        if (course_ledger())
+            vocabulary_->prepare_profile(now);
+    }
+    J read_course(int64_t now){vocabulary_->ensure_loaded(now);return vocabulary_->course_cursor();}
+    bool save_course(const J &value,int64_t now){
+        vocabulary_->ensure_loaded(now);
+        const auto &lesson=field(value,"session");
+        return vocabulary_->save_course(value,lesson.is_object()?model_.task(lesson):J());
+    }
+    J story_progress(const J &r) { require(vocabulary_active(),"词汇系统未就绪");return vocabulary_->story_progress(r); }
     void tick(int64_t now) { model_.now = now; if(vocabulary_) vocabulary_->tick(now); }
     uint64_t calls() const { return calls_; }
     uint64_t pages() const { return pages_; }

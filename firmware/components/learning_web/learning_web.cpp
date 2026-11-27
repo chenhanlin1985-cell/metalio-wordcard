@@ -1,4 +1,5 @@
 #include "learning_web.hpp"
+#include "../native_learning/include/pack_paths.hpp"
 #include "../native_learning/include/native_study.hpp"
 #include "quickjs.h"
 #include <chrono>
@@ -6,9 +7,17 @@
 #include <cstring>
 #include <fstream>
 #include <sstream>
+#include <set>
+#ifdef _WIN32
+#include <filesystem>
+#else
+#include <dirent.h>
+#endif
+#include <cctype>
 #include <sys/stat.h>
 #ifdef ESP_PLATFORM
 #include <esp_heap_caps.h>
+#include <miniz.h>
 #include <esp_log.h>
 #include <esp_timer.h>
 #include <freertos/FreeRTOS.h>
@@ -67,6 +76,9 @@ struct WebScript {
     const char *name;
     const char *data;
     size_t length;
+#ifdef ESP_PLATFORM
+    size_t packed;
+#endif
 };
 extern const WebScript web_scripts[];
 extern const size_t web_script_count;
@@ -129,7 +141,7 @@ static JSValue native_read(JSContext *c, JSValueConst, int argc, JSValueConst *a
     return found ? JS_NewStringLen(c, value.data(), value.size()) : JS_NULL;
 }
 static JSValue native_write(JSContext *c, JSValueConst, int argc, JSValueConst *argv) {
-    return JS_NewBool(c, argc == 2 && static_cast<LearningWeb *>(JS_GetContextOpaque(c))
+    return JS_NewBool(c, (argc == 2) && static_cast<LearningWeb *>(JS_GetContextOpaque(c))
                                           ->write(string(c, argv[0]), string(c, argv[1])));
 }
 static JSValue native_export(JSContext *c, JSValueConst, int argc, JSValueConst *argv) {
@@ -156,7 +168,16 @@ static size_t web_usable(const void *p) {
     return p ? heap_caps_get_allocated_size(const_cast<void *>(p)) : 0;
 }
 #endif
+int64_t LearningWeb::clock_ms() const {
+#ifndef ESP_PLATFORM
+    if(preview_time_)return preview_time_;
+#endif
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
+#include "content_books.inc"
+
 static std::string file_key(const std::string &key) {
+    if(key=="content-selection")return "current-content.json";
     if (key == "wordcard-adult-web-v2")
         return "course-v2.json";
     if (key == "wordcard-learning-path-v2")
@@ -171,6 +192,11 @@ static std::string file_key(const std::string &key) {
     return {};
 }
 std::string LearningWeb::read(const std::string &key, bool &found) {
+    if(key=="wordcard-adult-web-v1"&&native_&&native_->course_ledger()){found=false;return {};}
+    if(key=="wordcard-adult-web-v2"&&native_&&native_->course_ledger()){
+        try{auto run=native_->read_course(clock_ms());found=!run.is_null();return found?run.dump():"";}
+        catch(const std::exception &e){error_=e.what();found=true;return "{unreadable";}
+    }
     const auto name = file_key(key);
     found = false;
     if (name.empty())
@@ -201,6 +227,10 @@ bool LearningWeb::write(const std::string &key, const std::string &value) {
         int64_t began = micros();
         ~WriteTimer() { out += uint64_t(micros() - began); }
     } write_timer{last_write_us_};
+    if(key=="wordcard-adult-web-v2"&&native_&&native_->course_ledger()){
+        try{return value.size()<=700000&&native_->save_course(J::parse(value),clock_ms());}
+        catch(const std::exception &e){error_=e.what();return false;}
+    }
     const auto n = file_key(key);
     if (n.empty() || value.size() > 700000)
         return false;
@@ -224,6 +254,7 @@ bool LearningWeb::write(const std::string &key, const std::string &value) {
             std::rename(bak.c_str(), p.c_str());
         return false;
     }
+    if(key=="content-selection")selection_=value;
     return true;
 }
 int LearningWeb::interrupt(JSRuntime *, void *p) {
@@ -247,6 +278,7 @@ LearningWeb::~LearningWeb() {
 #ifdef ESP_PLATFORM
     if (owner_ && !is_owner()) {
         invoke_owner([&] {
+            close_books();
             delete native_;
             native_ = nullptr;
             if (ctx_)
@@ -261,6 +293,7 @@ LearningWeb::~LearningWeb() {
         return;
     }
 #endif
+    close_books();
     delete native_;
     if (ctx_) {
         JS_FreeContext(ctx_);
@@ -337,11 +370,23 @@ bool LearningWeb::leave_native(const std::string &root_navigation) {
     return true;
 }
 bool LearningWeb::dispatch_native(const std::string &data) {
+    if(data==R"({"action":"pack-library"})")return open_books();
+    if(data==R"({"action":"pack-decks"})"){shelf_location_="deck/0";return open_books();}
+    if(data==R"({"action":"pack-resume"})")return book_root_action("resume");
+    if(data==R"({"action":"pack-mode"})")return book_root_action("mode");
+    if(data==R"({"action":"pack-review"})")return book_root_action("review");
+    if(data==R"({"action":"pack-notebook"})")return book_root_action("notebook");
+    if(data.find("\"root\":true")!=std::string::npos){
+        const auto action=J::parse(data,nullptr,false);
+        if(str(action,"action")=="v-go"&&flag(action,"root")){
+            if(str(action,"value")=="review")return book_root_action("review");
+            library_origin_.clear();auxiliary_return_.clear();
+        }
+    }
+    if(data.find("w-day-home")!=std::string::npos||(data.find("v-return")!=std::string::npos&&str(selected_book(data),"value")=="home"))auxiliary_return_.clear();
     VmTimer timer(last_call_us_);
     last_write_us_ = last_gc_us_ = 0;
-    native_->tick(std::chrono::duration_cast<std::chrono::milliseconds>(
-                      std::chrono::system_clock::now().time_since_epoch())
-                      .count());
+    native_->tick(clock_ms());
     const bool vocabulary_boundary = native_->vocabulary_active();
     if (native_->dispatch(data)) {
         native_dirty_ = true;
@@ -374,8 +419,21 @@ bool LearningWeb::status(std::string &json) {
         return invoke_owner([&] { ok = status(json); }) && ok;
     }
 #endif
+    if(book_ctx_){
+        if(!book_call("status",nullptr,&json))return false;
+        if(book_imported_){
+            auto out=selected_book(json),storage=selected_book(native_->status());
+            for(const auto *k:{"lastImportedWord","lastImportedId","courseError"})if(storage.contains(k))out[k]=storage[k];
+            json=out.dump();
+        }
+        return true;
+    }
     if (native_active()) {
         json = native_->status();
+        const auto selection=selected_book(selection_);
+        if(!str(selection,"key").empty()){
+            auto status=J::parse(json);status["currentContent"]=selection;json=status.dump();
+        }
         return true;
     }
     return eval("(()=>{const "
@@ -578,9 +636,8 @@ bool LearningWeb::edit(const std::string &keys) {
     if (native_active()) {
         VmTimer timer(last_call_us_);
         last_write_us_ = last_gc_us_ = 0;
-        native_->tick(std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::system_clock::now().time_since_epoch())
-                          .count());
+        native_->tick(clock_ms());
+        if(book_ctx_)return book_action("edit:"+keys);
         native_->edit(keys);
         native_dirty_ = true;
         audio_dirty_ = true;
@@ -634,6 +691,14 @@ bool LearningWeb::init(const std::string &dir) {
         return ready_;
     }
     directory_ = dir;
+    if(native_enabled_&&!native_)native_=new NativeStudy(
+        [this](const std::string &key,const std::string &value){return write(key,value);},dir);
+    // Replay the SD journal before app.js reads the course cursor. Its native
+    // disk work can exceed the execution budget for a single startup script.
+    if (native_enabled_ && native_)
+        native_->prepare_profile(clock_ms());
+    bool hasSelection=false;selection_=read("content-selection",hasSelection);
+
 #ifdef ESP_PLATFORM
     static const JSMallocFunctions allocator = {web_calloc, web_malloc, web_free, web_realloc, web_usable};
     rt_ = JS_NewRuntime2(&allocator, nullptr);
@@ -661,8 +726,18 @@ bool LearningWeb::init(const std::string &dir) {
     for (size_t i = 0; i < web_script_count; ++i) {
         const auto began = micros();
         deadline_ = began + 10000000;
-        auto v = JS_Eval(ctx_, web_scripts[i].data, web_scripts[i].length, web_scripts[i].name,
-                         JS_EVAL_TYPE_GLOBAL);
+        const auto &script=web_scripts[i];
+#ifdef ESP_PLATFORM
+        auto *buffer=static_cast<char*>(heap_caps_malloc(script.length+1,MALLOC_CAP_SPIRAM|MALLOC_CAP_8BIT));
+        if(!buffer||tinfl_decompress_mem_to_mem(buffer,script.length,script.data,script.packed,0)!=script.length){
+            heap_caps_free(buffer);error_=std::string(script.name)+" 解码失败";return false;
+        }
+        buffer[script.length]=0;
+        auto v=JS_Eval(ctx_,buffer,script.length,script.name,JS_EVAL_TYPE_GLOBAL);
+        heap_caps_free(buffer);
+#else
+        auto v=JS_Eval(ctx_,script.data,script.length,script.name,JS_EVAL_TYPE_GLOBAL);
+#endif
         if (JS_IsException(v)) {
             const auto ok = exception();
             error_ = std::string(web_scripts[i].name) + ": " + error_;
@@ -692,6 +767,23 @@ bool LearningWeb::command(const std::string &a, const std::string &value) {
         return invoke_owner([&] { ok = command(a, value); }) && ok;
     }
 #endif
+    if(book_ctx_){
+        if(a=="w-day-home")return book_root_action("home");
+        if(a=="w-unknown")return book_action("unknown");
+        if(a=="lookup")return book_action(a);
+        if(a=="v-import"){
+            book_imported_=true;return native_->dispatch(J{{"action",a},{"value",value}}.dump());
+        }
+        if(a=="u-notebook"){
+            std::string bookmark;if(!book_call("bookmark",nullptr,&bookmark))return false;
+            close_books();library_origin_.clear();
+            const bool ok=native_->dispatch(J{{"action","v-go"},{"value","notebook"},{"root",true}}.dump());
+            if(ok)auxiliary_return_=std::move(bookmark);
+            return ok;
+        }
+        if(a=="v-go"&&value=="settings")return book_action("settings");
+        return true;
+    }
     const auto data = J{{"action", a}, {"value", value}}.dump();
     if (native_active())
         return dispatch_native(data);
@@ -707,6 +799,7 @@ bool LearningWeb::action(int i) {
     if (i < 0 || size_t(i) >= actions_.size())
         return false;
     const auto data = actions_[i];
+    if(book_ctx_)return book_action(data);
     return native_active() ? dispatch_native(data) : eval("nativeAction(" + data + ")");
 }
 bool LearningWeb::key(const std::string &k, const std::string &v) {
@@ -717,13 +810,12 @@ bool LearningWeb::key(const std::string &k, const std::string &v) {
     }
 #endif
     if (native_active()) {
+        if(book_ctx_)return book_action(k=="key"?"key/"+v:k=="backspace"?"erase":k);
         if (cached_page_.keyboard && cached_page_.route == "word-batch" && (k == "key" || k == "backspace"))
             return edit(k == "backspace" ? std::string(1, '\b') : v);
         VmTimer timer(last_call_us_);
         last_write_us_ = last_gc_us_ = 0;
-        native_->tick(std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::system_clock::now().time_since_epoch())
-                          .count());
+        native_->tick(clock_ms());
         native_->input(k, v);
         native_dirty_ = true;
         audio_dirty_ = true;
@@ -740,12 +832,11 @@ bool LearningWeb::type(const std::string &v) {
         return invoke_owner([&] { ok = type(v); }) && ok;
     }
 #endif
+    if(book_ctx_)return book_action("type:"+v);
     if (native_active() && (cached_page_.route == "word-batch" || native_->vocabulary_active())) {
         VmTimer timer(last_call_us_);
         last_write_us_ = last_gc_us_ = 0;
-        native_->tick(std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::system_clock::now().time_since_epoch())
-                          .count());
+        native_->tick(clock_ms());
         native_->type(v);
         native_dirty_ = true;
         return true;
@@ -756,6 +847,7 @@ bool LearningWeb::open_courses() {
 #ifdef ESP_PLATFORM
     if(!is_owner()){bool ok=false;return invoke_owner([&]{ok=open_courses();})&&ok;}
 #endif
+    if(book_ctx_)close_books();
     if(courses_open_)return true;
     cancel_prepare();
     courses_open_=true;
@@ -787,9 +879,13 @@ bool LearningWeb::back() {
     if (native_active()) {
         VmTimer timer(last_call_us_);
         last_write_us_ = last_gc_us_ = 0;
-        native_->tick(std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::system_clock::now().time_since_epoch())
-                          .count());
+        native_->tick(clock_ms());
+        if(book_ctx_)return book_action("back");
+        if(!auxiliary_return_.empty()&&cached_page_.route=="notebook"){
+            const auto bookmark=auxiliary_return_;if(!open_books())return false;
+            auxiliary_return_.clear();return book_call("reopen",&bookmark);
+        }
+        if(!library_origin_.empty()&&cached_page_.route==library_origin_&&cached_page_.key.rfind("vocabulary:history-quiz:",0)!=0){library_origin_.clear();return open_books();}
         if (native_->back()) {
             native_dirty_ = true;
             audio_dirty_ = true;
@@ -823,9 +919,8 @@ bool LearningWeb::playback(int serial, bool ok) {
     if (native_active()) {
         VmTimer timer(last_call_us_);
         last_write_us_ = last_gc_us_ = 0;
-        native_->tick(std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::system_clock::now().time_since_epoch())
-                          .count());
+        native_->tick(clock_ms());
+        if(book_ctx_){if(serial==book_audio_serial_&&!ok){book_call("audioEnd");native_dirty_=true;}return true;}
         if (native_->playback(serial, ok))
             native_dirty_ = true;
         audio_dirty_ = true;
@@ -844,6 +939,11 @@ bool LearningWeb::take_audio(std::string &path, int &serial, bool &stop, double 
 #endif
     if (native_active()) {
         audio_dirty_ = false;
+        if(book_ctx_){
+            std::string json;if(!book_call("takeAudio",nullptr,&json)||json=="null")return false;
+            const auto a=J::parse(json);path=str(a,"path");serial=book_audio_serial_=int(num(a,"serial"));
+            book_audio_text_=str(a,"text");stop=false;if(rate)*rate=1;return true;
+        }
         return native_->take_audio(path, serial, stop, rate);
     }
     audio_dirty_ = false;
@@ -877,6 +977,7 @@ std::string LearningWeb::audio_text(const std::string &path) {
         return text;
     }
 #endif
+    if(book_ctx_)return book_audio_text_;
     if (native_active())
         return native_->audio_text(path);
     deadline_ = micros() + 5000000;
@@ -956,7 +1057,7 @@ bool LearningWeb::page(WebPage &out) {
     JS_UpdateStackTop(rt_);
     if (native_active() || enter_native()) {
         if (native_dirty_) {
-            cached_page_ = native_->page();
+            if(book_ctx_){if(!book_view(cached_page_))return false;}else {cached_page_=native_->page();project_selection(cached_page_);}
             cached_page_.secondary=courses_open_;
             actions_ = cached_page_.actions;
             native_dirty_ = false;

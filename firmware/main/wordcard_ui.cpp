@@ -1,4 +1,5 @@
 #include "wordcard_ui.hpp"
+#include "../components/native_learning/include/word_formation.hpp"
 #include "dictionary_keyboard.hpp"
 #include "web_input_field.hpp"
 #include "shutdown_card.hpp"
@@ -67,6 +68,16 @@ Font::Glyph Font::glyph(uint32_t codepoint, uint16_t font_size) const {
     auto cached = cache_.find(key);
     if (cached != cache_.end())
         return cached->second;
+    out = exact_glyph(codepoint,font_size,2);
+    if (!out.bitmap) return missing();
+    if (cache_.size() >= 512) cache_.clear();
+    cache_[key] = out;
+    return out;
+}
+Font::Glyph Font::exact_glyph(uint32_t codepoint, uint16_t font_size, uint8_t bpp) const {
+    Glyph out;
+    if (!data_) return out;
+    const uint64_t key = uint64_t(codepoint) << 32 | uint64_t(font_size) << 16 | bpp;
     uint32_t lo = 0, hi = count_;
     while (lo < hi) {
         auto mid = lo + (hi - lo) / 2;
@@ -76,10 +87,10 @@ Font::Glyph Font::glyph(uint32_t codepoint, uint16_t font_size) const {
             hi = mid;
     }
     if (lo == count_)
-        return missing();
+        return out;
     auto e = data_ + index_ + size_t(lo) * 16;
     if (u64(e) != key)
-        return missing();
+        return out;
     auto p = data_ + u32(e + 8);
     out.width = u16(p);
     out.height = u16(p + 2);
@@ -88,9 +99,6 @@ Font::Glyph Font::glyph(uint32_t codepoint, uint16_t font_size) const {
     out.advance = u16(p + 8);
     out.font_size = font_size;
     out.bitmap = p + 10;
-    if (cache_.size() >= 512)
-        cache_.clear();
-    cache_[key] = out;
     return out;
 }
 static uint32_t next(const std::string &s, size_t &i) {
@@ -108,6 +116,52 @@ static uint32_t next(const std::string &s, size_t &i) {
         cp = (cp << 6) | (b & 63);
     }
     return cp;
+}
+int Canvas::folio_run(int x, int center_y, const std::string &s, int slot, Align align, bool paint) {
+    const Font *face=font_.folio();
+    if (!face || s.empty()) return 0;
+    const int bits=slot==236?2:4;
+    int pen=0,left=0,right=0,top=0,bottom=0;
+    bool first=true;
+    for (size_t i=0;i<s.size();) {
+        const auto g=face->exact_glyph(next(s,i),slot,bits);
+        if (!g.bitmap) return 0; // The caller can draw the complete line in the factory font.
+        if (g.width && g.height) {
+            const int l=pen+g.x, r=l+g.width, b=-g.y, t=b-g.height;
+            left=first?l:std::min(left,l); right=first?r:std::max(right,r);
+            top=first?t:std::min(top,t); bottom=first?b:std::max(bottom,b);
+            first=false;
+        }
+        pen+=g.advance;
+    }
+    const int width=right-left;
+    if (!paint || !width) return width;
+    pen=x-left-(align==Align::Right?width:align==Align::Center?width/2:0);
+    const int baseline=center_y-(top+bottom)/2;
+    for (size_t i=0;i<s.size()&&!cancelled();) {
+        const auto g=face->exact_glyph(next(s,i),slot,bits);
+        int p=0;
+        for (int row=0;row<g.height;++row) for (int col=0;col<g.width;++col,++p) {
+            const uint8_t ink=bits==4?(g.bitmap[p/2]>>(p%2?0:4))&15:
+                              5*((g.bitmap[p/4]>>(6-2*(p%4)))&3);
+            if(ink) gray(pen+g.x+col,baseline-g.y-g.height+row,15-ink);
+        }
+        pen+=g.advance;
+    }
+    return width;
+}
+bool Canvas::folio_reward(int cx, int cy, unsigned index, int size) {
+    const Font *face = font_.folio();
+    if (!face || index >= 6) return false;
+    const auto glyph = face->exact_glyph(0xe000 + index, size, 1);
+    if (!glyph.bitmap || glyph.width != size || glyph.height != size) return false;
+    const int left = cx - size / 2, top = cy - size / 2;
+    for (int row = 0; row < size && !cancelled(); ++row) {
+        const auto *bits = glyph.bitmap + row * (size / 8);
+        for (int col = 0; col < size; ++col)
+            if (bits[col / 8] & (128 >> (col % 8))) pixel(left + col, top + row);
+    }
+    return true;
 }
 void Canvas::clear() {
     std::memset(fb_, 255, bytes);
@@ -278,6 +332,13 @@ static std::string fit_px(Canvas &c, const std::string &s, int width, int pixels
     }
     return out + "…";
 }
+static void button_line(Canvas &c, Rect r, const std::string &label, int pixels, int room, bool bold) {
+    while (pixels > 28 && c.text_width_px(label,pixels)>room) pixels-=2;
+    const auto visible=c.text_width_px(label,pixels)<=room?label:fit_px(c,label,room,pixels);
+    const int x=r.x+(r.w-c.text_width_px(visible,pixels))/2, y=r.y+(r.h-pixels-10)/2;
+    c.text_px(x,y,visible,pixels);
+    if(bold)c.text_px(x+1,y,visible,pixels);
+}
 void UI::button(Canvas &c, Rect r, Action a, const std::string &label, int value, bool primary,
                 bool enabled) {
     buttons_.push_back({r, {a, value}, label, enabled, primary});
@@ -285,21 +346,23 @@ void UI::button(Canvas &c, Rect r, Action a, const std::string &label, int value
     c.border(r, enabled ? (primary ? 5 : 3) : 1);
     // These two existing narrow keyboard keys must retain their full labels.
     // Keep their geometry; use the previously accepted 30 px functional text.
-    const int pixels = (a == Action::DictionaryShift || a == Action::DictionaryErase) ? 30 : 36;
-    const int line_height = pixels + 10;
-    auto lines = c.wrap_px(label, r.w - 20, pixels);
-    const size_t limit = std::max(1, r.h / line_height);
-    if (lines.size() > limit) {
-        lines.resize(limit);
-        lines.back() = fit_px(c, lines.back() + "…", r.w - 20, pixels);
+    int pixels = (a == Action::DictionaryShift || a == Action::DictionaryErase) ? 30 : 36;
+    if(label.empty())return;
+    const int room = r.w - 20;
+    while (pixels > 28 && c.text_width_px(label,pixels)>room) pixels-=2;
+    if ((a==Action::AssessmentChoose || a==Action::GuidedChoose || a==Action::RecallChoose)
+        && c.text_width_px(label,pixels)>room && r.w>=500 && value>=0 && value<26) {
+        // The full line remains tappable. The letter is the control, the prose sits beside it.
+        c.fill(r,false);
+        c.border({r.x+2,r.y+8,58,r.h-16},primary?4:2);
+        c.text_px(r.x+17,r.y+(r.h-46)/2,std::string(1,char('A'+value)),36);
+        auto lines=c.wrap_px(label,r.w-84,pixels);
+        const int lh=pixels+6,top=r.y+std::max(0,(r.h-int(lines.size())*lh)/2);
+        for(size_t i=0;i<lines.size()&&top+int(i)*lh+pixels<=r.y+r.h;++i)
+            c.text_px(r.x+72,top+int(i)*lh,lines[i],pixels);
+        return;
     }
-    const int top = r.y + (r.h - int(lines.size()) * line_height) / 2;
-    for (size_t i = 0; i < lines.size(); ++i) {
-        const int x = r.x + (r.w - c.text_width_px(lines[i], pixels)) / 2;
-        const int y = top + int(i) * line_height;
-        c.text_px(x, y, lines[i], pixels);
-        if (primary && enabled) c.text_px(x + 1, y, lines[i], pixels);
-    }
+    button_line(c,r,label,pixels,room,primary && enabled);
 }
 Event UI::hit(int x, int y) const {
     if(keyboard_)return dictionary_keyboard_hit(x,y,keyboard_shift_,keyboard_symbols_,keyboard_search_,keyboard_recent_,keyboard_recall_).event;
@@ -489,7 +552,11 @@ void UI::render(Canvas &c, const View &v) {
         c.centered(1000,"断电后，墨水屏仍会保留画面。");
         return;
     }
-    if(v.screen==Screen::TtsTest){tts_test_page(c,v);return;}
+    if(v.screen==Screen::TtsTest){
+        tts_test_page(c,v);
+        if(v.settings_origin)button(c,{342,32,148,88},Action::CloseSettings,v.settings_exit_label());
+        return;
+    }
     if(v.screen==Screen::UsbDisk){usb_page(c,v);return;}
     if (int(v.screen) >= int(Screen::Dictionary)) { dictionary_pages(c,v); return; }
     if (v.screen == Screen::Home) {
@@ -511,6 +578,8 @@ void UI::render(Canvas &c, const View &v) {
     c.fill({24, 78, 636, 2});
     if (v.screen != Screen::Home)
         button(c, {24, 96, 136, 88}, Action::Back, v.screen == Screen::Study ? "暂停" : "返回");
+    if(v.settings_origin && (v.screen==Screen::Settings || v.screen==Screen::SelfTest))
+        button(c,{512,96,148,88},Action::CloseSettings,v.settings_exit_label());
     if (!v.notice.empty()) {
         auto lines = c.wrap(v.notice, 624);
         int y = 1082;
@@ -532,14 +601,10 @@ void UI::render(Canvas &c, const View &v) {
         c.text(510, 122, std::to_string(v.position + 1) + "/" + std::to_string(v.count));
         const bool hidden_audio = v.study_mode == StudyMode::Listening && !v.revealed;
         const bool reverse = v.study_mode == StudyMode::Reverse && !v.revealed;
-        int scale = c.text_width(v.card->front, 3) <= 620 ? 3 : 2;
-        auto front = c.wrap(v.card->front, 620, scale);
-        if (front.size() > 3) {
-            scale = 1;
-            front = c.wrap(v.card->front, 620, scale);
-        }
-        const bool three_lines = !hidden_audio && !reverse && scale == 2 && front.size() == 3;
-        int yy = three_lines ? 210 : 230;
+        int px=72;
+        auto front=c.wrap_px(v.card->front,604,px);
+        while(front.size()>2 && px>36){px-=6;front=c.wrap_px(v.card->front,604,px);}
+        int yy=224;
         if (hidden_audio) {
             c.centered(250, "听音回忆", 2);
             c.centered(350, "听到这个词，你想到什么？");
@@ -555,11 +620,11 @@ void UI::render(Canvas &c, const View &v) {
             yy = 520;
         } else
             for (const auto &line : front) {
-                c.centered(yy, line, scale);
-                yy += three_lines ? 72 : scale * 44;
+                c.text_px(40, yy, line, px);
+                yy += px+10;
             }
         if (!reverse)
-            button(c, {210, yy + (three_lines ? 20 : 30), 264, 88}, Action::Speak,
+            button(c, {40, yy + 18, 264, 88}, Action::Speak,
                    v.audio_busy        ? (v.audio_source==SpeechSource::Synthesis ? "合成播放中" : "SD 播放中")
                    : v.audio_pending   ? "发音待复核"
                    : v.audio_available ? (v.audio_source==SpeechSource::Synthesis ? "合成发音" : v.audio_source==SpeechSource::Sd ? "SD 发音" : "听发音")
@@ -572,8 +637,9 @@ void UI::render(Canvas &c, const View &v) {
             button(c, {28, 936, 628, 108}, Action::Reveal, "查看答案", 0, true);
         } else {
             c.fill({28, 550, 628, 2});
-            const auto lines =
-                c.wrap((v.card->ipa.empty() ? "" : v.card->ipa + "\n") + v.card->back, 616);
+            const auto parts=word_formation(v.card->front);
+            const auto lines=c.wrap((v.card->ipa.empty() ? "" : v.card->ipa+"\n")+v.card->back+
+                (parts.formula.empty() ? "" : "\n"+parts.formula + parts.detail_text()),616);
             answer_pages_ = std::max(1, int((lines.size() + 6) / 7));
             const int start = std::min(v.answer_page, answer_pages_ - 1) * 7;
             for (size_t i = start; i < lines.size() && i < size_t(start + 7); ++i)

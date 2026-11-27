@@ -1,0 +1,363 @@
+{
+  "art": "pages.wpix",
+  "terms": {
+    "concert": {
+      "id": "pet-0307",
+      "meaning": "n. 音乐会"
+    },
+    "music": {
+      "id": "pet-0310",
+      "meaning": "n. 音乐"
+    },
+    "coat": {
+      "id": "pet-0043",
+      "meaning": "n. 大衣；外套"
+    },
+    "customer": {
+      "id": "pet-1193",
+      "meaning": "n. 顾客"
+    },
+    "sleeve": {
+      "id": "pet-0062",
+      "meaning": "n. 袖子"
+    },
+    "shop assistant": {
+      "id": "pet-1211",
+      "meaning": "n. 店员"
+    },
+    "wool": {
+      "id": "pet-0086",
+      "meaning": "n. 羊毛"
+    },
+    "label": {
+      "id": "pet-0048",
+      "meaning": "n. 衣物标签"
+    },
+    "size": {
+      "id": "pet-0056",
+      "meaning": "n. 尺码；大小"
+    },
+    "receipt": {
+      "id": "pet-1226",
+      "meaning": "n. 收据；购物小票"
+    },
+    "parcel": {
+      "id": "pet-0128",
+      "meaning": "n. 包裹"
+    },
+    "birthday": {
+      "id": "pet-1466",
+      "meaning": "n. 生日"
+    },
+    "date": {
+      "id": "pet-1494",
+      "meaning": "n. 日期"
+    },
+    "cost": {
+      "id": "pet-1185",
+      "meaning": "v. 价钱为；花费"
+    },
+    "cash": {
+      "id": "pet-1204",
+      "meaning": "n. 现金"
+    },
+    "credit card": {
+      "id": "pet-1189",
+      "meaning": "n. 信用卡"
+    },
+    "purse": {
+      "id": "pet-0020",
+      "meaning": "n. 女式小钱包"
+    },
+    "change": {
+      "id": "pet-1212",
+      "meaning": "n. 找零；找回的钱"
+    },
+    "return": {
+      "id": "pet-1191",
+      "meaning": "v. 归还"
+    },
+    "instrument": {
+      "id": "pet-0349",
+      "meaning": "n. 乐器"
+    },
+    "neighbour": {
+      "relatedId": "pet-0809",
+      "meaning": "n. 邻居",
+      "ipa": "US /ˈneɪbɚ/",
+      "audio": "packs/pet-2024/1.0.0/audio/neighbour.wav"
+    },
+    "pocket": {
+      "relatedId": "pet-0011",
+      "meaning": "n. 口袋",
+      "ipa": "US /ˈpɑːkət/",
+      "audio": "packs/pet-2024/1.0.0/audio/pocket.wav"
+    },
+    "ticket": {
+      "relatedId": "pet-1295",
+      "meaning": "n. 票；此处指火车票",
+      "ipa": "US /ˈtɪkət/",
+      "audio": "packs/pet-2024/1.0.0/audio/ticket.wav"
+    },
+    "price": {
+      "relatedId": "pet-1218",
+      "meaning": "n. 价格；价钱",
+      "ipa": "US /praɪs/",
+      "audio": "packs/pet-2024/1.0.0/audio/price.wav"
+    }
+  },
+  "englishTitle": "The Receipt in the Pocket",
+  "author": "小小单词卡",
+  "attribution": "PET 口袋绘本系列原创短篇 · 第三篇",
+  "intro": "两件一模一样的大衣，两张收据。梅得把大衣还对人，还得替一位爸爸保住生日礼物的秘密。",
+  "source": "https://github.com/chenhanlin1985-cell/metalio-wordcard",
+  "chapters": [
+    {
+      "title": "谁抓住了袖子？",
+      "en": "The [[concert]] was over. As the [[music]] faded, a [[customer]] reached for his coat. May’s neighbour was holding the same [[sleeve]].",
+      "zh": "音乐会散场，音乐声渐渐消失。一位顾客伸手去拿大衣，梅的邻居正抓着同一只袖子。",
+      "words": [
+        {
+          "term": "concert",
+          "gloss": "音乐会",
+          "distractors": [
+            "排练",
+            "乐队",
+            "演讲"
+          ]
+        },
+        {
+          "term": "music",
+          "gloss": "音乐",
+          "distractors": [
+            "歌词",
+            "乐谱",
+            "掌声"
+          ]
+        },
+        {
+          "term": "customer",
+          "gloss": "顾客",
+          "distractors": [
+            "店主",
+            "送货员",
+            "售票员"
+          ]
+        },
+        {
+          "term": "sleeve",
+          "gloss": "袖子",
+          "distractors": [
+            "口袋",
+            "领口",
+            "下摆"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "两件一模一样的大衣",
+      "en": "May found a second [[coat]]. Both were made of [[wool]]. She checked the [[label]] inside each one. Even the [[size]] was the same.",
+      "zh": "梅又找到一件大衣。两件都是羊毛做的。她翻看衣服里面的标签，连尺码也一样。",
+      "words": [
+        {
+          "term": "coat",
+          "gloss": "大衣",
+          "distractors": [
+            "围巾",
+            "衬衫",
+            "背心"
+          ]
+        },
+        {
+          "term": "wool",
+          "gloss": "羊毛",
+          "distractors": [
+            "棉花",
+            "丝绸",
+            "皮革"
+          ]
+        },
+        {
+          "term": "label",
+          "gloss": "衣物标签",
+          "distractors": [
+            "拉链",
+            "衣架",
+            "纽扣"
+          ]
+        },
+        {
+          "term": "size",
+          "gloss": "尺码",
+          "distractors": [
+            "款式",
+            "颜色",
+            "重量"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "口袋里藏着什么？",
+      "en": "The [[shop assistant]] pointed to the pockets. May found a [[receipt]] in each. The man hugged his [[parcel]]. Inside was a present for his daughter’s [[birthday]].",
+      "zh": "店员指了指衣袋。梅从两个口袋里各翻出一张收据。男人抱紧包裹，里面是给女儿的生日礼物。",
+      "words": [
+        {
+          "term": "shop assistant",
+          "gloss": "店员",
+          "distractors": [
+            "顾客",
+            "保安",
+            "送货员"
+          ]
+        },
+        {
+          "term": "receipt",
+          "gloss": "收据",
+          "distractors": [
+            "购物清单",
+            "价目表",
+            "保修卡"
+          ]
+        },
+        {
+          "term": "parcel",
+          "gloss": "包裹",
+          "distractors": [
+            "衣袋",
+            "柜台",
+            "货架"
+          ]
+        },
+        {
+          "term": "birthday",
+          "gloss": "生日",
+          "distractors": [
+            "纪念日",
+            "假期",
+            "周末"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "十二英镑能看出什么？",
+      "en": "The [[date]] on both receipts was the same. Both gifts [[cost]] twelve pounds. The man paid in [[cash]]. He gave twenty pounds and got eight pounds in [[change]].",
+      "zh": "两张收据上的日期相同。两件礼物都花了十二英镑。男人用现金付了二十英镑，找回八英镑。",
+      "words": [
+        {
+          "term": "date",
+          "gloss": "日期",
+          "distractors": [
+            "地点",
+            "金额",
+            "编号"
+          ]
+        },
+        {
+          "term": "cost",
+          "gloss": "价钱为",
+          "distractors": [
+            "重达",
+            "节省",
+            "赚得"
+          ]
+        },
+        {
+          "term": "cash",
+          "gloss": "现金",
+          "distractors": [
+            "支票",
+            "代金券",
+            "积分"
+          ]
+        },
+        {
+          "term": "change",
+          "gloss": "找回的零钱",
+          "distractors": [
+            "付的小费",
+            "打折省的钱",
+            "交的押金"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "是谁的大衣？",
+      "en": "May’s neighbour opened her [[purse]] and showed her [[credit card]]. Now May could [[return]] the other coat to the man. His parcel went BOOM. His daughter knew which [[instrument]] was inside!",
+      "zh": "邻居打开小钱包，亮出信用卡。梅终于能把另一件大衣还给男人了。包裹咚地响了一声，女儿猜到了里面是哪种乐器！",
+      "words": [
+        {
+          "term": "purse",
+          "gloss": "小钱包",
+          "distractors": [
+            "背包",
+            "手套",
+            "文件夹"
+          ]
+        },
+        {
+          "term": "credit card",
+          "gloss": "信用卡",
+          "distractors": [
+            "会员卡",
+            "礼品卡",
+            "交通卡"
+          ]
+        },
+        {
+          "term": "return",
+          "gloss": "归还",
+          "distractors": [
+            "借走",
+            "试穿",
+            "折叠"
+          ]
+        },
+        {
+          "term": "instrument",
+          "gloss": "乐器",
+          "distractors": [
+            "曲目",
+            "鼓点",
+            "节拍"
+          ]
+        }
+      ]
+    }
+  ],
+  "album": [
+    {
+      "en": "After a [[concert]] in the [[music]] shop, May's [[neighbour]] reached for her [[coat]]. Another [[customer]] caught the same [[sleeve]]. “Hang on,” he said. “I think that's mine.”",
+      "zh": "乐器店里的音乐会散场了。梅的邻居伸手去拿大衣，另一位顾客也抓住了那只袖子。“等等，”他说，“这件好像是我的。”",
+      "image": 0
+    },
+    {
+      "en": "The [[shop assistant]] lifted a second [[coat]] off the hook. Same thick [[wool]]. Same big buttons. May checked the [[label]] inside each one. Even the [[size]] was the same.",
+      "zh": "店员从挂钩上取下第二件大衣。一样厚实的羊毛，一样的大纽扣。梅看了看两件衣服里面的标签，连尺码都一样。",
+      "image": 1
+    },
+    {
+      "en": "In each [[pocket]] May found a [[receipt]]. The man hugged his [[parcel]]. “Mine says what I bought for my daughter's [[birthday]],” he whispered. Behind him, a little girl stood on tiptoe.",
+      "zh": "梅在两个口袋里各找到一张收据。男人抱紧包裹，小声说：“我的那张上写着我给女儿买的生日礼物。”他身后，一个小女孩正踮着脚尖看。",
+      "image": 2
+    },
+    {
+      "en": "May kept each slip on its [[coat]] and hid the names of the items with her train [[ticket]]. Same [[date]]. Same [[price]]. Both items [[cost]] twelve pounds. Now what?",
+      "zh": "梅把两张收据各留在各自的大衣上，再用火车票遮住商品名。日期相同，价钱也一样。两样东西都花了十二英镑。这下怎么办？",
+      "image": 3
+    },
+    {
+      "en": "“[[Cash]] or [[credit card]]?” May asked. Her [[neighbour]] pulled a card from her [[purse]]. “I gave them twenty pounds,” said the man. Only one [[receipt]] showed eight pounds in [[change]].",
+      "zh": "“付现金还是刷信用卡？”梅问。邻居从钱包里抽出卡。男人说：“我给了他们二十英镑。”只有一张收据上写着找零八英镑。",
+      "image": 4
+    },
+    {
+      "en": "May picked up the [[coat]] with the [[cash]] [[receipt]] to [[return]] it to the man. His [[parcel]] bumped the door. BOOM! “I know which [[instrument]] you bought!” His daughter drummed on her knees.",
+      "zh": "梅拿起装着现金小票的那件大衣，递还给那位爸爸。他手里的包裹碰到了门。咚！“我知道你买的是什么乐器啦！”女儿说着，用两只手在膝盖上敲起鼓来。",
+      "image": 5
+    }
+  ]
+}

@@ -6,9 +6,20 @@
 namespace wordcard {
 // A question's identity excludes selection, feedback and typed letters. A
 // changed identity replaces the text body; don't carry dirty ink across it.
-enum class StudyRefreshReason { None, Question, Summary };
+enum class StudyRefreshReason { None, Question, Summary, Journey };
 inline StudyRefreshReason study_refresh_reason(std::string_view before,std::string_view after,unsigned debt){
  if(before==after)return StudyRefreshReason::None;
+ // Native page keys use a vocabulary: prefix, not the legacy pipe format.
+ // Replacing a stamp/art page needs one GC16 even immediately after boot
+ // (zero debt). Same-page speech/status updates and typing retain the budget.
+ constexpr std::string_view prefix="vocabulary:";
+ if(after.substr(0,prefix.size())==prefix){
+  const auto rest=after.substr(prefix.size());const auto end=rest.find(':');
+  const auto route=rest.substr(0,end);
+  if(route=="home"||route=="collection"||route=="stamp"||route=="gallery"||route=="word")
+   return StudyRefreshReason::Journey;
+  return StudyRefreshReason::None;
+ }
  auto parts=[](std::string_view key){std::array<std::string_view,11> out{};for(auto &p:out){const auto n=key.find('|');p=key.substr(0,n);if(n==std::string_view::npos)break;key.remove_prefix(n+1);}return out;};
  const auto old=parts(before),now=parts(after);
  const auto summary=[](std::string_view r){return r=="word-result"||r=="focus-summary"||r=="summary";};

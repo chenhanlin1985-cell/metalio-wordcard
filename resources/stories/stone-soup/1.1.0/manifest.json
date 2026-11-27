@@ -1,0 +1,14 @@
+{
+  "format": "wordcard-pack",
+  "schema": 3,
+  "type": "story",
+  "id": "stone-soup",
+  "version": "1.1.0",
+  "title": "石头汤",
+  "requires": "pet-2024@1.0.0",
+  "files": {
+    "content.json": "16e27925a523b46308937bde816304ca4b57de4cc36dd3e9b7cfe5d33d34033f",
+    "pages.wpix": "c256bc225f1ae78a282f37995c3ea3833c0ec279ec9d6e4518ef0bc4e2b0d519"
+  },
+  "storyType": "vocabulary"
+}

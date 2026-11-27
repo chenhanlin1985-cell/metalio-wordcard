@@ -4,6 +4,10 @@
 
 namespace wordcard {
 struct KeyboardKey { Rect rect; Event event; };
+// The keyboard touch worker and the displayed header must use identical hit boxes.
+inline constexpr Rect study_keyboard_dictionary{216,12,172,96};
+inline constexpr Rect study_keyboard_words{396,12,132,96};
+inline constexpr Rect study_keyboard_settings{536,12,124,96};
 inline Rect dictionary_keyboard_cell(int slot) {
     if(slot<0||slot>=30)return {0,0,0,0};
     if(slot<10)return {2+slot*68,784,68,100};
@@ -34,8 +38,10 @@ inline KeyboardKey dictionary_keyboard_hit(int x,int y,bool shift,bool symbols,b
     }else if(recall&&Rect{24,650,636,88}.contains(x,y))return {{24,650,636,88},{Action::RecallSkip}};
     const int backWidth=compactStudy||nativeSearch?184:120;
     if(Rect{24,12,backWidth,96}.contains(x,y))return {{24,12,backWidth,96},{Action::Back}};
-    if(nativeSearch&&Rect{224,12,228,96}.contains(x,y))return {{224,12,228,96},{Action::Dictionary}};
-    if(Rect{476,12,184,96}.contains(x,y))return {{476,12,184,96},{Action::Vocabulary}};
+    if(nativeSearch&&study_keyboard_dictionary.contains(x,y))return {study_keyboard_dictionary,{Action::Dictionary}};
+    if((compactStudy||nativeSearch)&&study_keyboard_settings.contains(x,y))return {study_keyboard_settings,{Action::DeviceMenu}};
+    const Rect words=(compactStudy||nativeSearch)?study_keyboard_words:Rect{476,12,184,96};
+    if(words.contains(x,y))return {words,{Action::Vocabulary}};
     for(int i=0;!compactStudy&&i<recent_count&&i<2;++i)if((recent_enabled&(1u<<i))&&Rect{24,398+i*108,636,88}.contains(x,y))return {{24,398+i*108,636,88},{Action::DictionaryRecent,i}};
     if(!compactStudy&&!recall&&recent_count>2&&(recent_enabled&4)&&Rect{24,650,636,88}.contains(x,y))return {{24,650,636,88},{Action::DictionaryRecent,2}};
     if(search_enabled && Rect{516,1084,168,100}.contains(x,y))return {{516,1084,168,100},{Action::DictionarySearch}};

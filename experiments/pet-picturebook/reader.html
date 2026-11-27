@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>石头汤 · PET 口袋绘本</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#e5e2da;color:#171713;font-family:"Microsoft YaHei",system-ui,sans-serif;display:grid;min-height:100svh;place-items:center}main{width:min(100%,56.25svh,560px);aspect-ratio:9/16;background:#fff;container-type:inline-size;display:flex;flex-direction:column;box-shadow:0 4px 32px #403a301c}header,footer{padding:3.4cqw 5.5cqw;flex:none}header{border-bottom:1px solid;display:flex;justify-content:space-between;align-items:center;font-size:3.4cqw;letter-spacing:.04em}.body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 5.5cqw}h1,h2,p{margin:0}h1{font:600 8.6cqw/1.18 Georgia,"KaiTi","STKaiti",serif;letter-spacing:-.04em}.heading{display:flex;justify-content:space-between;align-items:baseline;padding:4cqw 0 2.6cqw}.bookname{font:normal 4.8cqw/1.3 "KaiTi","STKaiti",serif}.art{width:100%;aspect-ratio:1.5;position:relative;overflow:hidden;margin-bottom:3.6cqw}.art img{position:absolute;width:200%;height:300%;max-width:none;display:block}.story{font:normal 5.2cqw/1.36 Georgia,"Times New Roman",serif}.chinese{font:normal 4.9cqw/1.60 "KaiTi","STKaiti","Microsoft YaHei",serif}.word{font:inherit;color:inherit;background:none;border:0;border-radius:0;min-height:0;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:#8b8983;text-underline-offset:.16em;padding:0;display:inline;white-space:nowrap}.word:hover,.word:focus-visible{background:#eee}.story,.chinese{padding-bottom:1cqw}footer{display:flex;gap:2.3cqw;border-top:1px solid;margin-top:1.8cqw}button,input{font-family:inherit}button{cursor:pointer;color:inherit;background:#fff;border:1.5px solid #262620;font-size:4cqw;font-weight:600;min-height:11cqw;border-radius:1.1cqw;padding:0 2.8cqw;white-space:nowrap}button:focus-visible,input:focus-visible{outline:3px solid #67675e;outline-offset:2px}button:disabled{opacity:.35;cursor:default}footer button{flex:1}footer button:last-child,.primary{border-width:2px;background:#f1f0eb}h2{font-size:7.1cqw;line-height:1.25}.panel{padding:6cqw 0 3cqw}.hint{font-size:4cqw;line-height:1.55;color:#46463e;margin:2.6cqw 0}.cue{font-size:5.6cqw;line-height:1.55;margin:5cqw 0}.stack{display:grid;gap:2.5cqw;margin:3cqw 0}.stack button{width:100%;text-align:left}.choice{font:normal 6cqw/1.25 Georgia,serif}.result{font-weight:bold;font-size:4.6cqw;margin:4cqw 0}.missing{font:normal 8cqw/1.4 Georgia,serif;letter-spacing:.06em}.answer{width:100%;padding:2cqw;font-size:5cqw;border:1.5px solid;margin-top:3cqw}.chip{padding:.35em .6em;border:1px solid;font:normal 4.2cqw Georgia,serif}.chips{display:flex;flex-wrap:wrap;gap:1.3cqw;margin:2cqw 0 4cqw}dialog{width:min(87vw,49svh,475px);max-height:80svh;padding:min(5vw,2.5svh);border:2px solid;color:#171713}dialog::backdrop{background:#2227}dialog h2{font:600 clamp(24px,4.2svh,40px)/1.2 Georgia,"KaiTi",serif}dialog p{font-size:clamp(16px,2.6svh,22px);line-height:1.6;margin:10px 0}dialog button{min-height:44px;font-size:17px;padding:4px 20px}dialog .actions{display:flex;justify-content:space-between;margin-top:18px}.modes button[aria-pressed=true]{border:2.5px solid;background:#eeeee9}#notice{font-size:16px}.bar{display:flex;width:100%;gap:1.2cqw;margin-top:3cqw}.bar i{height:.65cqw;background:#ddddd6;flex:1}.bar i.on{background:#272720}.feedback{border-left:3px solid;padding-left:2.8cqw;margin-top:4cqw}.feedback b{font:600 6cqw Georgia,serif}.small{font-size:3.7cqw}.pos{font-size:3.8cqw} @media(max-aspect-ratio:9/16){main{width:100%;min-height:min(100svh,178vw)}}
+</style>
+<main aria-label="PET 绘本阅读器"><header><b id="brand">PET 口袋绘本</b><span id="position"></span></header><div class="body" id="body"></div><footer id="footer"></footer></main>
+<dialog id="lookup"><h2 id="lemma"></h2><p id="gloss"></p><p id="ipa"></p><p id="notice" role="status"></p><div class="actions"><button id="sound">听发音</button><button id="close">返回</button></div></dialog>
+<script type="application/json" id="book">__BOOK__</script>
+<script>
+'use strict';
+const book=JSON.parse(document.querySelector('#book').textContent), $=id=>document.getElementById(id);
+const plate=new Image();plate.src=book.plate;
+const terms=Object.fromEntries(book.terms.map(t=>[t.word,t]));
+const order=['pocket','boil','ordinary','spoon','curious','saucepan','slice','stone','neighbour','taste','square','salt','onion','recipe','fire','delicious','carrot','bowl','soup','hungry'];
+const key='metalio.picturebook.stone-soup.v1', defaults={page:0,view:'read',seen:[],mode:'简单',quiz:0,phase:'ask',trials:{},round:order,retry:false,zh:false,draft:''};
+let s=structuredClone(defaults);try{const x=JSON.parse(localStorage.getItem(key));if(x&&Array.isArray(x.round)&&x.round.length&&x.round.every(w=>terms[w])&&Number.isInteger(x.page)&&book.scenes[x.page]&&['read','end','quiz','group','done'].includes(x.view))Object.assign(s,x)}catch{}
+const save=()=>{try{localStorage.setItem(key,JSON.stringify(s))}catch{}};
+const node=(tag,txt='',cls='')=>{const n=document.createElement(tag);if(txt)n.textContent=txt;if(cls)n.className=cls;return n};
+function button(txt,fn,cls=''){const b=node('button',txt,cls);b.type='button';b.onclick=fn;return b}
+function foot(txt,fn,disabled=false){const b=button(txt,fn);b.disabled=disabled;$('footer').append(b)}
+function head(right){$('position').textContent=right}
+function show(view){s.view=view;save();render()}
+function go(page){s.page=page;s.zh=false;show('read')}
+let audio=null;
+function stop(){if(audio){audio.pause();audio=null}}
+function lookup(t){stop();$('lemma').textContent=t.word;$('gloss').textContent=t.meaning;$('ipa').textContent=t.ipa;$('notice').textContent='';$('lookup').showModal();$('sound').onclick=()=>{stop();audio=new Audio(t.audio);audio.play().catch(()=>$('notice').textContent='播放失败，请再点一次。')}}
+$('close').onclick=()=>$('lookup').close();$('lookup').onclose=stop;
+function reading(body){
+ const scene=book.scenes[s.page];if(!s.seen.includes(s.page)){s.seen.push(s.page);save()}
+ head('第 '+(s.page+1)+' / 6 页');
+ const title=node('div','','heading');title.append(node('h1','Stone Soup'),node('span','石头汤','bookname'));body.append(title);
+ const art=node('div','','art');plate.alt=scene.alt;plate.style.left=(-100*(s.page%2))+'%';plate.style.top=(-100*Math.floor(s.page/2))+'%';art.append(plate);body.append(art);
+ const p=node('p','',s.zh?'chinese':'story');p.lang=s.zh?'zh-CN':'en';
+ if(s.zh)p.textContent=scene.zh;else for(const text of scene.en.split(/([A-Za-z]+(?:['’][A-Za-z]+)*)/)){const t=terms[text.toLowerCase()];p.append(t?button(text,()=>lookup(t),'word'):document.createTextNode(text))}
+ body.append(p);foot('上一页',()=>go(s.page-1),s.page===0);foot(s.zh?'英文':'中文',()=>{s.zh=!s.zh;save();render()});foot(s.page===5?'读完':'下一页',()=>s.page===5?show('end'):go(s.page+1));
+}
+function retryRound(bad){const recent=s.round.slice(-3);const ready=bad.filter(w=>!recent.includes(w));const later=bad.filter(w=>recent.includes(w));const fillers=order.filter(w=>!bad.includes(w)&&!recent.includes(w));return [...ready,...(later.length?fillers.slice(0,Math.max(0,3-ready.length)):[]),...later]}
+function firstPass(){return order.filter(w=>s.trials[w]?.length)}
+function misses(){return order.filter(w=>s.trials[w]?.at(-1)===false)}
+function end(body){head('全书 · 6 页');body.append(node('div','全书读完','hint'),node('h2','石头留下了。'),node('p','故事里有 20 个重点词。凭记得的画面想英文，每次 5 个。','cue'));
+ const p=node('p','选择本轮练法','hint');body.append(p);const modes=node('div','','stack modes');
+ for(const [m,subtitle] of [['简单','选出英文'],['普通','补两个字母'],['困难','拼出整词']]){const b=button(m+'　'+subtitle,()=>{s.mode=m;save();render()});b.setAttribute('aria-pressed',String(s.mode===m));modes.append(b)}body.append(modes);
+ foot('重读',()=>go(0));foot(s.quiz<s.round.length&&firstPass().length?'继续练':firstPass().length?'看记录':'练五词',()=>{if(s.quiz<s.round.length)show('quiz');else show('done')});
+}
+function holes(w){return [1,w.length-2].map((n,i)=>i===1&&n===1?2:n)}
+function chars(w){return holes(w).map(i=>w[i]).join('')}
+function check(v,t){if(s.phase!=='ask')return;const target=s.mode==='普通'?chars(t.word):t.word,yes=v.trim().toLowerCase()===target;s.phase=yes?'yes':'no';(s.trials[t.word]??=[]).push(yes);s.draft='';save();render()}
+function next(){s.quiz++;s.phase='ask';s.draft='';show(s.quiz>=s.round.length?'done':s.quiz%5===0?'group':'quiz')}
+function quiz(body){
+ const t=terms[s.round[s.quiz]];if(!t)return show('done');head((s.retry?'再练':'回想')+' · '+(s.quiz+1)+' / '+s.round.length);body.append(node('div',s.mode+'模式','hint'),node('h2','想起哪个词？'),node('p',t.cue,'cue'));
+ if(s.phase==='ask'){
+  if(s.mode==='简单'){const words=t.others.slice();words.splice((order.indexOf(t.word)*7+1)%3,0,t.word);const opts=node('div','','stack');for(const w of words)opts.append(button(w,()=>check(w,t),'choice'));body.append(opts)}
+  else{if(s.mode==='普通')body.append(node('p',Array.from(t.word,(c,i)=>holes(t.word).includes(i)?'＿':c).join(''),'missing'));let input=node('input','','answer');input.autocapitalize='none';input.spellcheck=false;input.autocomplete='off';input.ariaLabel=input.placeholder=s.mode==='普通'?'依次填两个字母':'输入完整单词';input.value=s.draft;input.oninput=()=>{s.draft=input.value;save()};input.onkeydown=e=>{if(e.key==='Enter'&&input.value.trim())check(input.value,t)};body.append(input);foot('交答案',()=>{if(input.value.trim())check(input.value,t);else input.focus()})}
+  foot('想不起来',()=>check('',t));foot('歇一会',()=>show('end'));
+ }else{const f=node('div','','feedback');f.append(node('p',s.phase==='yes'?'答对了':'这个词是','result'),node('b',t.word),node('p',t.meaning,'hint'),button('听发音',()=>{lookup(t);$('sound').click()}));body.append(f);foot('回书末',()=>show('end'));foot('继续',next)}
+}
+function group(body){head('每组 5 词');body.append(node('div','本组结束','hint'),node('h2','歇口气。'),node('p','这一轮已经回想了 '+s.quiz+' 个词，还有 '+(s.round.length-s.quiz)+' 个。','cue'));foot('回书末',()=>show('end'));foot('下一组',()=>show('quiz'))}
+function done(body){head('本篇记录');let tried=firstPass(),bad=misses();const firstOK=tried.filter(w=>s.trials[w][0]).length;body.append(node('div','石头汤','hint'),node('h2','这一锅，收工。'),node('p','已翻看 '+s.seen.length+' / 6 页，已练 '+tried.length+' / 20 词。首次答对 '+firstOK+' 个。','cue'),node('p',bad.length?'还想再练的词':'本轮没有待重练的词。','hint'));if(bad.length){const list=node('div','','chips');for(const w of bad)list.append(node('span',w,'chip'));body.append(list)}
+ foot('重读',()=>go(0));foot(bad.length?'练错词':'再练一轮',()=>{s.round=bad.length?retryRound(bad):order;s.quiz=0;s.phase='ask';s.draft='';s.retry=!!bad.length;show('quiz')});
+}
+function render(){const body=$('body');body.replaceChildren();body.scrollTop=0;$('footer').replaceChildren();({read:reading,end,quiz,group,done}[s.view])(body)}
+render();
+</script></html>

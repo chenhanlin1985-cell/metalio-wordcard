@@ -1,0 +1,14 @@
+{
+  "format": "wordcard-pack",
+  "schema": 3,
+  "type": "story",
+  "id": "wrong-platform",
+  "version": "1.1.0",
+  "title": "错站台的票",
+  "requires": "pet-2024@1.0.0",
+  "files": {
+    "content.json": "4850478657eb52690ed6ca10d4ad2e497f8b75375e7fc2dd1e2821c2c5cde0c7",
+    "pages.wpix": "69fcafa662b107e6c397299bcbfe3cf1483a4d54f1b998c4449a12cedd337745"
+  },
+  "storyType": "vocabulary"
+}

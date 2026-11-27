@@ -1,0 +1,8 @@
+{
+  "name": "metalio-story-reader-tools",
+  "private": true,
+  "devDependencies": {
+    "esbuild": "0.25.12",
+    "ts-fsrs": "6.0.0"
+  }
+}

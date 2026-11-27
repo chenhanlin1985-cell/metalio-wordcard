@@ -21,7 +21,7 @@ SDK、编译器、Git、CMake/Ninja 及 SDK Python 环境需自行安装。首�
 
 入口会在任何 Python/IDF 调用前设置 `PYTHONUTF8=1`、`PYTHONIOENCODING=utf-8`，校验多语言 stdout/stderr 和子进程继承。失败即停止；不能因目录里还有旧 BIN 就视为成功。有效配置来自随源码提交的 `firmware/sdkconfig.defaults`，可变的 sdkconfig 写在构建目录。
 
-成功产物在 `build/`：`metalio_wordcard.bin`、`bootloader/bootloader.bin`、`partition_table/partition-table.bin` 和 `flasher_args.json`。仓库不提交这些文件。编译不需要 SD 模型、音频或字库，实际使用需要，见 [资源文档](RESOURCES.md)。内部 CMake 项目版本仍为 0.3.5，功能基线按 fix55h-recovery 标识。
+成功产物在 `build/`：`metalio_wordcard.bin`、`bootloader/bootloader.bin`、`partition_table/partition-table.bin` 和 `flasher_args.json`。仓库不提交这些文件。编译不需要 SD 模型、音频或字库，实际使用需要，见 [资源文档](RESOURCES.md)。内部 CMake 项目版本仍为 0.3.5，功能基线按 fix65-card-examples 标识。
 
 ## 主机检查
 
@@ -52,3 +52,21 @@ node tools/web_firmware_bundle.cjs
 关机图源文件在 `assets/shutdown/`。如需重新编码，先安装 Pillow，再用 UTF-8 环境运行 `tools/shutdown_asset.py`。该步骤不属于普通编译的前置条件。其他内置兼容词表和波形表已作为 C/C++ 输入提交；大容量词库制作与模型转换材料随外部资源包另行提供。
 
 构建工具参考：[ESP-IDF 官方仓库](https://github.com/espressif/esp-idf)。更换 SDK、USB 组件或屏幕波形后须重新验证硬件；本次公开整理的检查范围见 [VALIDATION.md](VALIDATION.md)。
+
+## 验证故事与构词资源
+
+`resources/stories/` 收录本版发布的六本故事。运行 `python tools/build_word_formation.py --check` 可核对构词表和固件索引。在 Windows PowerShell 中请先执行以下两行。
+
+```powershell
+$env:PYTHONUTF8='1'
+$env:PYTHONIOENCODING='utf-8'
+```
+
+安装完整资源到测试卡后，可运行故事回归。以下示例假设卡的盘符为 F，完整安装包已解压到 D:\S31。主机预览使用包内的两个字库。需要 Node.js、esbuild 0.25.12、Python 和上述 Visual Studio 工具。
+
+```powershell
+Copy-Item 'D:\S31\01-firmware\font.fontpack' .\assets\
+Copy-Item 'F:\metalio\e-ink\wordcards\vocabulary\learning-kaishu-v3.fontpack' .\assets\
+npm ci --prefix experiments/pet-voyage
+.\tools\test-story-reader.ps1 -Library F:\metalio\e-ink\wordcards\packs -Catalog F:\metalio\e-ink\wordcards\vocabulary
+```

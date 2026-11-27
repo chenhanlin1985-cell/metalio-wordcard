@@ -1,0 +1,357 @@
+{
+  "art": "pages.wpix",
+  "terms": {
+    "station": {
+      "id": "pet-1143",
+      "meaning": "n. 车站"
+    },
+    "platform": {
+      "id": "pet-1614",
+      "meaning": "n. 站台"
+    },
+    "boat": {
+      "id": "pet-1545",
+      "meaning": "n. 船；小船"
+    },
+    "wet": {
+      "id": "pet-1716",
+      "meaning": "adj. 湿的"
+    },
+    "ticket": {
+      "id": "pet-1295",
+      "meaning": "n. 票；车票"
+    },
+    "fare": {
+      "id": "pet-1675",
+      "meaning": "n. 车费；票价"
+    },
+    "drawing": {
+      "id": "pet-0348",
+      "meaning": "n. 图画"
+    },
+    "delay": {
+      "id": "pet-1592",
+      "meaning": "n. 延误；晚点"
+    },
+    "announcement": {
+      "id": "pet-1537",
+      "meaning": "n. 广播通知"
+    },
+    "train": {
+      "id": "pet-1611",
+      "meaning": "n. 火车"
+    },
+    "harbour": {
+      "id": "pet-1593",
+      "meaning": "n. 港口"
+    },
+    "bridge": {
+      "id": "pet-1547",
+      "meaning": "n. 桥；此处指天桥"
+    },
+    "passenger": {
+      "id": "pet-1590",
+      "meaning": "n. 乘客"
+    },
+    "suitcase": {
+      "id": "pet-1564",
+      "meaning": "n. 行李箱"
+    },
+    "confused": {
+      "id": "pet-0972",
+      "meaning": "adj. 困惑的"
+    },
+    "finger": {
+      "id": "pet-0621",
+      "meaning": "n. 手指"
+    },
+    "price": {
+      "id": "pet-1218",
+      "meaning": "n. 价格；标价"
+    },
+    "window": {
+      "id": "pet-1678",
+      "meaning": "n. 窗；此处指车窗"
+    },
+    "fold": {
+      "id": "pet-0073",
+      "meaning": "v. 折叠"
+    },
+    "captain": {
+      "id": "pet-1806",
+      "meaning": "n. 船长"
+    },
+    "neighbour": {
+      "relatedId": "pet-0809",
+      "meaning": "n. 邻居",
+      "ipa": "US /ˈneɪbɚ/",
+      "audio": "packs/pet-2024/1.0.0/audio/neighbour.wav"
+    },
+    "curious": {
+      "relatedId": "pet-0989",
+      "meaning": "adj. 好奇的",
+      "ipa": "US /ˈkjʊriəs/",
+      "audio": "packs/pet-2024/1.0.0/audio/curious.wav"
+    },
+    "pocket": {
+      "relatedId": "pet-0011",
+      "meaning": "n. 口袋",
+      "ipa": "US /ˈpɑːkət/",
+      "audio": "packs/pet-2024/1.0.0/audio/pocket.wav"
+    }
+  },
+  "englishTitle": "The Ticket on Platform Two",
+  "author": "小小单词卡",
+  "attribution": "PET 口袋绘本系列原创短篇 · 第二篇",
+  "intro": "二号站台的水洼里漂来一只纸船。梅捞起来一看，有个人恐怕要赶不上车了。",
+  "source": "https://github.com/chenhanlin1985-cell/metalio-wordcard",
+  "chapters": [
+    {
+      "title": "站台上的纸船",
+      "en": "May waited at the [[station]]. A paper [[boat]] sailed across [[platform]] two and bumped her shoe. She bent down and got her sleeves [[wet]].",
+      "zh": "梅在车站等车。一只纸船漂过二号站台，碰了碰她的鞋。她弯下腰，弄湿了袖口。",
+      "words": [
+        {
+          "term": "station",
+          "gloss": "车站",
+          "distractors": [
+            "机场",
+            "码头",
+            "停车场"
+          ]
+        },
+        {
+          "term": "boat",
+          "gloss": "小船",
+          "distractors": [
+            "纸飞机",
+            "木筏",
+            "车厢"
+          ]
+        },
+        {
+          "term": "platform",
+          "gloss": "站台",
+          "distractors": [
+            "候车室",
+            "轨道",
+            "检票口"
+          ]
+        },
+        {
+          "term": "wet",
+          "gloss": "湿的",
+          "distractors": [
+            "干的",
+            "脏的",
+            "破的"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "船底藏着什么？",
+      "en": "May unfolded the paper. It was a [[ticket]]! The [[fare]] was for a child travelling to Little Bay [[Harbour]]. In the corner was a [[drawing]] of a whale.",
+      "zh": "梅把纸展开。原来是张车票！票上写的是去小湾港的儿童票价。角落里画着一只鲸鱼。",
+      "words": [
+        {
+          "term": "ticket",
+          "gloss": "车票",
+          "distractors": [
+            "收据",
+            "明信片",
+            "地图"
+          ]
+        },
+        {
+          "term": "fare",
+          "gloss": "车费",
+          "distractors": [
+            "罚款",
+            "折扣",
+            "押金"
+          ]
+        },
+        {
+          "term": "harbour",
+          "gloss": "港口",
+          "distractors": [
+            "湖泊",
+            "河岸",
+            "机场"
+          ]
+        },
+        {
+          "term": "drawing",
+          "gloss": "图画",
+          "distractors": [
+            "照片",
+            "数字",
+            "签名"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "三号站台",
+      "en": "An [[announcement]] came over the loudspeaker. “Sorry for the [[delay]]. The [[train]] to Little Bay will leave from platform three.” May ran up the [[bridge]] to look for the owner.",
+      "zh": "广播响了。“很抱歉列车晚点。开往小湾的火车将从三号站台发车。”梅跑上天桥，寻找车票的主人。",
+      "words": [
+        {
+          "term": "announcement",
+          "gloss": "广播通知",
+          "distractors": [
+            "私信",
+            "邀请",
+            "广告画"
+          ]
+        },
+        {
+          "term": "delay",
+          "gloss": "延误",
+          "distractors": [
+            "取消",
+            "启程",
+            "换乘"
+          ]
+        },
+        {
+          "term": "train",
+          "gloss": "火车",
+          "distractors": [
+            "公交车",
+            "渡船",
+            "卡车"
+          ]
+        },
+        {
+          "term": "bridge",
+          "gloss": "天桥",
+          "distractors": [
+            "隧道",
+            "楼梯",
+            "站台"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "没有尾巴的鲸鱼",
+      "en": "A young [[passenger]] stood beside a [[suitcase]]. His father looked [[confused]]. May put one [[finger]] over the whale. “What was on your ticket?” “A whale with no tail!”",
+      "zh": "一个小乘客站在行李箱旁。他爸爸一脸困惑。梅用一根手指盖住鲸鱼。“你车票上画的是什么？”“一条没尾巴的鲸鱼！”",
+      "words": [
+        {
+          "term": "passenger",
+          "gloss": "乘客",
+          "distractors": [
+            "司机",
+            "售票员",
+            "检修工"
+          ]
+        },
+        {
+          "term": "suitcase",
+          "gloss": "行李箱",
+          "distractors": [
+            "包裹",
+            "背包",
+            "钱包"
+          ]
+        },
+        {
+          "term": "confused",
+          "gloss": "困惑的",
+          "distractors": [
+            "生气的",
+            "放心的",
+            "自豪的"
+          ]
+        },
+        {
+          "term": "finger",
+          "gloss": "手指",
+          "distractors": [
+            "手腕",
+            "手掌",
+            "手肘"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "船长上车了",
+      "en": "“There was no room for a tail under the [[price]]!” May gave him the ticket. He took a seat by the [[window]]. “Will you [[fold]] it again, [[Captain]]?” “Today my boat is taking the train!”",
+      "zh": "“标价下面没地方画尾巴了！”梅把车票还给他。他在窗边坐下。“船长，你还要把它折起来吗？”“今天我的船要坐火车啦！”",
+      "words": [
+        {
+          "term": "price",
+          "gloss": "价格",
+          "distractors": [
+            "日期",
+            "座号",
+            "时间"
+          ]
+        },
+        {
+          "term": "window",
+          "gloss": "车窗",
+          "distractors": [
+            "车门",
+            "过道",
+            "行李架"
+          ]
+        },
+        {
+          "term": "fold",
+          "gloss": "折叠",
+          "distractors": [
+            "剪开",
+            "撕碎",
+            "展开"
+          ]
+        },
+        {
+          "term": "captain",
+          "gloss": "船长",
+          "distractors": [
+            "船员",
+            "乘务员",
+            "站长"
+          ]
+        }
+      ]
+    }
+  ],
+  "album": [
+    {
+      "en": "At the [[station]], May and her [[neighbour]] waited on [[platform]] two. A paper [[boat]] bumped her shoe. She fished it out of a puddle and got her sleeves [[wet]].",
+      "zh": "梅和邻居在车站的二号站台等车。一只纸船碰了碰她的鞋。她伸手把船从水洼里捞出来，袖口也湿了。",
+      "image": 0
+    },
+    {
+      "en": "[[Curious]], May opened up the [[boat]]. It was a [[ticket]]! Someone had paid a child's [[fare]] to Little Bay. In one corner was a tiny [[drawing]]. May smiled.",
+      "zh": "梅觉得好奇，就把纸船展开了。原来是张车票！去小湾镇的，买的是儿童票。票角上还有一幅小画。梅看了直笑。",
+      "image": 1
+    },
+    {
+      "en": "“Sorry for the [[delay]],” came an [[announcement]]. “The [[train]] to Little Bay [[Harbour]] will now leave from [[platform]] three.” Off went the crowd. May took the little [[ticket]] with her.",
+      "zh": "“列车晚点了，很抱歉。”站内广播响起来，“开往小湾港的列车改在三号站台发车。”人群动了起来。梅带上那张小车票，跟了过去。",
+      "image": 2
+    },
+    {
+      "en": "From the [[bridge]], May spotted a small [[passenger]] beside a [[suitcase]]. He was turning his [[pocket]] inside out. His dad looked [[confused]]. “But how can a [[ticket]] sail away?”",
+      "zh": "梅从天桥上望下去，看见一个小乘客站在行李箱旁，把口袋都翻了出来。他爸爸一脸困惑。“可车票怎么会漂走呢？”",
+      "image": 3
+    },
+    {
+      "en": "May hurried down. She put her [[finger]] over the [[drawing]]. “What's on your [[ticket]]?” “A whale with no tail! There wasn't room under the [[price]].” May lifted her [[finger]]. Exactly!",
+      "zh": "梅赶紧跑下桥，用手指盖住那幅画。“你的票上画着什么？”“一条没尾巴的鲸鱼！价钱底下那点地方，画不下了。”梅抬起手指。还真是！",
+      "image": 4
+    },
+    {
+      "en": "May gave it back. The boy took a seat by the [[window]]. “Going to [[fold]] it again, [[Captain]]?” May called. He slipped it into his [[pocket]]. “Today my [[boat]]'s taking the [[train]]!”",
+      "zh": "梅把票还给他。男孩上车，坐到了窗边。“船长，还要把它折起来吗？”梅喊道。男孩把票揣进口袋。“今天，我的船坐火车！”",
+      "image": 5
+    }
+  ]
+}

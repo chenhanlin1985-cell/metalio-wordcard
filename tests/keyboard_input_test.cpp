@@ -72,14 +72,16 @@ int main(){try {
     check(!web_keyboard_state(nativePage).nativeSearch,"non-keyboard search cannot select native header capture");
     for(int y:{12,60,107}){
         for(int x:{24,120,207})check(dictionary_keyboard_hit(x,y,false,false,true,2,false,3,false,true).event.action==Action::Back,"native search captures full contextual return button");
-        for(int x:{224,338,451})check(dictionary_keyboard_hit(x,y,false,false,true,2,false,3,false,true).event.action==Action::Dictionary,"native search captures full complete-dictionary button");
-        for(int x:{476,568,659})check(dictionary_keyboard_hit(x,y,false,false,true,2,false,3,false,true).event.action==Action::Vocabulary,"native search notebook capture matches renderer");
+        for(int x:{216,302,387})check(dictionary_keyboard_hit(x,y,false,false,true,2,false,3,false,true).event.action==Action::Dictionary,"native search captures full complete-dictionary button");
+        for(int x:{396,462,527})check(dictionary_keyboard_hit(x,y,false,false,true,2,false,3,false,true).event.action==Action::Vocabulary,"native search notebook capture matches renderer");
+        for(int x:{536,598,659})for(bool search:{false,true})
+            check(dictionary_keyboard_hit(x,y,false,false,true,2,!search,3,!search,search).event.action==Action::DeviceMenu,"settings hit area on both native input screens");
     }
-    for(int x:{208,220,452,464})
+    for(int x:{208,215,388,395,528,535})
         check(dictionary_keyboard_hit(x,60,false,false,true,2,false,3,false,true).event.action==Action::None,"native search header gutters have no hidden control");
     check(dictionary_keyboard_hit(338,60,false,false,true,2,false,3).event.action==Action::None,"legacy search center remains title with no dictionary action");
     check(dictionary_keyboard_hit(338,60,false,false,true,1,true,1,true).event.action==Action::None,"native study center remains title with no dictionary action");
-    check(dictionary_keyboard_hit(568,60,false,false,true,1,true,1,true).event.action==Action::Vocabulary,"native study lookup tool uses existing vocabulary dispatch");
+    check(dictionary_keyboard_hit(462,60,false,false,true,1,true,1,true).event.action==Action::Vocabulary,"native study lookup tool uses existing vocabulary dispatch");
     for(int row:{0,1}){
         const auto candidate=dictionary_keyboard_hit(338,440+row*108,false,false,true,2,false,3,false,true);
         check(candidate.event.action==Action::DictionaryRecent&&candidate.event.value==row,"native search retains candidate row capture");
@@ -165,7 +167,7 @@ int main(){try {
     k.sample(true,36,834,now);check(k.publish(true,false,true,1,true,1,true),"compact shift changes layout");
     k.sample(false,36,834,now+10000);now+=20000;check(!k.pop(e),"compact mode switch discards held old-mode letter");
     tap(0);check(k.pop(e)&&e.value=='Q',"compact shifted letter keeps existing key behavior");
-    for(auto target:{std::pair<int,Action>{180,Action::Back},{338,Action::Dictionary},{568,Action::Vocabulary}}){
+    for(auto target:{std::pair<int,Action>{180,Action::Back},{338,Action::Dictionary},{462,Action::Vocabulary},{598,Action::DeviceMenu}}){
         k.deactivate();k.publish(false,false,true,2,false,3,false,true);k.sample(false,0,0,now);
         k.sample(true,target.first,60,now);k.sample(true,target.first,60,now+600000);
         check(!k.pending(),"native search header hold waits for controller release");

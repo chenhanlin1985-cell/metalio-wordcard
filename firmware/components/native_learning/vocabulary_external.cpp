@@ -64,7 +64,7 @@ std::string short_meaning(const std::string &definition) {
 }
 VJ external_word(const VJ &input) {
     require(input.is_object(), "词典词条格式无效");
-    auto id = text(input, "id", 30, true);
+    auto id = text(input, "id", 64, true);
     auto word = text(input, "word", 100, true);
     // Registration after reboot receives the canonical record, while a fresh
     // dictionary payload carries the unabridged definition in meaning.
@@ -75,8 +75,10 @@ VJ external_word(const VJ &input) {
     auto pos = text(input, "pos", 80, false);
     require(word.front() != ' ' && word.back() != ' ', "词典单词首尾含空格");
     const auto hash = external_hash(word);
-    require(id == "dict:personal:" + hash, "词典词条ID无效或与单词不符");
-    return VJ{{"id", id}, {"word", word}, {"meaning", meaning},
+    const auto source="dict:personal:"+hash;
+    const auto sense=source+"/"+external_hash(VJ::array({pos,definition}).dump());
+    require(id==source||id==sense, "词典词条ID无效或与单词不符");
+    return VJ{{"id", sense}, {"word", word}, {"meaning", meaning},
               {"dictionaryDefinition", definition}, {"ipa", ipa},
               {"pos", pos}, {"stage", "personal"}, {"lessonEligible", false},
               {"source", "full-offline-dictionary"}, {"humanVerified", false},
@@ -135,13 +137,15 @@ bool NativeVocabulary::import_word(const VJ &input) {
         const bool hadSaved = saved.is_object() && saved.contains(id);
         if (hadSaved)
             require(saved.at(id) == word, "同一生词ID的词典内容已改变，原记录保留");
-        // Match exact spelling only: IT and it are distinct dictionary words.
         std::string curated;
-        for (const auto &entry : catalog_.entries)
-            if (entry.word == spelling && !catalog_.external.contains(entry.id)) {
-                curated = entry.id;
-                break;
-            }
+        const auto definition=str(word,"dictionaryDefinition");
+        for(const auto &entry:catalog_.entries){
+            const auto full=entry.pos.empty()?entry.meaning:entry.pos+" "+entry.meaning;
+            if(entry.word!=spelling||catalog_.external.contains(entry.id)||
+               !(full==definition||(entry.meaning==definition&&entry.pos==str(word,"pos"))))continue;
+            if(!curated.empty()){curated.clear();break;}
+            curated=entry.id;
+        }
         bool ok;
         if (!curated.empty() && !hadSaved) {
             ok = commit(VJ{{"type", "notebook"}, {"id", curated}});
@@ -199,14 +203,15 @@ bool NativeVocabulary::prepare_word_list() {
             if(word.size()>96){issue("这一行过长，请检查是否混入了例句");continue;}
             if(!requested.insert(word).second)continue;
             auto find=[&](const std::string &spelling)->std::string {
-                // Retain an already saved dictionary sense before curated aliases.
-                for(const auto &id:field(state_,"notebook")) {
-                    const auto *e=catalog_.entry(str(id));if(e&&e->word==spelling)return e->id;
+                std::string matched;
+                for(const auto &e:catalog_.entries)if(e.word==spelling){
+                    if(!matched.empty())return "#ambiguous";
+                    matched=e.id;
                 }
-                for(const auto &e:catalog_.entries)if(e.word==spelling)return e.id;
-                return {};
+                return matched;
             };
             std::string id=find(word);VJ definition=nullptr;
+            if(id=="#ambiguous"){issue(word+" 有多个义项，请在词典中确认释义");continue;}
             if(id.empty()) {
                 std::string error;
                 if(!opened){if(!dictionary.open(root+"/dictionary",error))throw std::runtime_error(error);opened=true;}
@@ -217,6 +222,7 @@ bool NativeVocabulary::prepare_word_list() {
                 DictionaryEntry entry;if(!dictionary.read(matches[size_t(exact)].index,entry,error))throw std::runtime_error(error);
                 if(entry.translation.empty()){issue(word+"：词典暂无中文释义，请在词典中确认");continue;}
                 id=find(entry.word);
+                if(id=="#ambiguous"){issue(word+" 有多个义项，请在词典中确认释义");continue;}
                 if(id.empty()) {
                     const auto card=dictionary_card(entry);
                     try {

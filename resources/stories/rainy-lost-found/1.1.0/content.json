@@ -1,0 +1,71 @@
+{
+  "intro": "末班车开走了，站台上留着一只湿背包。",
+  "firstAction": "接过背包",
+  "chapters": [
+    {
+      "topic": "01",
+      "title": "末班车留下的包",
+      "intro": "雨停后，司机把一只没人认领的背包交到值班窗口。先检查外观，登记里面的东西。",
+      "token": "寄存牌",
+      "outro": "你在内袋里发现了一张写着电话号码的纸条。",
+      "words": [
+        {
+          "id": "pet-0001",
+          "en": "The passenger left a [ ] with two shoulder straps.",
+          "zh": "乘客留下了一个有两条肩带的背包。"
+        },
+        {
+          "id": "pet-0011",
+          "en": "Check the inside [ ] of the coat for a name.",
+          "zh": "检查大衣的内袋里有没有姓名。"
+        },
+        {
+          "id": "pet-0037",
+          "en": "A long wool [ ] was wrapped around the gloves.",
+          "zh": "一条长羊毛围巾裹在手套外面。"
+        }
+      ]
+    },
+    {
+      "topic": "03",
+      "title": "打给失主的电话",
+      "intro": "电话接通了。你不能直接把背包交给任何一个说自己丢了包的人。听听来电人能否说出里面有什么。",
+      "token": "领取签条",
+      "outro": "对方说出了围巾的花色。你把寄存牌和领取签条订在一起。",
+      "returns": {
+        "both": [
+          "pet-0037",
+          "The caller knew the colour of the wool [ ].",
+          "来电人知道那条羊毛围巾的颜色。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-0105",
+          "en": "Write the street and house number in the [ ] box.",
+          "zh": "在地址栏写下街道和门牌号。"
+        },
+        {
+          "id": "pet-0162",
+          "en": "Leave a [ ] if nobody answers the phone.",
+          "zh": "要是没人接电话，就留个口信。"
+        },
+        {
+          "id": "pet-0128",
+          "en": "She described a wrapped [ ] inside the bag.",
+          "zh": "她描述了包里一个包好的包裹。"
+        }
+      ]
+    }
+  ],
+  "acts": [
+    {
+      "start": 0,
+      "title": "夜班交接"
+    }
+  ],
+  "ending": [
+    "交还失物",
+    "背包交还给赶车的女孩。她从内袋里取出那张纸条，在背面写下「谢谢」。"
+  ]
+}

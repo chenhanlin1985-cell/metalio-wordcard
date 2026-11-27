@@ -1,0 +1,206 @@
+[
+  {
+    "name": "cffi",
+    "version": "2.1.1",
+    "files": 32,
+    "license": "MIT-0",
+    "requires": [
+      "pycparser; implementation_name != \"PyPy\""
+    ]
+  },
+  {
+    "name": "click",
+    "version": "8.4.2",
+    "files": 24,
+    "license": "BSD-3-Clause",
+    "requires": [
+      "colorama; platform_system == 'Windows'"
+    ]
+  },
+  {
+    "name": "colorama",
+    "version": "0.4.6",
+    "files": 18,
+    "license": null,
+    "requires": null
+  },
+  {
+    "name": "cryptography",
+    "version": "48.0.1",
+    "files": 119,
+    "license": "Apache-2.0 OR BSD-3-Clause",
+    "requires": [
+      "cffi>=2.0.0 ; platform_python_implementation != 'PyPy'",
+      "typing-extensions>=4.13.2 ; python_full_version < '3.11'",
+      "bcrypt>=3.1.5 ; extra == 'ssh'"
+    ]
+  },
+  {
+    "name": "esp-pylib",
+    "version": "1.2.0",
+    "files": 20,
+    "license": "Apache-2.0",
+    "requires": [
+      "rich",
+      "pre-commit; extra == \"dev\"",
+      "czespressif; extra == \"dev\"",
+      "websockets>=12.0; python_version >= \"3.8\" and extra == \"ide\"",
+      "pyserial>=3.3; extra == \"serial\"",
+      "rich-click<2,>=1.7; extra == \"cli\"",
+      "click<9,>=8.0; extra == \"cli\"",
+      "pytest; extra == \"test\""
+    ]
+  },
+  {
+    "name": "esptool",
+    "version": "5.6.0",
+    "files": 172,
+    "license": "GPL-2.0-or-later",
+    "requires": [
+      "cryptography>=43.0.0",
+      "pyserial>=3.3",
+      "reedsolo<1.8,>=1.5.3",
+      "PyYAML>=5.1",
+      "intelhex",
+      "rich_click<2",
+      "click<9",
+      "esp-pylib[cli,ide,serial]>=1.0.0",
+      "pyelftools; extra == \"dev\"",
+      "coverage~=6.0; extra == \"dev\"",
+      "pre-commit; extra == \"dev\"",
+      "pytest; extra == \"dev\"",
+      "pytest-rerunfailures; extra == \"dev\"",
+      "requests; extra == \"dev\"",
+      "czespressif; extra == \"dev\"",
+      "python-pkcs11; extra == \"hsm\"",
+      "esp-docs<3,>=2.1.4; extra == \"docs\"",
+      "sphinx-tabs; extra == \"docs\""
+    ]
+  },
+  {
+    "name": "intelhex",
+    "version": "2.3.0",
+    "files": 14,
+    "license": "BSD",
+    "requires": null
+  },
+  {
+    "name": "markdown-it-py",
+    "version": "4.2.0",
+    "files": 75,
+    "license": null,
+    "requires": [
+      "mdurl~=0.1",
+      "psutil ; extra == \"benchmarking\"",
+      "pytest ; extra == \"benchmarking\"",
+      "pytest-benchmark ; extra == \"benchmarking\"",
+      "commonmark~=0.9 ; extra == \"compare\"",
+      "markdown~=3.4 ; extra == \"compare\"",
+      "mistletoe~=1.0 ; extra == \"compare\"",
+      "mistune~=3.0 ; extra == \"compare\"",
+      "panflute~=2.3 ; extra == \"compare\"",
+      "markdown-it-pyrs ; extra == \"compare\"",
+      "linkify-it-py>=1,<3 ; extra == \"linkify\"",
+      "mdit-py-plugins>=0.5.0 ; extra == \"plugins\"",
+      "gprof2dot ; extra == \"profiling\"",
+      "mdit-py-plugins>=0.5.0 ; extra == \"rtd\"",
+      "myst-parser ; extra == \"rtd\"",
+      "pyyaml ; extra == \"rtd\"",
+      "sphinx ; extra == \"rtd\"",
+      "sphinx-copybutton ; extra == \"rtd\"",
+      "sphinx-design ; extra == \"rtd\"",
+      "sphinx-book-theme~=1.0 ; extra == \"rtd\"",
+      "jupyter_sphinx ; extra == \"rtd\"",
+      "ipykernel ; extra == \"rtd\"",
+      "coverage ; extra == \"testing\"",
+      "pytest ; extra == \"testing\"",
+      "pytest-cov ; extra == \"testing\"",
+      "pytest-regressions ; extra == \"testing\"",
+      "pytest-timeout ; extra == \"testing\"",
+      "requests ; extra == \"testing\""
+    ]
+  },
+  {
+    "name": "mdurl",
+    "version": "0.1.2",
+    "files": 12,
+    "license": null,
+    "requires": null
+  },
+  {
+    "name": "pycparser",
+    "version": "3.11",
+    "files": 14,
+    "license": "BSD-3-Clause",
+    "requires": null
+  },
+  {
+    "name": "pygments",
+    "version": "2.21.0",
+    "files": 350,
+    "license": "BSD-2-Clause",
+    "requires": [
+      "colorama>=0.4.6; extra == 'windows-terminal'"
+    ]
+  },
+  {
+    "name": "pyserial",
+    "version": "3.5",
+    "files": 37,
+    "license": "BSD",
+    "requires": [
+      "hidapi; extra == 'cp2110'"
+    ]
+  },
+  {
+    "name": "pyyaml",
+    "version": "6.0.3",
+    "files": 25,
+    "license": "MIT",
+    "requires": null
+  },
+  {
+    "name": "reedsolo",
+    "version": "1.7.0",
+    "files": 7,
+    "license": "Public Domain",
+    "requires": null
+  },
+  {
+    "name": "rich",
+    "version": "15.0.0",
+    "files": 107,
+    "license": "MIT",
+    "requires": [
+      "ipywidgets (>=7.5.1,<9) ; extra == \"jupyter\"",
+      "markdown-it-py (>=2.2.0)",
+      "pygments (>=2.13.0,<3.0.0)"
+    ]
+  },
+  {
+    "name": "rich-click",
+    "version": "1.9.9",
+    "files": 32,
+    "license": "MIT License\n\nCopyright (c) 2022 Phil Ewels\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n",
+    "requires": [
+      "click>=8",
+      "colorama; platform_system == \"Windows\"",
+      "rich>=12",
+      "typing-extensions>=4; python_version < \"3.11\""
+    ]
+  },
+  {
+    "name": "typing-extensions",
+    "version": "4.16.0",
+    "files": 6,
+    "license": "PSF-2.0",
+    "requires": null
+  },
+  {
+    "name": "websockets",
+    "version": "16.1.1",
+    "files": 59,
+    "license": "BSD-3-Clause",
+    "requires": null
+  }
+]

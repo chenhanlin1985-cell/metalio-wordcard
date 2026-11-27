@@ -1,0 +1,67 @@
+#include "vocabulary.hpp"
+#include "wordcard_ui.hpp"
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <set>
+using namespace wordcard;namespace fs=std::filesystem;
+static int checks=0;static void ck(bool ok,const char*m){++checks;if(!ok)throw std::runtime_error(m);}
+static std::string read(const fs::path&p){std::ifstream f(p,std::ios::binary);return {std::istreambuf_iterator<char>(f),{}};}
+static void fixture(const fs::path&p,const VJ&s){fs::create_directories(p/"vocabulary-v2");auto d=VJ{{"state",s},{"journalOffset",0}}.dump();uint32_t h=2166136261;for(unsigned char b:d)h=(h^b)*16777619;std::ofstream(p/"vocabulary-v2/state.json",std::ios::binary)<<VJ{{"data",d},{"checksum",h}}.dump()<<'\n';}
+static VJ saved(const fs::path&p){auto frame=VJ::parse(str(VJ::parse(read(p/"vocabulary-v2/state.json")),"data"));auto s=frame["state"];std::ifstream f(p/"vocabulary-v2/events.ndjson");f.seekg(num(frame,"journalOffset"));std::string line;while(std::getline(f,line))s=s.patch(VJ::parse(str(VJ::parse(line),"data"))["patch"]);return s;}
+int main(int argc,char**argv){try{
+ ck(argc==4,"catalog font fresh output");fs::path out=argv[3];ck(!fs::exists(out),"fresh fixtures only");fs::create_directories(out/"vocabulary");fs::create_directories(out/"frames");
+ for(auto n:{"catalog.json","catalog.tsv","catalog.ndjson","pictures-v1.bin","pictures-v2.bin"})fs::copy_file(fs::path(argv[1])/n,out/"vocabulary"/n);
+ VocabularyCatalog cat;ck(cat.load((out/"vocabulary").generic_string()),"catalog");VocabularyEngine eng(cat);int64_t now=1794900000000LL;VJ ev;
+ auto act=[&](const VJ&s,const VJ&a){return eng.reduce(s,a,++now,ev);};auto mode=[&](const VJ&s,const std::string&m){return act(s,VJ{{"type","settings"},{"mode",m},{"dailyNew",10}});};
+ auto seed=act(eng.create(now),VJ{{"type","chooseStage"},{"stage","gre-trial"}});VJ completed=VJ::object();
+ for(const std::string m:{"meaning","partial","full"}){
+  auto s=act(mode(seed,m),VJ{{"type","begin"},{"intent","new"},{"associative",true}});int meanings=0,partials=0,full=0;
+  for(const auto&t:s["session"]["tasks"]){const auto k=str(t,"kind");meanings+=k=="meaning";partials+=k=="partial";full+=k=="recall";ck(k=="meaning"||k==(m=="partial"?"partial":"recall"),"only intended kinds");}
+  ck(meanings==5&&partials==(m=="partial"?5:0)&&full==(m=="full"?5:0),"three modes differ in actual questions");
+  bool wrong=false;int steps=0;std::vector<std::string> exposures;
+  while(str(s["session"],"phase")!="summary"){
+   ck(++steps<90,"finite group");const auto &ss=s["session"];
+   if(str(ss,"phase")=="learn"){exposures.push_back(str(ss["ids"][size_t(num(ss,"learnAt"))]));s=act(s,VJ{{"type","learnNext"},{"sessionId",ss["id"]},{"learnAt",ss["learnAt"]}});continue;}
+   if(!field(ss,"feedback").is_null()){s=act(s,VJ{{"type","continue"},{"taskId",ss["feedback"]["uid"]}});continue;}
+   auto t=eng.current(s);const auto id=str(t,"id"),k=str(t,"kind");const auto*w=cat.entry(id);
+   if(flag(t,"followup")){std::set<std::string> other;for(auto it=exposures.rbegin();it!=exposures.rend()&&*it!=id;++it)other.insert(*it);ck(other.size()>=3,"partial error separated by three other words");}
+   auto answer=k=="meaning"?w->meaning:k=="partial"?str(eng.gap(t),"answer"):w->word;
+   if(k=="partial"){auto g=eng.gap(t);ck(g["positions"].size()>=1&&g["positions"].size()<=2,"one or two blanks");ck(answer.size()<w->word.size(),"partial never asks the whole word");if(!wrong){answer="wrong";wrong=true;}}
+   s=act(s,VJ{{"type","answer"},{"taskId",t["uid"]},{"value",answer}});exposures.push_back(id);
+  }
+  ck(num(s["session"],"newCount")==5,"five words retained");ck(s["journey"]["stamps"].size()==1,"one completion stamp");
+  for(const auto&id:s["session"]["ids"]){const auto cards=s["cards"][str(id)];ck(cards.contains("meaning"),"meaning retained");ck(cards.contains("partial")== (m=="partial"),"separate partial memory");ck(cards.contains("recall")== (m=="full"),"only hard earns full recall");ck(!cards.contains("spelling"),"partial does not manufacture old full spelling records");}
+  auto before=s;auto queue=eng.review_tasks(s,now+86400000LL,"current");ck(s==before,"review list read-only");for(const auto&q:queue)ck(str(q,"kind")=="meaning"||(m!="meaning"&&str(q,"kind")==(m=="partial"?"partial":"recall")),"reviews respect difficulty");completed[m]=s;
+ }
+ auto switched=mode(completed["partial"],"meaning");ck(switched["cards"]==completed["partial"]["cards"]&&switched["seen"]==completed["partial"]["seen"],"lowering mode preserves every card");for(const auto&q:eng.review_tasks(switched,now+86400000LL,"current"))ck(str(q,"kind")=="meaning","easy review never asks spelling");
+ switched=mode(switched,"full");auto higher=eng.review_tasks(switched,now+86400000LL,"current");bool first=false;for(const auto&q:higher){ck(str(q,"kind")!="partial","hard does not schedule partial");first|=flag(q,"firstRecall");}ck(first,"partial success does not grant full recall");
+ // Imported lists use the same mode and cannot fall through to full spelling.
+ auto listSeed=mode(seed,"partial");for(const auto&e:cat.entries)if(e.stage=="gre-trial"&&listSeed["notebook"].size()<5)listSeed["notebook"].push_back(e.id);
+ auto list=act(listSeed,VJ{{"type","learnNotebook"},{"explicit",true},{"associative",true}});ck(str(list["session"],"source")=="notebook","notebook intent");for(auto&t:list["session"]["tasks"])ck(str(t,"kind")=="meaning"||str(t,"kind")=="partial","imported words respect normal mode");
+ // Very short words keep a visible letter; one-letter words use recognition.
+ std::string one,two;for(const auto&e:cat.entries){if(one.empty()&&(e.word=="I"||e.word=="a"))one=e.id;if(two.empty()&&(e.word=="an"||e.word=="in"))two=e.id;}ck(!one.empty()&&!two.empty(),"short-word fixtures exist");auto ts=mode(seed,"partial");ts["notebook"]=VJ::array({one,two});ts=act(ts,VJ{{"type","learnNotebook"},{"explicit",true},{"associative",true}});int shortPartials=0;for(auto&t:ts["session"]["tasks"])if(str(t,"kind")=="partial"){++shortPartials;ck(str(t,"id")!=one,"no full blank for one-letter word");ck(eng.gap(t)["positions"].size()==1,"two-letter word leaves one visible");}ck(shortPartials==1,"only two-letter word gets a partial task");
+ // Old staged sessions retain their task order, feedback and drafts verbatim.
+ auto old=act(seed,VJ{{"type","begin"},{"intent","new"},{"associative",true}});auto oldGroup=old["session"];
+ auto changed=mode(old,"partial");ck(changed["session"]==oldGroup,"mode changes never rewrite a running group");ck(act(changed,VJ{{"type","begin"},{"intent","new"},{"associative",true}})["session"]==oldGroup,"resume keeps original group");
+ // Followups and early repeats must not inflate independent partial success.
+ auto partial=act(mode(seed,"partial"),VJ{{"type","begin"},{"intent","new"},{"associative",true}});VJ pt;
+ while(str(partial["session"],"phase")=="learn")partial=act(partial,VJ{{"type","learnNext"},{"sessionId",partial["session"]["id"]},{"learnAt",partial["session"]["learnAt"]}});
+ for(;;){auto t=eng.current(partial);if(str(t,"kind")=="partial"){pt=t;break;}partial=act(partial,VJ{{"type","answer"},{"taskId",t["uid"]},{"value",cat.entry(str(t,"id"))->meaning}});partial=act(partial,VJ{{"type","continue"},{"taskId",t["uid"]}});}
+ auto heard=act(partial,VJ{{"type","audio"},{"id",pt["id"]}});heard=act(heard,VJ{{"type","answer"},{"taskId",pt["uid"]},{"value",eng.gap(pt)["answer"]}});ck(flag(heard["session"]["feedback"],"assisted")&&num(heard["cards"][str(pt,"id")]["partial"],"successes")==0,"audio assistance is not independent partial recall");
+ // Actual C++ mode selection, cancellation, persistence and return with input.
+ auto bytes=read(argv[2]);Font font;ck(font.init((const uint8_t*)bytes.data(),bytes.size()),"font");std::vector<uint8_t> fb(Canvas::bytes);Canvas canvas(fb.data(),font);UI ui;View view;view.screen=Screen::WebLearning;
+ auto paint=[&](NativeVocabulary&m,const std::string&name){auto p=m.page();view.web=p;view.web_page=0;ui.render(canvas,view);ck(p.error.empty(),"no error page");if(p.route=="modes")ck(ui.answer_pages()==1,"mode selection fits one screen");int pages=ui.answer_pages();for(int page=0;page<pages;++page){view.web_page=page;ui.render(canvas,view);std::ofstream f(out/"frames"/(name+"-"+std::to_string(page+1)+".pgm"),std::ios::binary);f<<"P5\n684 1216\n255\n";for(int y=0;y<1216;y++)for(int x=0;x<684;x++){char b=char(canvas.shade(x,y)*17);f.write(&b,1);}auto bs=ui.buttons();for(size_t i=0;i<bs.size();i++){auto a=bs[i].rect;ck(a.x>=0&&a.y>=0&&a.x+a.w<=684&&a.y+a.h<=1216,"control bounds");for(size_t j=0;j<i;j++){auto b=bs[j].rect;ck(a.x>=b.x+b.w||b.x>=a.x+a.w||a.y>=b.y+b.h||b.y>=a.y+a.h,"no control overlap");}}}return p;};
+ auto dir=out/"learning-web-ui";fixture(dir,partial);NativeVocabulary model(dir.generic_string());ck(model.enter(now),"enter native");
+ auto send=[&](const VJ&a){ck(model.dispatch(a.dump()),"UI action");ck(model.page().error.empty(),"UI action saved");};
+ send(VJ{{"action","v-go"},{"value","word-batch"}});ck(model.type("a"),"type draft");auto before=saved(dir);auto partialPage=paint(model,"normal-question");ck(partialPage.keyboard&&!partialPage.gap_mask.empty(),"normal renders inline blanks");
+ send(VJ{{"action","v-go"},{"value","modes"}});paint(model,"mode-normal");send(VJ{{"action","v-select-mode"},{"value","meaning"}});paint(model,"mode-easy");ck(saved(dir)==before,"selecting without confirmation is read-only");ck(model.back(),"cancel");ck(model.page().typed=="a"&&saved(dir)==before,"cancel returns exact input");
+ send(VJ{{"action","v-go"},{"value","modes"}});send(VJ{{"action","v-select-mode"},{"value","full"}});paint(model,"mode-hard");send(VJ{{"action","v-use-mode"}});ck(model.page().route=="word-batch"&&model.page().typed=="a","confirm returns same question and draft");auto after=saved(dir);ck(str(after["settings"],"mode")=="full"&&str(after["session"],"current")==str(before["session"],"current")&&after["session"]["draft"]==before["session"]["draft"]&&str(after["session"],"mode")=="full"&&std::any_of(after["session"]["tasks"].begin(),after["session"]["tasks"].end(),[](const VJ&t){return str(t,"kind")=="recall";})&&after["cards"]==before["cards"]&&after["notebook"]==before["notebook"],"pending questions follow new mode, preserving draft and memory");
+ NativeVocabulary restarted(dir.generic_string());ck(restarted.enter(now),"restart");ck(str(saved(dir)["settings"],"mode")=="full","mode survives restart");ck(restarted.dispatch(VJ{{"action","v-start"},{"intent","new"}}.dump())&&restarted.page().typed=="a","restart resumes old partial draft");
+ for(const std::string m:{"meaning","full"}){auto s=act(mode(seed,m),VJ{{"type","begin"},{"intent","new"},{"associative",true}});while(str(s["session"],"phase")=="learn")s=act(s,VJ{{"type","learnNext"},{"sessionId",s["session"]["id"]},{"learnAt",s["session"]["learnAt"]}});if(m=="full")while(str(eng.current(s),"kind")=="meaning"){auto t=eng.current(s);s=act(s,VJ{{"type","answer"},{"taskId",t["uid"]},{"value",cat.entry(str(t,"id"))->meaning}});s=act(s,VJ{{"type","continue"},{"taskId",t["uid"]}});}auto d=out/("learning-web-"+m);fixture(d,s);NativeVocabulary n(d.generic_string());ck(n.enter(now),"question fixture");n.dispatch(VJ{{"action","v-go"},{"value","word-batch"}}.dump());auto p=paint(n,m+"-question");ck(p.keyboard==(m=="full")&&p.gap_mask.empty(),"easy no keyboard, hard full keyboard");}
+ // Exercise the app's facade too: selection must invalidate its cached page.
+ const auto bridgeDir=out/"learning-web-facade";fixture(bridgeDir,seed);LearningWeb bridge;ck(bridge.init(bridgeDir.generic_string())&&bridge.home(),"facade init");WebPage bp;ck(bridge.page(bp)&&bridge.native_active(),"facade first render activates native owner");ck(bridge.command("v-go","modes"),"facade mode entry");ck(bridge.page(bp)&&bp.route=="modes","facade mode page");
+ int choose=-1;for(size_t i=0;i<bp.actions.size();++i){auto a=VJ::parse(bp.actions[i]);if(str(a,"action")=="v-select-mode"&&str(a,"value")=="partial")choose=int(i);}ck(choose>=0&&bridge.action(choose),"facade tap normal");ck(bridge.page(bp),"facade rerender");bool selected=false;for(const auto&b:bp.blocks)selected|=b.text=="普通"&&b.selected;ck(selected,"facade does not reuse stale selection");int use=-1;for(size_t i=0;i<bp.actions.size();++i)if(str(VJ::parse(bp.actions[i]),"action")=="v-use-mode")use=int(i);ck(use>=0&&bridge.action(use),"facade confirmation");ck(str(saved(bridgeDir)["settings"],"mode")=="partial","facade selection persisted");
+ const auto legacyDir=out/"learning-web-legacy";fixture(legacyDir,old);NativeVocabulary legacy(legacyDir.generic_string());ck(legacy.enter(now),"legacy init");ck(legacy.dispatch(VJ{{"action","v-go"},{"value","modes"}}.dump())&&legacy.dispatch(VJ{{"action","v-use-mode"}}.dump()),"confirm hard from legacy staged");auto legacySaved=saved(legacyDir);ck(str(legacySaved["settings"],"mode")=="full"&&legacySaved["session"]["ids"]==oldGroup["ids"]&&str(legacySaved["session"],"mode")=="full"&&std::none_of(legacySaved["session"]["tasks"].begin(),legacySaved["session"]["tasks"].end(),[](const VJ&t){return str(t,"kind")=="gap";}),"explicit hard choice replans unasked staged tasks");
+ std::ofstream(out/"checks.json")<<VJ{{"passed",checks},{"modes",3},{"completeGroups",3},{"physicalDevice",false}}.dump(2);std::cout<<"Study mode checks passed "<<checks<<'\n';return 0;
+ }catch(const std::exception&e){std::cerr<<e.what()<<'\n';return 1;}}

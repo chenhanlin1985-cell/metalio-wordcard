@@ -1,4 +1,4 @@
-idf_component_register(SRCS "learning_web.cpp" "generated/web_bundle.cpp"
+idf_component_register(SRCS "learning_web.cpp" "generated/web_bundle_deflate.cpp"
     "vendor/quickjs.c" "vendor/libregexp.c" "vendor/libunicode.c" "vendor/dtoa.c"
     INCLUDE_DIRS "include" PRIV_INCLUDE_DIRS "vendor" REQUIRES esp_timer esp_psram native_learning)
 target_compile_features(${COMPONENT_LIB} PUBLIC cxx_std_17)

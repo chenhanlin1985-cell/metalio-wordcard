@@ -19,7 +19,13 @@ inline void draw_shutdown_card(Canvas &canvas) {
     std::array<std::array<uint8_t,w>,3> rows{};
     size_t index=0;unsigned remaining=0;uint8_t shade=15;
     auto next=[&](){
-        if(!remaining){const auto run=shutdown_art::runs[index++];remaining=(run>>4)+1;shade=run&15;}
+        if(!remaining){
+            const auto key=shutdown_art::codes[index++];
+            uint16_t run;
+            if(key<255)run=shutdown_art::common[key];
+            else{run=uint16_t(shutdown_art::codes[index])<<8|shutdown_art::codes[index+1];index+=2;}
+            remaining=(run>>4)+1;shade=run&15;
+        }
         --remaining;return shade;
     };
     int decoded=-1;

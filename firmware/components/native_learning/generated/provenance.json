@@ -1,8 +1,8 @@
 {
-  "source": "src/legacy-course",
+  "source": "outputs/daily-plan-2026-11-01",
   "dataOnly": true,
-  "sha256": "249fe37a7e5e7d660505c66a1e54caba258fc84a53da35bc6658f13847b04f80",
-  "bytes": 274784,
+  "sha256": "5e4bd34cb3e22ab93cf5ac6cdb77067cf7745c9f17d9dc4a0cc10242657d890c",
+  "bytes": 291350,
   "words": 118,
   "lessons": 11
 }

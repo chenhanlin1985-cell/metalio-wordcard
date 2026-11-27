@@ -1,4 +1,5 @@
 #include "wordcard_ui.hpp"
+#include "../components/native_learning/include/word_formation.hpp"
 #include "dictionary_keyboard.hpp"
 #include <algorithm>
 namespace wordcard {
@@ -94,13 +95,19 @@ void UI::dictionary_pages(Canvas &c,const View &v) {
         else if (v.dictionary_matches.size()==6) c.text(40,990,"显示前 6 条；可补全输入缩小范围。");
         button(c,{40,v.dictionary_native_lookup?1080:1060,604,v.dictionary_native_lookup?100:88},Action::Dictionary,"修改输入",0,v.dictionary_native_lookup);
     } else if (v.screen == Screen::DictionaryEntry && v.card) {
-        int px=78;auto word=c.wrap_px(v.card->front,604,px);
-        if(word.size()>2){px=48;word=c.wrap_px(v.card->front,604,px);}
-        for(size_t i=0;i<std::min<size_t>(3,word.size());++i)c.text_px(40,230+int(i)*(px+12),word[i],px);
-        const auto text=c.wrap_px((v.card->ipa.empty() ? "音标暂缺\n" : v.card->ipa+"\n")+v.card->back,604,40);
-        answer_pages_=std::max(1,int((text.size()+5)/6));
-        const size_t start=size_t(std::clamp(v.answer_page,0,answer_pages_-1))*6;
-        for(size_t i=start;i<text.size()&&i<start+6;++i)c.text_px(40,452+int(i-start)*52,text[i],40);
+        int px=72;auto word=c.wrap_px(v.card->front,604,px);
+        while(word.size()>2 && px>36){px-=6;word=c.wrap_px(v.card->front,604,px);}
+        int y=206;
+        for(const auto &line:word){c.text_px(40,y,line,px);y+=px+10;}
+        const auto parts=word_formation(v.card->front);
+        const auto body=(v.card->ipa.empty() ? "" : v.card->ipa+"\n")+v.card->back+
+                        (parts.formula.empty() ? "" : "\n"+parts.formula + parts.detail_text());
+        const auto text=c.wrap_px(body,604,36);
+        y+=24;
+        const int per=std::max(1,(780-y)/48);
+        answer_pages_=std::max(1,(int(text.size())+per-1)/per);
+        const int start=std::clamp(v.answer_page,0,answer_pages_-1)*per;
+        for(int i=start;i<int(text.size()) && i<start+per;++i)c.text_px(40,y+(i-start)*48,text[i],36);
         c.text(450,140,std::to_string(v.answer_page+1)+" / "+std::to_string(answer_pages_));
         button(c,{40,800,280,88},Action::DictionaryPage,"上一页",-1,false,v.answer_page>0);
         button(c,{364,800,280,88},Action::DictionaryPage,"下一页",1,false,v.answer_page+1<answer_pages_);

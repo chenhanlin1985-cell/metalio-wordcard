@@ -1,4 +1,7 @@
 #include "power_control.hpp"
+#include "metalio_i2c1.h"
+#include "power_i2c.h"
+#include <algorithm>
 #include "power_button.hpp"
 #include "config.h"
 #include "epd_board_metalio_eink4_plus.h"
@@ -47,6 +50,27 @@ bool power_key_start() {
     return ok;
 }
 bool power_key_requested(){return phase.load()!=0;}
+int home_battery_percent() {
+    // Called only by the display owner on a normal home redraw. The board's
+    // BQ27220 reports millivolts, little-endian, on the shared display I2C bus.
+    static int cached = -1;
+    static int64_t next_sample_us = 0;
+    const auto now = esp_timer_get_time();
+    if (now < next_sample_us) return cached;
+    const power_i2c_t bus{I2C_NUM_1, metalio_i2c1_lock, metalio_i2c1_unlock};
+    uint8_t data[2]{};
+    const auto err = power_i2c_write_read(&bus, 0x55, 0x08, data, sizeof(data), 30);
+    const int mv = data[0] | (int(data[1]) << 8);
+    cached = -1;
+    if (err == ESP_OK && mv >= 2500 && mv <= 5000) {
+        // Metalio Plus voltage endpoints. Round to 5% for an approximate reading.
+        const int range_mv = std::clamp(mv - 3300, 0, 1030);
+        cached = 5 * ((range_mv * 20 + 515) / 1030);
+    }
+    next_sample_us = now + (cached < 0 ? 5000000 : 60000000);
+    ESP_LOGI(TAG,"HOME_BATTERY mv=%d estimate=%d err=%d",mv,cached,int(err));
+    return cached;
+}
 bool power_key_released(){return phase.load()==2;}
 void power_key_cancel(){reset_requested=true;phase=0;}
 void power_key_status(){ESP_LOGI(TAG,"POWER_STATE phase=%d valid=%d raw=%02x read_failures=%u sampler=%d",phase.load(),int(valid_sample.load()),raw_port.load(),failures.load(),sampler!=nullptr);}

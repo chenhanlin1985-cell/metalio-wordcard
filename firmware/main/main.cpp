@@ -11,6 +11,10 @@
 #include "pcf8563.h"
 #include "wordcard.hpp"
 #include "wordcard_ui.hpp"
+#include "generated/home_folio_titles.hpp"
+#include "generated/reward_folio_font.hpp"
+#include "generated/bookshop_font.hpp"
+#include "generated/learning_folio_font.hpp"
 #include "dictionary_keyboard.hpp"
 #include "web_keyboard.hpp"
 #include "web_disclosure.hpp"
@@ -20,6 +24,7 @@
 #include "web_frame_cache.hpp"
 #include "keyboard_fast_refresh.hpp"
 #include "usb_disk.hpp"
+#include "audio_path_probe.hpp"
 #include "power_control.hpp"
 #include "sd_read_probe.hpp"
 #include "resource_cache_io.hpp"
@@ -174,6 +179,8 @@ class App {
   private:
     Font font_;
     Font dictionary_font_;
+    Font home_font_;
+    uint8_t *home_font_bytes_ = nullptr;
     uint8_t *dictionary_font_bytes_ = nullptr;
     Dictionary dictionary_;
     Card dictionary_card_;
@@ -199,6 +206,8 @@ class App {
     void menu_push(Screen);bool menu_return();bool menu_dispatch(Event);void menu_finish(Event,Screen);
     std::map<std::string,int> web_positions_;
     int web_prompt_return_page_=0;
+    bool example_pending_=false;
+    uint32_t example_token_=0;
     unsigned web_fast_selections_=0;
     bool web_audio_pending_=false,web_audio_playing_=false;
     int web_audio_serial_=0;
@@ -472,6 +481,24 @@ void App::catalog() {
 }
 void App::load_dictionary() {
     web_.cancel_prepare(); // Drain private render before replacing font assets.
+    if (!home_font_bytes_) {
+        auto load_face = [&](const char *file,uint32_t length,uint32_t expected) {
+            std::ifstream face(std::string(ROOT)+"/vocabulary/"+file,std::ios::binary|std::ios::ate);
+            if (!face || face.tellg()!=std::streamoff(length)) return false;
+            auto *bytes=static_cast<uint8_t*>(heap_caps_malloc(length,MALLOC_CAP_SPIRAM|MALLOC_CAP_8BIT));
+            if (!bytes) return false;
+            face.seekg(0);face.read(reinterpret_cast<char*>(bytes),length);
+            uint32_t checksum=2166136261u;
+            if(face)for(size_t i=0;i<length;++i)checksum=(checksum^bytes[i])*16777619u;
+            if(!face || checksum!=expected || !home_font_.init(bytes,length)){heap_caps_free(bytes);return false;}
+            home_font_bytes_=bytes;font_.folio(&home_font_);return true;
+        };
+        const bool bookshop=load_face("bookshop.fontpack",bookshop_font::size,bookshop_font::checksum);
+        const bool rewards=bookshop || load_face("learning-kaishu-v3.fontpack",reward_folio::size,reward_folio::checksum);
+        const bool learning=rewards || load_face("learning-kaishu-v2.fontpack",learning_folio::size,learning_folio::checksum);
+        if(!learning)load_face("home-kaishu-v1.fontpack",folio_type::sd_size,folio_type::sd_checksum);
+        ESP_LOGI(TAG,"HOME_TYPE asset=%s",bookshop?"bookshop-v1":rewards?"rewards-v3":learning?"learning-v2":home_font_bytes_?"kaishu-v1":"builtin-fallback");
+    }
     std::string error;
     dictionary_.open(std::string(ROOT)+"/dictionary",error);
     font_.fallback(nullptr);
@@ -713,6 +740,9 @@ void App::refresh_view() {
     view_.volume = audio_.volume();
     view_.brightness = Frontlight::GetInstance().target_brightness();
     view_.cct = int(Frontlight::GetInstance().cct());
+    view_.settings_origin = !menu_stack_.empty();
+    if(view_.screen==Screen::WebLearning && view_.web.route=="home")
+        view_.battery_percent = home_battery_percent();
     view_.storage = sd_ ? "SD 已挂载 · " + std::to_string(audio_index_.size()) + " 条发音索引"
                         : "使用内置词库 · 未挂载 SD";
     view_.clock = clock_;
@@ -865,8 +895,11 @@ void App::render() {
         epd_hl_get_framebuffer(MetalioEpd_Hl()),epd_hl_get_back_framebuffer(MetalioEpd_Hl()),Canvas::bytes);
     const bool fast=refresh_budget_.allow_fast(selection_fast||(typing&&display_mode_==0&&input_only),gc);
     const auto panel_start = esp_timer_get_time();
-    const bool hold_allowed=view_.screen!=Screen::PowerOff&&view_.screen!=Screen::UsbDisk;
-    if(full_||!hold_allowed)keyboard_poweroff();
+    const bool hold_allowed=view_.screen!=Screen::PowerOff&&view_.screen!=Screen::UsbDisk&&
+        !(view_.screen==Screen::WebLearning&&panel_static_native_page(view_.web.key));
+    // Reuse live rails for this final draw, then close them before the static
+    // page is considered settled. Avoid an extra off/on cycle on Home entry.
+    if(full_||view_.screen==Screen::PowerOff||view_.screen==Screen::UsbDisk)keyboard_poweroff();
     // Check live PWR_GOOD before reusing rails; a stale cached TPS-ok bit is not
     // evidence that power survived an idle interval. Failure takes the old path.
     uint8_t rail_port=0;
@@ -946,7 +979,7 @@ void App::render() {
         (unsigned long long)panel_us_,int(err),int(view_.screen),unsigned(view_.position),view_.revealed,page_turn,unsigned(quality_controls.size()),
         !gc&&display_mode_==0&&!quality_controls.empty()?"black-GL_white-hold_gray-GC":"none",typing,warm,periodic_cleanup);
     ESP_LOGI(TAG,"DISPLAY_POWER reused=%d ready_us=%llu hold=%d drive=off",warm,(unsigned long long)power_ready_us,panel_power_.held());
-    if(content_cleanup)ESP_LOGI(TAG,"DISPLAY_BOUNDARY reason=%s input_only=%d",boundary==StudyRefreshReason::Summary?"summary":"question",input_only);
+    if(content_cleanup)ESP_LOGI(TAG,"DISPLAY_BOUNDARY reason=%s input_only=%d",boundary==StudyRefreshReason::Journey?"journey":boundary==StudyRefreshReason::Summary?"summary":"question",input_only);
     ++render_generation_;
     input_ready_us = uint64_t(esp_timer_get_time());
     if(err==EPD_DRAW_SUCCESS)keyboard_publish();
@@ -974,6 +1007,10 @@ void App::serial() {
         }
         if(usb_pending_ && line!="status") {line.clear();continue;}
         if(line=="power status")power_key_status();
+        else if(line.rfind("audio pathprobe ",0)==0&&!audio_.busy()){
+            const auto p=line.substr(std::string("audio pathprobe ").size());
+            if(safe_relative_path(p)&&(p.rfind("vocabulary/audio/",0)==0||p.rfind("vocabulary/audio-v2/",0)==0))audio_path_probe(std::string(ROOT)+"/"+p);
+        }
         else if(line=="web status"&&web_.ready()){
             std::string report;
             const bool ok=web_.status(report);
@@ -1285,7 +1322,14 @@ void App::run() {
         std::string result,result_path;
         int result_kind = 0;uint32_t result_token=0;
         while (audio_.result(result, result_kind,result_path,&result_token)) {
+            if(result_token & 0x80000000u){
+                if(result_token==example_token_ && view_.screen==Screen::WebPrompt && view_.web_example>=0){
+                    web_audio_note_=result_kind==1 ? "播放完成" : result;dirty_=true;
+                }
+                continue;
+            }
             if(result_token){
+                if(result_kind==4&&result_token==uint32_t(web_audio_serial_)&&web_audio_playing_){web_audio_note_=result;dirty_=true;}
                 if(audio_result_matches(result_token,uint32_t(web_audio_serial_),web_audio_playing_,result_kind)){
                     web_audio_playing_=false;web_.playback(web_audio_serial_,result_kind==1);notice_=result_kind==1?"":result;dirty_=true;
                 }
@@ -1345,7 +1389,7 @@ extern "C" void app_main() {
         usb_serial_jtag_vfs_use_driver();
         usb_serial_jtag_vfs_set_rx_line_endings(ESP_LINE_ENDINGS_LF);
     }
-    ESP_LOGI(TAG,"BOOT_RESET reason=%d revision=fix55h-recovery",int(esp_reset_reason()));
+    ESP_LOGI(TAG,"BOOT_RESET reason=%d revision=fix65-card-examples",int(esp_reset_reason()));
     if(usb_disk_boot_requested())usb_disk_run();
     static App app;
     app.run();

@@ -1,0 +1,218 @@
+{
+  "title": "石头汤",
+  "en": "Stone Soup",
+  "scenes": [
+    {
+      "en": "In the village square, a hungry traveller asked for supper. A girl held up an empty bowl. The traveller pulled a stone from her pocket. “Got a pan?”",
+      "zh": "村子广场上，一位旅人饿了，想讨口晚饭。女孩举起一只空碗。旅人从口袋里掏出一块石头。“有锅吗？”",
+      "alt": "扎辫子的女孩探出门，广场上的旅人举起一块石头。"
+    },
+    {
+      "en": "“Stone soup?” The girl filled a saucepan with water. They set it over the fire. A neighbour watched from her window as the water began to boil.",
+      "zh": "“石头汤？”女孩往一口长柄小锅里灌了水。两人把锅架到火上。水渐渐开了，一位邻居趴在窗口看。",
+      "alt": "女孩往长柄锅里倒水，旅人把石头丢进去，锅下的火已经烧了起来。"
+    },
+    {
+      "en": "“What does a stone need?” asked the curious neighbour. “Company,” said the traveller. The girl cut up a carrot. In it went. The neighbour passed her an onion. In that went, too.",
+      "zh": "“石头还缺什么？”邻居好奇地问。“缺个伴儿。”旅人说。女孩切了根胡萝卜，下锅。邻居递来一个洋葱，也下了锅。",
+      "alt": "女孩把切好的胡萝卜和洋葱从砧板上拨进锅里，邻居探头看着。"
+    },
+    {
+      "en": "The traveller held out a spoon. The girl took a sip. “Funny taste.” The neighbour added a pinch of salt. This time the girl licked the spoon clean.",
+      "zh": "旅人递过来一勺汤。女孩抿了一口。“味道怪怪的。”邻居撒了一小撮盐。这一回，女孩把勺子都舔干净了。",
+      "alt": "旅人伸出汤勺让女孩尝汤，邻居从窗口捏了一撮盐撒下来。"
+    },
+    {
+      "en": "Soon everyone in the square had a bowl. “Delicious!” said the girl. Then her spoon hit something hard under the last slice of carrot. Clink!",
+      "zh": "不一会儿，广场上人手一碗汤。“真好喝！”女孩说。最后一片胡萝卜底下好像有什么硬东西。勺子一碰，叮！",
+      "alt": "大家端着碗等旅人分汤，女孩低下头，碗里好像有什么东西。"
+    },
+    {
+      "en": "“An ordinary stone!” The traveller held out her hand. The girl slipped the stone into her own pocket. “Tomorrow, you bring the carrot.” The traveller laughed. “You've got the recipe!”",
+      "zh": "“就一块普普通通的石头嘛！”旅人伸手来接。女孩却把它揣进了自己的口袋。“明天，你带胡萝卜。”旅人笑了。“这汤怎么做，你已经会啦！”",
+      "alt": "空锅和碗叠在一旁，女孩攥着石头，旅人伸出手，两个人相视而笑。"
+    }
+  ],
+  "terms": [
+    [
+      "1142",
+      "square",
+      1,
+      "n. 广场",
+      "旅人讨晚饭、后来大家聚在一起喝汤的那个广场。",
+      "street",
+      "yard"
+    ],
+    [
+      "0543",
+      "hungry",
+      1,
+      "adj. 饥饿的",
+      "旅人想讨口晚饭，因为她肚子饿了。哪个词说的是这种感觉？",
+      "thirsty",
+      "sleepy"
+    ],
+    [
+      "0439",
+      "bowl",
+      1,
+      "n. 碗",
+      "女孩一开始举着它空空的，最后大家用它盛汤。",
+      "plate",
+      "cup"
+    ],
+    [
+      "1365",
+      "stone",
+      1,
+      "n. 石头",
+      "下锅时硬邦邦，煮完了用勺子一碰还是叮的一声。",
+      "bone",
+      "shell"
+    ],
+    [
+      "0011",
+      "pocket",
+      1,
+      "n. 口袋",
+      "旅人从这里掏出石头，女孩最后也把石头藏进自己的这里。",
+      "sleeve",
+      "collar"
+    ],
+    [
+      "0458",
+      "soup",
+      2,
+      "n. 汤",
+      "女孩起初有点不信，石头真的能煮出一锅什么？",
+      "juice",
+      "bread"
+    ],
+    [
+      "0434",
+      "saucepan",
+      2,
+      "n. 长柄小锅",
+      "女孩拿来烧水煮汤的那口长柄小锅。",
+      "kettle",
+      "tray"
+    ],
+    [
+      "1371",
+      "fire",
+      2,
+      "n. 火；炉火",
+      "水要烧开，锅下面得有它。",
+      "smoke",
+      "ash"
+    ],
+    [
+      "0809",
+      "neighbour",
+      2,
+      "n. 邻居",
+      "趴在自家窗口、给她们送洋葱的那个人，住在附近。",
+      "customer",
+      "stranger"
+    ],
+    [
+      "0427",
+      "boil",
+      2,
+      "v. 沸腾；烧开",
+      "火烧了一会儿，水开始咕嘟咕嘟。这时水开始做什么？",
+      "freeze",
+      "cool"
+    ],
+    [
+      "0989",
+      "curious",
+      3,
+      "adj. 好奇的",
+      "邻居探头问石头还需要什么。哪个词说的是她想弄明白的心情？",
+      "nervous",
+      "proud"
+    ],
+    [
+      "0504",
+      "carrot",
+      3,
+      "n. 胡萝卜",
+      "女孩切了第一样菜，是一根橙色的胡萝卜。",
+      "pepper",
+      "potato"
+    ],
+    [
+      "0488",
+      "onion",
+      3,
+      "n. 洋葱",
+      "邻居递来的第二样菜，一层一层，切的时候容易流泪。",
+      "bean",
+      "mushroom"
+    ],
+    [
+      "0470",
+      "spoon",
+      4,
+      "n. 勺子",
+      "尝汤时伸到女孩嘴边的餐具，也碰响了碗底的石头。",
+      "fork",
+      "knife"
+    ],
+    [
+      "0495",
+      "taste",
+      4,
+      "n. 味道",
+      "女孩抿了一口，说汤的什么有点怪？",
+      "colour",
+      "shape"
+    ],
+    [
+      "0422",
+      "salt",
+      4,
+      "n. 盐",
+      "邻居从窗口撒了一小撮什么，汤就有了咸味？",
+      "sugar",
+      "flour"
+    ],
+    [
+      "0428",
+      "delicious",
+      5,
+      "adj. 美味的",
+      "这回女孩尝到合口的汤，脱口而出「真好喝！」",
+      "bitter",
+      "sour"
+    ],
+    [
+      "0446",
+      "slice",
+      5,
+      "n. 薄片",
+      "石头躲在最后一片胡萝卜下面。这里的「一片」怎么说？",
+      "drop",
+      "bunch"
+    ],
+    [
+      "0941",
+      "ordinary",
+      6,
+      "adj. 普通的",
+      "捞上来的石头毫无魔力。女孩说它普普通通。",
+      "unusual",
+      "precious"
+    ],
+    [
+      "0551",
+      "recipe",
+      6,
+      "n. 食谱；做法",
+      "女孩没拿到写着步骤的纸，却已经知道这锅汤怎么做了。",
+      "menu",
+      "bill"
+    ]
+  ]
+}

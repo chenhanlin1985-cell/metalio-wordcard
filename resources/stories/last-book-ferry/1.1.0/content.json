@@ -1,0 +1,881 @@
+{
+  "intro": "正要关店时，有人把一只湿背包留在书店门口。",
+  "firstAction": "打开寄存柜",
+  "art": "scenes.wpix",
+  "chapters": [
+    {
+      "topic": "01",
+      "title": "寄存柜里的信",
+      "intro": "正要关店时，旧书店收到一只没人认领的背包。里面的纸条只剩半句：「末班船开走以前……」你翻开包盖，先查清是谁留下了它。",
+      "token": "半张托运单",
+      "outro": "你从内袋抽出半张托运单。船名湿透了，只剩一个银色的印子。",
+      "words": [
+        {
+          "id": "pet-0001",
+          "en": "The missing books arrived in a [ ].",
+          "zh": "那些失踪的书是装在一个背包里送来的。"
+        },
+        {
+          "id": "pet-0011",
+          "en": "The note was in the inside [ ] of the coat.",
+          "zh": "纸条就在大衣的内袋里。"
+        },
+        {
+          "id": "pet-0026",
+          "en": "One [ ] is missing from the coat.",
+          "zh": "这件大衣少了一颗纽扣。"
+        },
+        {
+          "id": "pet-0037",
+          "en": "A wool [ ] was wrapped around the wet book.",
+          "zh": "那本湿书外面裹着一条羊毛围巾。"
+        }
+      ]
+    },
+    {
+      "topic": "02",
+      "title": "银鱼藏在哪一页",
+      "intro": "托运单有四道褪色的记号。店员把旧色样摊在桌面，请你按证人的描述，把印子拼回原样。",
+      "token": "银鱼印记",
+      "outro": "银鱼是镇上流动图书船的标志。它嘴里衔着一个小小的信封。",
+      "returns": {
+        "both": [
+          "pet-0037",
+          "The witness wore a wool [ ] around her neck.",
+          "证人脖子上围着一条羊毛围巾。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-0093",
+          "en": "The fish is the colour of a spoon: [ ].",
+          "zh": "鱼印是勺子那样的银色。",
+          "meaning": "n. 银色"
+        },
+        {
+          "id": "pet-0090",
+          "en": "The ink has faded to a [ ] blue.",
+          "zh": "墨水已经褪成了淡蓝色。",
+          "meaning": "adj. 浅色的，淡的"
+        },
+        {
+          "id": "pet-0102",
+          "en": "The mixing chart says red and blue make [ ].",
+          "zh": "调色表上写着，红色和蓝色混在一起会变成紫色。",
+          "meaning": "n. 紫色"
+        },
+        {
+          "id": "pet-0100",
+          "en": "The leaf on the stamp is [ ], like fresh grass.",
+          "zh": "邮票上的叶子是青草一样的绿色。",
+          "meaning": "adj. 绿色的"
+        }
+      ]
+    },
+    {
+      "topic": "03",
+      "title": "失联的收件人",
+      "intro": "信封上的邮局编号还能辨认。邮局说上周确实来过一件没签收的东西，你得找出包裹记录。",
+      "token": "寄件回执",
+      "outro": "回执夹层里有个地址。邮差认得那栋楼，那儿以前是一家书店。",
+      "returns": {
+        "both": [
+          "pet-0093",
+          "Ask for the parcel with the [ ] fish, the colour of the moon.",
+          "去找带银色鱼印的包裹，颜色像月光一样。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-0128",
+          "en": "The postman weighs the [ ] before sending it.",
+          "zh": "邮递员在寄出这个包裹前先给它称重。"
+        },
+        {
+          "id": "pet-0105",
+          "en": "Write the street name and house number in the [ ] box.",
+          "zh": "在地址栏填上街道名和门牌号。"
+        },
+        {
+          "id": "pet-0135",
+          "en": "Enter the secret [ ] to open the account.",
+          "zh": "输入秘密密码才能打开这个账户。"
+        },
+        {
+          "id": "pet-0132",
+          "en": "Click here to [ ] a copy onto your computer.",
+          "zh": "点这里，把一份副本下载到你的电脑上。"
+        }
+      ]
+    },
+    {
+      "topic": "13",
+      "title": "锁住的老店",
+      "intro": "地图上的街名改过一次。沿着邮差画的路线找到老店，再看看书究竟从哪儿运了出去。",
+      "token": "旧店钥匙",
+      "outro": "后门的锁和托运单上的齿痕一模一样。隔壁阿姨把钥匙交给了你。",
+      "returns": {
+        "both": [
+          "pet-0105",
+          "The courier needs the full [ ], including the house number.",
+          "快递员需要包括门牌号在内的完整地址。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-1045",
+          "en": "I bought this novel at the little [ ] on River Road.",
+          "zh": "这本小说是我在河路那家小书店买的。"
+        },
+        {
+          "id": "pet-1055",
+          "en": "Guests go in through the front [ ].",
+          "zh": "客人从正门入口进去。"
+        },
+        {
+          "id": "pet-1056",
+          "en": "Follow the arrow to the emergency [ ] to get out.",
+          "zh": "跟着箭头走到紧急出口就能出去。"
+        },
+        {
+          "id": "pet-1071",
+          "en": "Take the stamped envelope to the [ ] to send it.",
+          "zh": "把贴好邮票的信封拿到邮局寄出。"
+        }
+      ]
+    },
+    {
+      "topic": "10",
+      "title": "楼上的地图",
+      "intro": "楼上的房间还维持着关店那天的样子。你得翻出那张航线图，决定接下来自己背书，还是让邮差代运。",
+      "token": "河道地图",
+      "outro": "地图背后写着第一批读者的名字。书要回到他们手里，才算真正找回来。",
+      "returns": {
+        "both": [
+          "pet-1055",
+          "The map is inside. Find the [ ] marked IN.",
+          "地图在屋里。找到标着 IN 的入口。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-0755",
+          "en": "The atlas stood on the top [ ] of the bookcase.",
+          "zh": "地图册原来放在书柜最上层的架子上。"
+        },
+        {
+          "id": "pet-0733",
+          "en": "Pull the [ ] aside to see through the window.",
+          "zh": "把窗帘拉开，就能透过窗户往外看。"
+        },
+        {
+          "id": "pet-0754",
+          "en": "Turn the [ ] to unlock the drawer.",
+          "zh": "转动钥匙就能打开上锁的抽屉。"
+        },
+        {
+          "id": "pet-0748",
+          "en": "Step onto the [ ] outside the upstairs room.",
+          "zh": "走到楼上房间外面的阳台上。"
+        }
+      ]
+    },
+    {
+      "topic": "18",
+      "title": "渡口不等人",
+      "intro": "河水涨起来了，旧路已经走不通。你带着地图到渡口，船长只肯为有凭据的那批书留一个位置。",
+      "token": "渡船票根",
+      "outro": "船长在票根背面写下第一个取书点。还没靠岸，水面就起了白雾。",
+      "returns": {
+        "A": [
+          "pet-0001",
+          "Keep both hands free and carry the books in your [ ].",
+          "把书装在背包里，这样两只手就能腾出来。"
+        ],
+        "B": [
+          "pet-0128",
+          "The postman has tied the books up with string. Sign for the [ ].",
+          "邮差用绳子捆好了书，请签收包裹。"
+        ]
+      },
+      "branchKey": "route",
+      "branchIntro": {
+        "A": "你背着书，走上渡船。",
+        "B": "邮差把书箱先送到了渡口。"
+      },
+      "words": [
+        {
+          "id": "pet-1679",
+          "en": "The [ ] carries people and bikes across the river.",
+          "zh": "这班渡船载着人和自行车过河。"
+        },
+        {
+          "id": "pet-1547",
+          "en": "We crossed the river on a stone [ ] without getting into a boat.",
+          "zh": "我们没坐船，而是从一座石桥上过了河。"
+        },
+        {
+          "id": "pet-1685",
+          "en": "The wooden [ ] points towards the harbour.",
+          "zh": "木制路标指向港口。"
+        },
+        {
+          "id": "pet-1538",
+          "en": "Show your [ ] before you get on the plane.",
+          "zh": "登机以前要出示登机牌。"
+        }
+      ]
+    },
+    {
+      "topic": "19",
+      "title": "雾里的钟声",
+      "intro": "船长关掉发动机听岸上的钟。你守着收音机抄下天气播报，决定什么时候可以继续走。",
+      "token": "天气记录纸",
+      "outro": "雾一散，河滩上露出半截木箱。箱角也有一条银鱼。",
+      "returns": {
+        "both": [
+          "pet-1679",
+          "No cars can cross the river until the [ ] starts running again.",
+          "渡船复航之前，汽车都过不了这条河。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-1693",
+          "en": "We could hardly see the riverbank through the thick [ ].",
+          "zh": "浓雾里，我们几乎看不见河岸。"
+        },
+        {
+          "id": "pet-1728",
+          "en": "The weather [ ] says the fog will clear by noon.",
+          "zh": "天气预报说，雾会在中午前散去。"
+        },
+        {
+          "id": "pet-1703",
+          "en": "We heard [ ] just after the flash of lightning.",
+          "zh": "闪电过后，我们听到了雷声。"
+        },
+        {
+          "id": "pet-1696",
+          "en": "A gentle [ ] moved the paper flag.",
+          "zh": "一阵微风吹动了纸旗。"
+        }
+      ]
+    },
+    {
+      "topic": "16",
+      "title": "河滩下的书箱",
+      "intro": "木箱一头卡在树枝下面。你要把它绑稳，在水位再次上涨以前拖到岸上。",
+      "token": "第一只书箱",
+      "outro": "木盖终于打开。最上面是一本借阅簿，半页字还藏在泥里。",
+      "returns": {
+        "both": [
+          "pet-1728",
+          "Before you lower the rope, check tomorrow's weather [ ].",
+          "放下绳子以前，先看看明天的天气预报。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-1378",
+          "en": "The rope was caught on a [ ] of the willow tree.",
+          "zh": "绳子挂在了一根柳树枝上。"
+        },
+        {
+          "id": "pet-1379",
+          "en": "The [ ] covered the path when the river rose.",
+          "zh": "河水上涨时，洪水淹没了小路。"
+        },
+        {
+          "id": "pet-1365",
+          "en": "Put a heavy [ ] on the map to stop it blowing away.",
+          "zh": "用一块沉甸甸的石头压住地图，免得它被吹走。"
+        },
+        {
+          "id": "pet-1448",
+          "en": "A single green [ ] fell from the tree into the crate.",
+          "zh": "一片绿叶从树上落进了木箱。"
+        }
+      ]
+    },
+    {
+      "topic": "06",
+      "title": "清出一行名字",
+      "intro": "借阅簿和岸边的碎纸混在了一起。把能认的纸找出来，再替当年保管借阅簿的人清好河滩。",
+      "token": "借阅簿残页",
+      "outro": "一张残页上写着「星期五晚饭」。附近只有一家小店还记得那顿饭。",
+      "returns": {
+        "both": [
+          "pet-1378",
+          "Pull the willow [ ] out of the pile of wet paper.",
+          "把柳树枝从湿纸堆里抽出来。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-0389",
+          "en": "Please pick up the [ ] people left on the bank.",
+          "zh": "请把人们留在河岸上的散落垃圾捡起来。"
+        },
+        {
+          "id": "pet-0393",
+          "en": "We can [ ] the clean paper and use the material again.",
+          "zh": "我们可以回收利用干净的纸，让这些材料再次派上用场。"
+        },
+        {
+          "id": "pet-0386",
+          "en": "Take the empty glass bottles to the [ ].",
+          "zh": "把空玻璃瓶送到废玻璃瓶回收点。"
+        },
+        {
+          "id": "pet-0391",
+          "en": "The oil in the river is a sign of water [ ].",
+          "zh": "河里的油污是水污染的迹象。"
+        }
+      ]
+    },
+    {
+      "topic": "07",
+      "title": "写在食谱背面",
+      "intro": "小店的主人记得那晚借走书的人。她拿出那天的食谱，说客人习惯把留言写在纸背。",
+      "token": "厨房留言",
+      "outro": "留言说「我把书送去了学校」。下面还有一滴已经干透的草莓酱。",
+      "returns": {
+        "both": [
+          "pet-0011",
+          "The cook keeps the pantry list in the front [ ] of her apron.",
+          "厨师把食品清单放在围裙前面的口袋里。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-0551",
+          "en": "Follow this [ ] to make the same soup again.",
+          "zh": "照着这张食谱，就能再做出同样的汤。"
+        },
+        {
+          "id": "pet-0403",
+          "en": "The list of [ ] includes tomatoes and onions.",
+          "zh": "配料单上有番茄和洋葱。"
+        },
+        {
+          "id": "pet-0434",
+          "en": "Heat the soup in a [ ] on the cooker.",
+          "zh": "把汤放进炉灶上的长柄锅里加热。"
+        },
+        {
+          "id": "pet-0404",
+          "en": "She spread strawberry [ ] on her toast.",
+          "zh": "她在烤面包上抹了草莓果酱。"
+        }
+      ]
+    },
+    {
+      "topic": "04",
+      "title": "借书人的课桌",
+      "intro": "学校搬走以前，孩子们给每本书留过一句话。校工打开旧教室，让你把那堂课重新拼起来。",
+      "token": "旧班级名册",
+      "outro": "名册最后是一个空格。那名学生当时还不会用英语写自己的名字。",
+      "returns": {
+        "both": [
+          "pet-0404",
+          "The red mark on the register is sweet strawberry [ ], not ink.",
+          "名册上的红印是甜甜的草莓酱。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-0192",
+          "en": "One pupil was [ ] from class that day.",
+          "zh": "那天有一个学生缺了课。"
+        },
+        {
+          "id": "pet-0209",
+          "en": "Look up the meaning of the word in a [ ].",
+          "zh": "在词典里查这个词的意思。"
+        },
+        {
+          "id": "pet-0211",
+          "en": "Use a [ ] to draw a straight line under the name.",
+          "zh": "用尺子在名字下面画一条直线。"
+        },
+        {
+          "id": "pet-0202",
+          "en": "The English [ ] began when the bell rang.",
+          "zh": "铃声一响，这节英语课就开始了。"
+        }
+      ]
+    },
+    {
+      "topic": "12",
+      "title": "没有署名的信",
+      "intro": "空格旁夹着一封双语信。你和当年的班长一起读，把一个孩子没说出口的话翻译出来。",
+      "token": "双语便笺",
+      "outro": "「那本书教我给爸爸写信。」写信的人如今在河对岸修旧物。",
+      "returns": {
+        "both": [
+          "pet-0209",
+          "Find a [ ] with English on one side and French on the other.",
+          "找一本一边是英语、一边是法语的词典。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-1023",
+          "en": "Could you [ ] the note from French into English?",
+          "zh": "你能把这张便笺从法语译成英语吗？"
+        },
+        {
+          "id": "pet-1017",
+          "en": "Please say my name slowly so I can [ ] it correctly.",
+          "zh": "请慢慢念我的名字，好让我把它读准。"
+        },
+        {
+          "id": "pet-1021",
+          "en": "Put these words together to make a complete [ ].",
+          "zh": "把这些词连起来组成一个完整的句子。"
+        },
+        {
+          "id": "pet-1005",
+          "en": "Leave a short [ ] to tell him where the book is.",
+          "zh": "留个简短的口信，告诉他书在哪儿。"
+        }
+      ]
+    },
+    {
+      "topic": "09",
+      "title": "修书人的抽屉",
+      "intro": "修书人认出了那封信。他一直留着一张书船的旧照片，船尾的字放大后也许还能读。",
+      "token": "船尾照片",
+      "outro": "照片里的船尾叫「麻雀号」。它今晚要临时当赛艇的终点船。",
+      "returns": {
+        "both": [
+          "pet-1005",
+          "The repairer was out, so we left him a voice [ ].",
+          "修书人外出了，于是我们给他留了条语音口信。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-0721",
+          "en": "Can you [ ] the torn cover instead of replacing it?",
+          "zh": "你能把破封面修好，继续用它吗？"
+        },
+        {
+          "id": "pet-0692",
+          "en": "In the old [ ], you can see the name on the boat.",
+          "zh": "在那张旧照片上，你能看到船上的名字。"
+        },
+        {
+          "id": "pet-0661",
+          "en": "The picture made with oils is a [ ].",
+          "zh": "那幅用油彩画成的图是一幅油画。"
+        },
+        {
+          "id": "pet-0681",
+          "en": "The local [ ] displays pictures by artists from the town.",
+          "zh": "本地画廊展出镇上艺术家的画作。"
+        }
+      ]
+    },
+    {
+      "topic": "15",
+      "title": "河上的接力",
+      "intro": "终点船被人群围住了。你找到负责比赛的人，借送奖品的机会把书交到船员手里。",
+      "token": "接力号码布",
+      "outro": "接过书的船员看见你的双手磨红了。他说先处理一下，再谈下一程。",
+      "returns": {
+        "both": [
+          "pet-0692",
+          "The number on the boat matches the one in the old [ ].",
+          "船身上的号码和旧照片上的号码对得上。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-1248",
+          "en": "Six boats took part in the [ ] to see which was fastest.",
+          "zh": "六条船参加了比赛，比谁最快。"
+        },
+        {
+          "id": "pet-1241",
+          "en": "The winner received a book as the first [ ].",
+          "zh": "获胜者得到一本书作为一等奖奖品。"
+        },
+        {
+          "id": "pet-1229",
+          "en": "The young [ ] trains daily to compete in running events.",
+          "zh": "这名年轻运动员每天训练，准备参加跑步比赛。"
+        },
+        {
+          "id": "pet-1257",
+          "en": "The ball crossed the line and the team scored a [ ].",
+          "zh": "球越过了门线，球队进了一球。",
+          "meaning": "n. 进球，得分"
+        }
+      ]
+    },
+    {
+      "topic": "08",
+      "title": "木刺和录音带",
+      "intro": "医务站的志愿者替你包扎时，从书箱里发现一卷录音带。船上最后一个干燥的位置，只够先安置一样东西。",
+      "token": "医务站封条",
+      "outro": "这趟船可以先救回原书，也可以先留住读者的声音。你来决定最后几站怎么走。",
+      "returns": {
+        "both": [
+          "pet-1248",
+          "The runner came off the track before the [ ] was over.",
+          "这场赛跑还没结束，那名选手就离开了跑道。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-0583",
+          "en": "Wrap a clean [ ] around the injured hand.",
+          "zh": "在受伤的手上缠上一条干净的绷带。"
+        },
+        {
+          "id": "pet-0566",
+          "en": "The joint between your foot and your leg is your [ ].",
+          "zh": "连接脚和小腿的关节是脚踝。"
+        },
+        {
+          "id": "pet-0561",
+          "en": "She needs time to [ ] after her illness.",
+          "zh": "她病后需要时间恢复。"
+        },
+        {
+          "id": "pet-0646",
+          "en": "You can collect your medicine at the [ ] next door.",
+          "zh": "你可以去隔壁的药房取药。"
+        }
+      ]
+    },
+    {
+      "topic": "14",
+      "title": "第二只书箱",
+      "intro": "集市上有人要卖一箱旧书。卖主说书是寄放的，你要拿出凭据才能把它们领走。",
+      "token": "盖章收据",
+      "outro": "收据上写着最后一位借书人的姓。她今晚会出现在码头的露天演出上。",
+      "returns": {
+        "A": [
+          "pet-0721",
+          "We need cloth and glue to [ ] the original cover.",
+          "我们需要布和胶水来修补原来的封面。"
+        ],
+        "B": [
+          "pet-1005",
+          "Press PLAY to hear the [ ] the reader left on the tape.",
+          "按下播放键，听听那位读者留在磁带上的口信。"
+        ]
+      },
+      "branchKey": "legacy",
+      "branchIntro": {
+        "A": "这一程要救回原书的封面。",
+        "B": "这一程要留住读者的声音。"
+      },
+      "words": [
+        {
+          "id": "pet-1226",
+          "en": "Keep the [ ] as proof that you paid.",
+          "zh": "收好收据，作为你已经付款的凭证。"
+        },
+        {
+          "id": "pet-1186",
+          "en": "Read the [ ] tied to the handle of the crate.",
+          "zh": "读一读系在木箱提手上的标签。"
+        },
+        {
+          "id": "pet-1197",
+          "en": "The cover was [ ] when the crate fell.",
+          "zh": "木箱摔下来的时候，封面受损了。"
+        },
+        {
+          "id": "pet-1199",
+          "en": "These [ ] books have all had owners before.",
+          "zh": "这些二手书以前都有过主人。"
+        }
+      ]
+    },
+    {
+      "topic": "05",
+      "title": "露天广播",
+      "intro": "演出开场前，你争取到一分钟的话筒时间。让正在找书的人听懂这条广播。",
+      "token": "现场节目单",
+      "outro": "一个戴羊毛围巾的女人站起来。她就是当年缺课的那个学生。",
+      "returns": {
+        "both": [
+          "pet-1226",
+          "Show the [ ] from the market to prove the crate is yours.",
+          "出示在集市拿到的收据，证明木箱属于你。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-0376",
+          "en": "The singer stepped onto the [ ] in front of the crowd.",
+          "zh": "歌手走上了观众面前的舞台。"
+        },
+        {
+          "id": "pet-0307",
+          "en": "We heard the band play live at the outdoor [ ].",
+          "zh": "我们在露天音乐会上听了乐队的现场演奏。"
+        },
+        {
+          "id": "pet-0287",
+          "en": "The sign says [ ] is free, so anyone can come in.",
+          "zh": "牌子上写着免费入场，所以谁都能进来。"
+        },
+        {
+          "id": "pet-0320",
+          "en": "The [ ] listened quietly while the woman read her letter.",
+          "zh": "那个女人读信时，听众都在安静地听。",
+          "meaning": "n. 观众，听众"
+        }
+      ]
+    },
+    {
+      "topic": "11",
+      "title": "她为什么没回来",
+      "intro": "你把半张托运单递给她。她捏着那枚纽扣，讲起小时候不敢回图书船的那一天。",
+      "token": "读者签名",
+      "outro": "「我一直以为，把书弄湿就不能再借了。」她终于在名册的空格里签上名字。",
+      "returns": {
+        "both": [
+          "pet-0037",
+          "She still has the wool [ ] that kept the book dry.",
+          "她还留着当年包住书、防止书被淋湿的羊毛围巾。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-0892",
+          "en": "She felt [ ] while waiting for news of the missing book.",
+          "zh": "她等着失书的消息，心里十分焦虑。"
+        },
+        {
+          "id": "pet-0889",
+          "en": "He felt [ ] when everyone noticed his mistake.",
+          "zh": "大家都注意到他的错误时，他觉得很尴尬。"
+        },
+        {
+          "id": "pet-0968",
+          "en": "After practising her story, she felt [ ] enough to speak in public.",
+          "zh": "练习了几遍以后，她有了在公众面前开口的自信。"
+        },
+        {
+          "id": "pet-0862",
+          "en": "The girl was [ ] to hear that she could borrow books again.",
+          "zh": "听说可以重新借书，女孩高兴极了。"
+        }
+      ]
+    },
+    {
+      "topic": "17",
+      "title": "开船前的一刻钟",
+      "intro": "码头的钟快了五分钟。你把广播里的时间和航行日志一项项对齐，给迟到的读者留出登船的时间。",
+      "token": "末班时刻表",
+      "outro": "最后一个读者赶上了。船长翻到航行日志的末页，把笔放在你手上。",
+      "returns": {
+        "both": [
+          "pet-0307",
+          "The clock stopped just as the band began its [ ].",
+          "乐队的音乐会刚开始，钟就停了。"
+        ]
+      },
+      "words": [
+        {
+          "id": "pet-1464",
+          "en": "We met at [ ], exactly twelve in the daytime.",
+          "zh": "我们中午碰面，正好是白天十二点。"
+        },
+        {
+          "id": "pet-1486",
+          "en": "The last boat leaves at [ ], twelve at night.",
+          "zh": "最后一班船在午夜开，也就是夜里十二点。"
+        },
+        {
+          "id": "pet-1487",
+          "en": "The clock shows 6:15, a [ ] six.",
+          "zh": "钟上是六点十五分，也就是六点一刻。",
+          "meaning": "时间表达，过一刻"
+        },
+        {
+          "id": "pet-1457",
+          "en": "If today is Friday, [ ] is Saturday.",
+          "zh": "如果今天是星期五，明天就是星期六。"
+        }
+      ]
+    },
+    {
+      "topic": "20",
+      "title": "最后一笔借阅",
+      "intro": "大家在船上排好书架，只缺新的值班表。给每个人找到合适的工作，让这趟末班船成为下一趟的起点。",
+      "token": "首航借阅证",
+      "outro": "你写下第一位借书人的名字。窗外的水面发白，新一天的第一班书船开了。",
+      "returns": {
+        "A": [
+          "pet-0755",
+          "We put the restored books on the top [ ] of the new bookcase.",
+          "我们把修复好的书摆在新书架的顶层。"
+        ],
+        "B": [
+          "pet-0320",
+          "The listeners on deck are the first [ ] for the recorded stories.",
+          "甲板上的听众是这些录音故事的第一批观众。"
+        ]
+      },
+      "branchKey": "legacy",
+      "branchIntro": {
+        "A": "这一程要救回原书的封面。",
+        "B": "这一程要留住读者的声音。"
+      },
+      "words": [
+        {
+          "id": "pet-1745",
+          "en": "Ask the [ ] at the desk to help you borrow a book.",
+          "zh": "请柜台的图书管理员帮你借书。"
+        },
+        {
+          "id": "pet-1753",
+          "en": "The [ ] fixed the engine before the boat left.",
+          "zh": "机修工在船离开前修好了发动机。"
+        },
+        {
+          "id": "pet-1746",
+          "en": "The [ ] interviewed the passengers for the newspaper.",
+          "zh": "记者采访了乘客，准备给报纸写报道。"
+        },
+        {
+          "id": "pet-1868",
+          "en": "The [ ] agreed to print a new edition of the book.",
+          "zh": "出版商同意印行这本书的新版。"
+        }
+      ]
+    }
+  ],
+  "acts": [
+    {
+      "start": 0,
+      "title": "遗落的托运单",
+      "image": 0
+    },
+    {
+      "start": 5,
+      "title": "沿河寻书",
+      "image": 1
+    },
+    {
+      "start": 10,
+      "title": "无名的读者",
+      "image": 2
+    },
+    {
+      "start": 15,
+      "title": "末班变首航",
+      "image": 3
+    }
+  ],
+  "gates": [
+    {
+      "after": 5,
+      "test": [
+        "谁能带你过河",
+        "船长不认店铺钥匙。他要看一件能证明这批书由邮局经手的东西。",
+        2,
+        [
+          0,
+          2,
+          3
+        ],
+        "船长核对了回执上的编号，把船舱里干燥的位置留给你。",
+        "这件东西能说明你去过旧店，船长还需要邮局经手的凭据。"
+      ]
+    },
+    {
+      "after": 10,
+      "test": [
+        "敲开学校的门",
+        "校工守着搬空的教室。你带的哪件东西写着「我把书送去了学校」，能说服他打开门？",
+        9,
+        [
+          5,
+          8,
+          9
+        ],
+        "校工认出了纸背的字，取下了旧教室的钥匙。",
+        "校工想看的是寄书人自己写下的去向。再翻翻刚找到的东西。"
+      ]
+    },
+    {
+      "after": 15,
+      "test": [
+        "给书箱补上船名",
+        "医务站要给船上的干燥箱位开一张移交单。志愿者想核对原船的名字，两条船却都挂着银鱼旗。",
+        12,
+        [
+          1,
+          10,
+          12
+        ],
+        "志愿者照着照片填好「麻雀号」，把最后一个干燥箱位交给了你。",
+        "两条船都有图书船的标志。还需要能读出船名的证据。"
+      ]
+    },
+    {
+      "after": 20,
+      "test": [
+        "把第一本书借给谁",
+        "广播找回了最早的读者。哪件证物能证明她亲自回来补上了名册里的空格？",
+        17,
+        [
+          14,
+          16,
+          17
+        ],
+        "她指给你看那一笔歪歪的签名。新借阅簿的第一行，留给她。",
+        "这些东西能证明那天有人在场。借书还需要读者亲自留下的名字。"
+      ]
+    }
+  ],
+  "forks": [
+    {
+      "after": 5,
+      "key": "route",
+      "title": "谁来运书",
+      "body": "背包轻巧，你能跟着书一直走。交给熟悉沿岸的邮差，就多了一串能联系的小站。",
+      "options": [
+        "我亲自背书",
+        "委托沿岸邮差"
+      ]
+    },
+    {
+      "after": 15,
+      "key": "legacy",
+      "title": "留下什么",
+      "body": "船舱只剩一个干燥的位置。原书的装订正在松开，磁带里是当年借书人的声音。",
+      "options": [
+        "先修复原书",
+        "先保存录音"
+      ]
+    }
+  ],
+  "endings": {
+    "AA": [
+      "背包里的图书馆",
+      "你亲手背回来的书，整整齐齐摆满了甲板上的矮架。那个迟到了许多年的读者，成了今天第一个借书的人。"
+    ],
+    "BA": [
+      "沿河的借书站",
+      "邮差把修好的原书送到岸边的小站。一张张签收的回执串成航线，住得远的人也能借到书了。"
+    ],
+    "AB": [
+      "会说话的背包",
+      "你把录音机装进那只背包。读者坐在你身边，第一次听见当年的自己给爸爸念信。"
+    ],
+    "BB": [
+      "水上的声音邮局",
+      "邮差给每个码头留下一份录音。最后一个包裹寄到时，整条河都听到了那个孩子没敢说出口的话。"
+    ]
+  }
+}

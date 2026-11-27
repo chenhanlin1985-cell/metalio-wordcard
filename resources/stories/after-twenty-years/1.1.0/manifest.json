@@ -1,0 +1,13 @@
+{
+  "format": "wordcard-pack",
+  "schema": 3,
+  "type": "story",
+  "id": "after-twenty-years",
+  "version": "1.1.0",
+  "title": "二十年后",
+  "requires": "pet-2024@1.0.0",
+  "files": {
+    "content.json": "2f7520e6b4d7bd2b5334fc49e35bc2afe4a364f36211fe31fd7618b7ce0a7b06"
+  },
+  "storyType": "comprehension"
+}

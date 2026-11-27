@@ -1,0 +1,339 @@
+{
+  "art": "pages.wpix",
+  "terms": {
+    "square": {
+      "id": "pet-1142",
+      "meaning": "n. 广场"
+    },
+    "hungry": {
+      "id": "pet-0543",
+      "meaning": "adj. 饥饿的"
+    },
+    "bowl": {
+      "id": "pet-0439",
+      "meaning": "n. 碗"
+    },
+    "stone": {
+      "id": "pet-1365",
+      "meaning": "n. 石头"
+    },
+    "pocket": {
+      "id": "pet-0011",
+      "meaning": "n. 口袋"
+    },
+    "soup": {
+      "id": "pet-0458",
+      "meaning": "n. 汤"
+    },
+    "saucepan": {
+      "id": "pet-0434",
+      "meaning": "n. 长柄小锅"
+    },
+    "fire": {
+      "id": "pet-1371",
+      "meaning": "n. 火；炉火"
+    },
+    "neighbour": {
+      "id": "pet-0809",
+      "meaning": "n. 邻居"
+    },
+    "boil": {
+      "id": "pet-0427",
+      "meaning": "v. 沸腾；烧开"
+    },
+    "curious": {
+      "id": "pet-0989",
+      "meaning": "adj. 好奇的"
+    },
+    "carrot": {
+      "id": "pet-0504",
+      "meaning": "n. 胡萝卜"
+    },
+    "onion": {
+      "id": "pet-0488",
+      "meaning": "n. 洋葱"
+    },
+    "spoon": {
+      "id": "pet-0470",
+      "meaning": "n. 勺子"
+    },
+    "taste": {
+      "id": "pet-0495",
+      "meaning": "n. 味道"
+    },
+    "salt": {
+      "id": "pet-0422",
+      "meaning": "n. 盐"
+    },
+    "delicious": {
+      "id": "pet-0428",
+      "meaning": "adj. 美味的"
+    },
+    "slice": {
+      "id": "pet-0446",
+      "meaning": "n. 薄片"
+    },
+    "ordinary": {
+      "id": "pet-0941",
+      "meaning": "adj. 普通的"
+    },
+    "recipe": {
+      "id": "pet-0551",
+      "meaning": "n. 食谱；做法"
+    }
+  },
+  "englishTitle": "Stone Soup",
+  "author": "欧洲民间故事",
+  "attribution": "据石头汤民间故事独立改写",
+  "intro": "口袋里只有一块石头，能给一村人做顿晚饭吗？",
+  "source": "https://www.cm-almeirim.pt/conhecer-almeirim/gastronomia/a-lenda-da-sopa-da-pedra",
+  "chapters": [
+    {
+      "title": "广场上的晚饭",
+      "en": "A [[hungry]] traveller stopped in the village [[square]]. A girl showed her an empty [[bowl]]. The traveller held up a [[stone]]. “Got a pan?”",
+      "zh": "一位饥肠辘辘的旅人在村子广场停下。女孩给她看了看空碗。旅人举起一块石头。“有锅吗？”",
+      "words": [
+        {
+          "term": "square",
+          "gloss": "广场",
+          "distractors": [
+            "街道",
+            "院子",
+            "集市"
+          ]
+        },
+        {
+          "term": "hungry",
+          "gloss": "饥饿的",
+          "distractors": [
+            "口渴的",
+            "困倦的",
+            "疲惫的"
+          ]
+        },
+        {
+          "term": "bowl",
+          "gloss": "碗",
+          "distractors": [
+            "盘子",
+            "杯子",
+            "水壶"
+          ]
+        },
+        {
+          "term": "stone",
+          "gloss": "石头",
+          "distractors": [
+            "骨头",
+            "贝壳",
+            "木片"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "石头能煮汤？",
+      "en": "The traveller took the stone from her [[pocket]]. “Stone [[soup]]?” The girl filled a [[saucepan]] with water and set it over the [[fire]].",
+      "zh": "旅人从口袋里取出石头。“石头汤？”女孩往一把长柄小锅里灌了水，把锅架到火上。",
+      "words": [
+        {
+          "term": "pocket",
+          "gloss": "口袋",
+          "distractors": [
+            "袖子",
+            "衣领",
+            "下摆"
+          ]
+        },
+        {
+          "term": "soup",
+          "gloss": "汤",
+          "distractors": [
+            "果汁",
+            "粥",
+            "酱汁"
+          ]
+        },
+        {
+          "term": "saucepan",
+          "gloss": "长柄小锅",
+          "distractors": [
+            "烧水壶",
+            "托盘",
+            "烤箱"
+          ]
+        },
+        {
+          "term": "fire",
+          "gloss": "炉火",
+          "distractors": [
+            "烟雾",
+            "灰烬",
+            "蒸汽"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "石头也要有伴",
+      "en": "When the water began to [[boil]], a [[curious]] [[neighbour]] leaned out of her window. “What does a stone need?” “Company,” said the traveller. The girl cut up a [[carrot]].",
+      "zh": "水刚烧开，好奇的邻居就从窗户探出身子。“石头还需要什么？”“得有个伴儿。”旅人说。女孩切了一根胡萝卜。",
+      "words": [
+        {
+          "term": "boil",
+          "gloss": "沸腾",
+          "distractors": [
+            "结冰",
+            "冷却",
+            "沉淀"
+          ]
+        },
+        {
+          "term": "curious",
+          "gloss": "好奇的",
+          "distractors": [
+            "紧张的",
+            "得意的",
+            "害羞的"
+          ]
+        },
+        {
+          "term": "neighbour",
+          "gloss": "邻居",
+          "distractors": [
+            "顾客",
+            "陌生人",
+            "旅客"
+          ]
+        },
+        {
+          "term": "carrot",
+          "gloss": "胡萝卜",
+          "distractors": [
+            "辣椒",
+            "土豆",
+            "南瓜"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "还差一点味道",
+      "en": "The neighbour added an [[onion]]. The girl picked up a [[spoon]] and tried the soup. “Funny [[taste]].” The neighbour added a pinch of [[salt]].",
+      "zh": "邻居加进一个洋葱。女孩拿勺子尝了一口汤。“味道怪怪的。”邻居又撒了一撮盐。",
+      "words": [
+        {
+          "term": "onion",
+          "gloss": "洋葱",
+          "distractors": [
+            "豆子",
+            "蘑菇",
+            "萝卜"
+          ]
+        },
+        {
+          "term": "spoon",
+          "gloss": "勺子",
+          "distractors": [
+            "叉子",
+            "餐刀",
+            "筷子"
+          ]
+        },
+        {
+          "term": "taste",
+          "gloss": "味道",
+          "distractors": [
+            "颜色",
+            "形状",
+            "温度"
+          ]
+        },
+        {
+          "term": "salt",
+          "gloss": "盐",
+          "distractors": [
+            "糖",
+            "面粉",
+            "胡椒"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "明天你带胡萝卜",
+      "en": "“[[Delicious]]!” Under the last [[slice]] of carrot, the girl found an [[ordinary]] stone. She slipped it into her pocket. “Tomorrow, you bring the carrot.” The traveller laughed. “You know the [[recipe]]!”",
+      "zh": "“真好吃！”最后一片胡萝卜下面，女孩摸到一块普普通通的石头。她把石头塞进口袋。“明天你带胡萝卜。”旅人笑了。“你已经知道做法啦！”",
+      "words": [
+        {
+          "term": "delicious",
+          "gloss": "美味的",
+          "distractors": [
+            "苦的",
+            "酸的",
+            "寡淡的"
+          ]
+        },
+        {
+          "term": "slice",
+          "gloss": "薄片",
+          "distractors": [
+            "一滴",
+            "一束",
+            "一勺"
+          ]
+        },
+        {
+          "term": "ordinary",
+          "gloss": "普通的",
+          "distractors": [
+            "珍贵的",
+            "奇特的",
+            "昂贵的"
+          ]
+        },
+        {
+          "term": "recipe",
+          "gloss": "食谱",
+          "distractors": [
+            "菜单",
+            "账单",
+            "购物单"
+          ]
+        }
+      ]
+    }
+  ],
+  "album": [
+    {
+      "en": "In the village [[square]], a [[hungry]] traveller asked for supper. A girl held up an empty [[bowl]]. The traveller pulled a [[stone]] from her [[pocket]]. “Got a pan?”",
+      "zh": "村子广场上，一位旅人饿了，想讨口晚饭。女孩举起一只空碗。旅人从口袋里掏出一块石头。“有锅吗？”",
+      "image": 0
+    },
+    {
+      "en": "“[[Stone]] [[soup]]?” The girl filled a [[saucepan]] with water. They set it over the [[fire]]. A [[neighbour]] watched from her window as the water began to [[boil]].",
+      "zh": "“石头汤？”女孩往一口长柄小锅里灌了水。两人把锅架到火上。水渐渐开了，一位邻居趴在窗口看。",
+      "image": 1
+    },
+    {
+      "en": "“What does a [[stone]] need?” asked the [[curious]] [[neighbour]]. “Company,” said the traveller. The girl cut up a [[carrot]]. In it went. The [[neighbour]] passed her an [[onion]]. In that went, too.",
+      "zh": "“石头还缺什么？”邻居好奇地问。“缺个伴儿。”旅人说。女孩切了根胡萝卜，下锅。邻居递来一个洋葱，也下了锅。",
+      "image": 2
+    },
+    {
+      "en": "The traveller held out a [[spoon]]. The girl took a sip. “Funny [[taste]].” The [[neighbour]] added a pinch of [[salt]]. This time the girl licked the [[spoon]] clean.",
+      "zh": "旅人递过来一勺汤。女孩抿了一口。“味道怪怪的。”邻居撒了一小撮盐。这一回，女孩把勺子都舔干净了。",
+      "image": 3
+    },
+    {
+      "en": "Soon everyone in the [[square]] had a [[bowl]]. “[[Delicious]]!” said the girl. Then her [[spoon]] hit something hard under the last [[slice]] of [[carrot]]. Clink!",
+      "zh": "不一会儿，广场上人手一碗汤。“真好喝！”女孩说。最后一片胡萝卜底下好像有什么硬东西。勺子一碰，叮！",
+      "image": 4
+    },
+    {
+      "en": "“An [[ordinary]] [[stone]]!” The traveller held out her hand. The girl slipped the [[stone]] into her own [[pocket]]. “Tomorrow, you bring the [[carrot]].” The traveller laughed. “You've got the [[recipe]]!”",
+      "zh": "“就一块普普通通的石头嘛！”旅人伸手来接。女孩却把它揣进了自己的口袋。“明天，你带胡萝卜。”旅人笑了。“这汤怎么做，你已经会啦！”",
+      "image": 5
+    }
+  ]
+}

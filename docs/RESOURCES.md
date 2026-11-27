@@ -1,76 +1,26 @@
-# 资源下载与安装
+# 下载与安装 fix65
 
-## 网盘下载
+[下载 Windows 完整安装包（782 MiB）](https://github.com/chenhanlin1985-cell/metalio-wordcard/releases/download/fix65/Metalio-S31-fix65-full.zip) · [查看 GitHub Release](https://github.com/chenhanlin1985-cell/metalio-wordcard/releases/tag/fix65)
 
-**[下载 fix55h 完整配套包（百度网盘）](https://pan.baidu.com/s/1LFhJ1OKthrljqOejNbFNOw?pwd=xbct)**，提取码：`xbct`。
-
-| 项目 | 内容 |
-| --- | --- |
-| 文件名 | `Metalio-Wordcard-fix55h-install-resources.zip` |
-| 固件版本 | fix55h-recovery |
-| 整理日期 | 2026-11-07 |
-| 文件大小 | 618,157,952 字节（约 618 MB / 590 MiB） |
-| 对应源码 | [`675880e`](https://github.com/chenhanlin1985-cell/metalio-wordcard/tree/675880e4f5bd1484d24ad2c8e427fe2156180b26) |
-| 包内内容 | 固件、启动文件、分区表、字库、完整 SD 资源、最新词典、许可与校验清单 |
-| 首次安装 | 解压后按包内 `README-先读我.md` 操作 |
-| 已安装设备 | 同一包内提供升级说明；按已有版本更新应用与必要资源，保留学习记录 |
-
-SHA-256（来自打包时的本地校验记录，供下载后核对）：
+设备型号为 Metalio E-INK4 Plus（ESP32-S31，4.7 英寸）。文件名为 `Metalio-S31-fix65-full.zip`，大小为 819,823,555 字节，SHA-256 如下。
 
 ```text
-abcce42a0d625afb43f972ef843642ffa81def38184428c8e859db72f2d277f9
+635405914cb7353e38e00cb2b21d821591d67360bd1aaaae2a4ea5d1942b70d0
 ```
 
-Windows 可在下载目录运行：
+Windows 下可运行 `Get-FileHash -Algorithm SHA256 .\Metalio-S31-fix65-full.zip` 核对下载文件。
 
-```powershell
-Get-FileHash -Algorithm SHA256 -LiteralPath '.\Metalio-Wordcard-fix55h-install-resources.zip'
-```
+## 首次安装或从最早版升级
 
-这个包已合入 look after 等词典修正，不含个人进度、生词本或用户词表。已经运行 fix55h 的设备，无须仅为此次打包重新刷机。
+1. 把 SD 卡内容复制到电脑备份，特别是学习记录、个人词表和生词本。最早版的学习记录迁移取决于原固件版本。
+2. 在 Windows 上完整解压 ZIP。用 USB 数据线连接 S31，双击 `开始刷机.cmd`，选 2「首次安装」，确认实际串口。安装器会按清单写入启动程序、分区表、应用、字库和离线语音模型。
+3. 用读卡器接入 SD 卡，双击 `安装SD资源.cmd`，选 1「全部安装」，确认 SD 卡盘符。完成后安全弹出，装回设备并重启。
+4. 在「内容库 → 故事书」打开《口袋里的收据》。两个安装器都可离线运行。
 
-不要以网上任意同名模型或词库替代配套包：文件格式、音频采样格式和缓存身份都与当前实现有关。
+## 以后分别更新
 
-## 哪些资源独立分发
+- 更新固件时运行 `开始刷机.cmd`。使用相同分区布局、字库和模型的设备可选择只更新应用。
+- 更新词库、语音或故事书时运行 `安装SD资源.cmd`，选 2，选择所需资源。安装故事会检查它依赖的词库和版本。重复安装会校验并跳过相同文件。
+- 添加自己的故事书时，可从仓库内同类型的书复制一份，修改正文和清单，再用内容打包工具校验。[故事书内容规范](故事书内容规范.md)
 
-- 分级词库、旧课程和它们的释义、音标、例句及音频。
-- 离线词典 `index.bin`、`entries.bin`，必须保持同一版本的一对文件。
-- Amy Small 英语模型及 eSpeak-NG 英语语言数据。
-- EFNT 字库、资源来源归属、许可证和校验清单。
-
-SD 根目录中，学习资源的基础目录是：
-
-```text
-metalio/e-ink/wordcards/
-  vocabulary/          分级词库及其 audio/ 子目录
-  dictionary/          离线词典
-  audio/               通用单词发音
-  web-course-v1/       更多学习的课程及发音资源
-  tts/
-    amy-small-en-us/    Amy Small 模型
-    espeak-ng-data/     eSpeak 数据
-```
-
-解压并按资源包目录结构复制，不能把整个资源目录再套进一层 ZIP 同名目录。字库是 Flash 的独立分区，不是把任意字体文件放到 SD 就能使用。
-
-## 首次安装与升级
-
-当前分区：应用起始 `0x20000`、字库 `0x600000`，具体以源码 `firmware/partitions.csv`、本次构建的 `flasher_args.json` 和配套包说明共同核对。首次安装需要 bootloader、分区表、应用和字库，不能只刷应用。不要套用其他 S3/S31 固件的偏移。
-
-**已安装同一分区布局的本项目设备，通常只升级应用，不擦除整片 Flash。** 若配套资源有变更，再按包内清单更新相应资源。不要使用全盘镜像覆盖用户 SD。
-
-网盘包用户先按包内 `README-先读我.md` 操作，文件名和目录以包内说明为准。下面示例用于从源码构建后、已经安装本项目且布局一致的设备，只更新应用；先替换串口：
-
-```powershell
-$env:PYTHONUTF8='1'
-$env:PYTHONIOENCODING='utf-8'
-python -m esptool --chip esp32s31 --port COMx --baud 460800 --no-stub write-flash --flash-mode dio --flash-size 16MB --flash-freq 80m 0x20000 build/metalio_wordcard.bin
-```
-
-需要支持 ESP32-S31 的 esptool；串口缺失时先确认 USB 数据线和下载模式，不执行 erase-flash。先备份 SD 中个人记录、词表和生词本；升级不要覆盖 `learning-web/` 等运行记录目录，也不要删除已有发音缓存。设备正在 U 盘模式时，不同时在设备端学习；复制后安全弹出，再返回学习。
-
-遇到 SD 无法写入，先用 [诊断工具](../tools/sd-diagnostics/先读我.md) 采集原因，不通过格式化或清空进度“解决”。
-
-## 上传资源包时
-
-包内只含可分发资源、许可证、版本和校验清单；排除个人 `my-words.txt`、学习日志、生词本、设备备份和测试作答数据。资源的许可独立于源码，保留逐项来源和例句归属；尚未确认再分发权利的内容不要公开上传。固件二进制需同时指向本仓库对应版本的源码与许可。
+包内 `05-许可与源码` 提供对应固件的构建源码和第三方许可。遇到 SD 无法写入时，可使用[SD 诊断工具](../tools/sd-diagnostics/先读我.md)。

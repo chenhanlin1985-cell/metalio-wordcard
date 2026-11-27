@@ -165,7 +165,7 @@ enum class Action {
     AssessmentPage, AssessmentPause, AssessmentResume, AssessmentSkip,
     AssessmentSkipConfirm, AssessmentReport, AssessmentSkill, AssessmentInterest,
     AssessmentRecommend, AssessmentSave,
-    WebAction, WebPage, WebLearning, DeviceMenu, WebImport, DeviceSettings, MoreLearning, LearningSettings, LegacyCourses, StorageCheck
+    WebAction, WebPage, WebLearning, DeviceMenu, WebImport, DeviceSettings, MoreLearning, LearningSettings, LegacyCourses, StorageCheck, CloseSettings, WebExample
 };
 struct Event {
     Action action = Action::None;
@@ -190,7 +190,7 @@ struct BookInfo {
 struct View {
     bool more_learning_scope=false;
     WebPage web;
-    int web_page=0;
+    int web_page=0, web_example=-1;
     std::string boot_stage;
     AssessmentView assessment;
     bool guided_enabled=false,legacy_home=false,legacy_practice=false;
@@ -235,6 +235,18 @@ struct View {
     size_t personal_planned_new = 0;
     int selected_book = 0;
     int page = 0, answer_page = 0, brightness = 40, cct = 3, volume = 50;
+    int battery_percent = -1;
+    bool settings_origin = false;
+    enum class SettingsReturn { Home, Question, Search, Previous };
+    SettingsReturn settings_return = SettingsReturn::Home;
+    const char *settings_exit_label() const {
+        switch (settings_return) {
+        case SettingsReturn::Question: return "回原题";
+        case SettingsReturn::Search: return "回查词";
+        case SettingsReturn::Previous: return "回原页";
+        default: return "回首页";
+        }
+    }
     bool revealed = false, audio_available = false, audio_busy = false, audio_pending = false,
          writable = false;
     bool resume_available = false, can_undo = false, favorite = false, haptics = true,
@@ -258,6 +270,9 @@ class Font {
         int16_t x = 0, y = 0;
     };
     Glyph glyph(uint32_t codepoint, uint16_t font_size = 30) const;
+    Glyph exact_glyph(uint32_t codepoint, uint16_t font_size, uint8_t bpp) const;
+    void folio(const Font *font) { folio_ = font; }
+    const Font *folio() const { return folio_; }
     struct RasterGlyph {
         uint64_t key = 0;
         int width = 0, height = 0, left = 0, top = 0, advance = 0;
@@ -267,7 +282,7 @@ class Font {
     bool ready() const { return data_ != nullptr; }
     void fallback(const Font *font) { fallback_ = font; cache_.clear(); raster_.reset(); }
     // Immutable font data is shared, mutable glyph maps are worker-owned.
-    Font detached(const Font *fallback=nullptr) const { Font f;f.data_=data_;f.size_=size_;f.count_=count_;f.index_=index_;f.fallback_=fallback;return f; }
+    Font detached(const Font *fallback=nullptr) const { Font f;f.data_=data_;f.size_=size_;f.count_=count_;f.index_=index_;f.fallback_=fallback;f.folio_=folio_;return f; }
 
   private:
     const uint8_t *data_ = nullptr;
@@ -286,6 +301,7 @@ class Font {
     struct RasterDelete { void operator()(RasterArena *) const; };
     mutable std::unique_ptr<RasterArena, RasterDelete> raster_;
     const Font *fallback_ = nullptr;
+    const Font *folio_ = nullptr; // Immutable after attachment; the home renderer only uses exact_glyph.
 };
 class Canvas {
   public:
@@ -307,8 +323,11 @@ class Canvas {
     std::vector<std::string> wrap(const std::string &text, int max_width, int scale = 1) const;
     // Device-sized typography, independent of the legacy 30/60/90 scale API.
     int text_width_px(const std::string &, int pixels) const;
+    enum class Align { Left, Center, Right };
+    int folio_run(int x, int center_y, const std::string &, int slot, Align align, bool paint);
+    bool folio_reward(int cx, int cy, unsigned index, int size);
     void text_px(int x,int y,const std::string &,int pixels);
-    std::vector<std::string> wrap_px(const std::string &,int max_width,int pixels) const;
+    std::vector<std::string> wrap_px(const std::string &,int max_width,int pixels,int folio_slot=0,bool keep_punctuation=false) const;
 
   private:
     uint8_t *fb_;

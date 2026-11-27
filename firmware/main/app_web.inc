@@ -19,8 +19,10 @@ void App::web_view(){
  if((view_.screen!=Screen::WebLearning&&view_.screen!=Screen::WebPrompt)||!web_.ready())return;
  const auto old=view_.web.key;
  if(!web_.page(view_.web)){view_.web.error="学习界面错误，请返回设备菜单";ESP_LOGE(TAG,"WEB_VIEW %s",web_.error().c_str());}
- view_.web.speech_note=web_audio_note_;
- if(old!=view_.web.key){web_positions_[old]=view_.web_page;view_.web_page=web_positions_[view_.web.key];web_audio_note_.clear();view_.web.speech_note.clear();}
+ if(old!=view_.web.key){web_positions_[old]=view_.web_page;view_.web_page=web_positions_[view_.web.key];web_audio_note_.clear();}
+ // page() supplies the current recall instruction. An empty audio overlay
+ // must not erase it; a real playback status can temporarily replace it.
+ if(!web_audio_note_.empty())view_.web.speech_note=web_audio_note_;
  view_.dictionary_shift=view_.web.shift;view_.dictionary_symbols=view_.web.symbols;
  view_.dictionary_ready=view_.web.can_submit;
  // Two actual candidate/help rows share the stable keyboard touch capture path.
@@ -28,7 +30,7 @@ void App::web_view(){
 }
 bool App::web_dispatch(Event e){
  if(menu_dispatch(e))return true;
- if(e.action==Action::StorageCheck && view_.screen==Screen::DeviceSettings) {
+ if(e.action==Action::StorageCheck && (view_.screen==Screen::DeviceSettings || view_.screen==Screen::WebTools)) {
   if(!sd_ || !progress_valid_) {notice_="SD 或原记录尚不可用；保留文件后检查存储";return true;}
   std::string error;
   const auto probe=std::string(ROOT)+"/.write-test";
@@ -46,12 +48,21 @@ bool App::web_dispatch(Event e){
  if(e.action==Action::WebImport){if(e.value==0)view_.screen=Screen::WebImportConfirm;else{
   leave_player();if(web_.import_progress()){view_.screen=Screen::WebLearning;notice_="已导入新版进度，原文件保留备份";}else notice_=web_.error();
  }return true;}
- if(view_.screen==Screen::WebPrompt&&e.action==Action::Back){view_.screen=Screen::WebLearning;view_.web_page=web_prompt_return_page_;return true;}
+ if(view_.screen==Screen::WebPrompt&&e.action==Action::Back){if(view_.web_example>=0){leave_player();view_.web_example=-1;}view_.screen=Screen::WebLearning;view_.web_page=web_prompt_return_page_;return true;}
  if((view_.screen!=Screen::WebLearning&&view_.screen!=Screen::WebPrompt)||!web_.ready())return false;
  if(view_.screen==Screen::WebPrompt&&e.action==Action::WebAction&&!web_prompt_action_allowed(view_.web,e.value))return true;
  bool ok=true;const auto command_began=esp_timer_get_time();
  switch(e.action){
- case Action::WebPage:if(e.value==0){web_prompt_return_page_=view_.web_page;view_.screen=Screen::WebPrompt;view_.web_page=0;}else view_.web_page=std::max(0,std::min(view_.web_page+e.value,ui_.answer_pages()-1));return true;
+ case Action::WebExample:{
+  if(!card_example(view_.web,e.value))return true;
+  if(view_.screen==Screen::WebLearning)web_prompt_return_page_=view_.web_page;
+  else if(view_.web_example!=e.value)return true;
+  leave_player();
+  view_.web_example=e.value;view_.screen=Screen::WebPrompt;view_.web_page=0;
+  example_token_=(example_token_+1u)|0x80000000u;
+  example_pending_=true;return true;
+ }
+ case Action::WebPage:if(e.value==0){web_prompt_return_page_=view_.web_page;view_.web_example=-1;view_.screen=Screen::WebPrompt;view_.web_page=0;}else view_.web_page=std::max(0,std::min(view_.web_page+e.value,ui_.answer_pages()-1));return true;
  case Action::WebAction:
   if(e.value>=0 && size_t(e.value)<view_.web.actions.size()) {
    const auto &action=view_.web.actions[size_t(e.value)];
@@ -69,7 +80,7 @@ bool App::web_dispatch(Event e){
  case Action::DictionaryRecent:{
   const auto keys=web_keyboard_state(view_.web);
   if(e.value<0||e.value>=keys.count||!(keys.enabled&(1u<<e.value)))break;
-  if(e.value==1&&web_long_prompt(view_.web)){web_prompt_return_page_=view_.web_page;view_.screen=Screen::WebPrompt;view_.web_page=0;break;}
+  if(e.value==1&&web_long_prompt(view_.web)){web_prompt_return_page_=view_.web_page;view_.web_example=-1;view_.screen=Screen::WebPrompt;view_.web_page=0;break;}
   const auto choices=web_keyboard_controls(view_.web);ok=web_.action(choices[e.value]->action);break;}
  case Action::Vocabulary:if(view_.web.route=="word-batch")ok=web_.command("lookup");else if(view_.web.keyboard)ok=web_.command("u-notebook");else{leave_player();vocabulary_return_=Screen::WebLearning;update_day();view_.screen=Screen::Vocabulary;refresh_vocabulary();}break;
  default:return false;
@@ -84,26 +95,36 @@ void App::web_audio_tick(){
  if(web_.take_audio(path,serial,stop,&rate)){
   if(stop){audio_.stop();web_audio_playing_=false;web_audio_pending_=false;}
   else{audio_.stop();web_audio_playing_=false;web_audio_path_=path;web_audio_serial_=serial;web_audio_pending_=true;web_audio_slow_=rate<0.99;
-   const auto normal=std::string(ROOT)+(path.rfind("vocabulary/audio/",0)==0?"/":"/web-course-v1/")+path;
-   web_audio_note_=exists(normal)?(web_audio_slow_?"SD 慢速录音 · 保持音高":"SD 录音 · 原速播放"):"离线合成发音 · 优先使用缓存";dirty_=true;}
+   web_audio_note_="正在准备发音";dirty_=true;}
+ }
+ // The panel and I2S share bandwidth. Publish the transcript before starting sound.
+ if(example_pending_ && !dirty_ && painted_screen_==Screen::WebPrompt && !audio_.busy()){
+  example_pending_=false;
+  const auto *sample=card_example(view_.web,view_.web_example);
+  if(view_.screen==Screen::WebPrompt && sample){
+   const auto &path=sample->example_audio;
+   const bool recorded=safe_relative_path(path) && (path.rfind("vocabulary/audio",0)==0 ||
+       path.rfind("packs/",0)==0 || path.rfind("web-course-v1/audio/",0)==0);
+   if(!audio_.play(recorded ? std::string(ROOT)+"/"+path : "",sample->text,example_token_)){
+    web_audio_note_="例句暂时无法播放，可点再听一遍";dirty_=true;
+   }
+  }
  }
  // A resident SD recording can provide immediate audible feedback. The old
  // path waited for an unrelated full-panel status paint before starting it.
  // Synthesis still paints its source/waiting status before doing long work.
- const bool vocabulary_audio=web_audio_path_.rfind("vocabulary/audio/",0)==0;
- const bool immediate_sd=web_audio_pending_&&exists(std::string(ROOT)+(vocabulary_audio?"/":"/web-course-v1/")+web_audio_path_);
- if(web_audio_pending_&&!audio_.busy()&&(!dirty_||immediate_sd)){
+ const bool vocabulary_audio=web_audio_path_.rfind("vocabulary/audio/",0)==0||web_audio_path_.rfind("vocabulary/audio-v2/",0)==0||web_audio_path_.rfind("packs/",0)==0;
+ // Do not stat the same FAT path three times on the UI thread. The audio
+ // worker opens/validates it once and reports its actual source asynchronously.
+ if(web_audio_pending_&&!audio_.busy()){
   web_audio_pending_=false;
   // Only the embedded map can supply paths; never expose arbitrary SD files.
   if((web_audio_path_.rfind("audio/",0)!=0&&!vocabulary_audio)||!safe_relative_path(web_audio_path_)){web_.playback(web_audio_serial_,false);dirty_=true;return;}
-  const auto text=web_.audio_text(web_audio_path_);
+  const auto text=view_.web.route=="path-test"?std::string{}:web_.audio_text(web_audio_path_);
   auto real=std::string(ROOT)+(vocabulary_audio?"/":"/web-course-v1/")+web_audio_path_;
   if(web_audio_slow_&&real.size()>4){const auto slow=real.substr(0,real.size()-4)+"-slow.wav";if(exists(slow))real=slow;else web_audio_note_="慢速录音未安装，改为原速播放";}
   web_audio_playing_=true;
-  const bool sd_audio=exists(real);
-  if(!sd_audio&&view_.web.route=="path-test"){web_audio_playing_=false;web_.playback(web_audio_serial_,false);dirty_=true;return;}
-  notice_=sd_audio?"":"SD 录音缺失，使用离线合成发音";
-  if(!audio_.play(sd_audio?real:"",sd_audio?"":text,uint32_t(web_audio_serial_))){web_audio_playing_=false;web_.playback(web_audio_serial_,false);dirty_=true;}
+  if(!audio_.play(real,text,uint32_t(web_audio_serial_))){web_audio_playing_=false;web_.playback(web_audio_serial_,false);dirty_=true;}
  }
 }
 void App::boot_message(const std::string &stage){

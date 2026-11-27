@@ -4,11 +4,14 @@ void AudioPlayer::run() {
         if (xQueueReceive(requests_, &r, portMAX_DELAY) != pdTRUE)
             continue;
         active_client_token_=r.client_token;
+        request_began_us_=r.submitted_us;first_write_=true;
+        ESP_LOGI(TAG,"AUDIO_TIMING token=%lu queue_us=%lld",(unsigned long)r.client_token,(long long)(esp_timer_get_time()-r.submitted_us));
         bool ok = true;
         std::string error;
         if (clear_cache_.exchange(false)) {
             cached_audio_.clear();
             cached_path_.clear();
+            cached_fallback_request_.clear();
             streamed_gain_path_.clear();
         }
         if (clear_clip_.exchange(false))
@@ -51,6 +54,7 @@ void AudioPlayer::run() {
         } else {
             epd_board_metalio_eink4_plus_pa_set(true);
             vTaskDelay(pdMS_TO_TICKS(20));
+            ESP_LOGI(TAG,"AUDIO_TIMING token=%lu pa_us=%lld",(unsigned long)r.client_token,(long long)(esp_timer_get_time()-r.submitted_us));
             if (r.mode == 4) {
                 ok = !clip_.empty() && write(clip_.data(), clip_.size());
                 error = ok ? "跟读回放结束" : "录音回放失败";
@@ -69,13 +73,20 @@ void AudioPlayer::run() {
                 error = "提示音已播放";
             } else if (!cached_audio_.empty() &&
                        ((!std::string(r.path).empty() && cached_path_ == r.path) ||
-                        (std::string(r.path).empty() && cached_path_ == std::string("tts:")+r.text))) {
+                        (cached_fallback_request_==r.path && cached_path_ == std::string("tts:")+r.text))) {
                 ++cache_hits_;
+                const bool synthesized=cached_path_.rfind("tts:",0)==0;
+                speech_source_=synthesized?wordcard::SpeechSource::Synthesis:wordcard::SpeechSource::Sd;
+                report(synthesized?"离线合成缓存":"SD 发音缓存",4);
                 ok = write(cached_audio_.data(), cached_audio_.size(),cached_gain_);
-                error = std::string(r.path).empty() ? "合成发音播放结束" : "SD 发音播放结束";
+                error = synthesized ? "合成发音播放结束" : "SD 发音播放结束";
             } else {
                 wordcard::WaveReader wave;
-                if (!r.path[0] || !wave.open(r.path, error)) {
+                const auto open_began=esp_timer_get_time();
+                const bool opened=r.path[0]&&wave.open(r.path,error);
+                ESP_LOGI(TAG,"AUDIO_TIMING token=%lu open_us=%lld opened=%d",(unsigned long)r.client_token,(long long)(esp_timer_get_time()-open_began),opened);
+                if (!opened) {
+                    cached_fallback_request_=r.path;
                     std::string normalized;
                     const bool speakable=wordcard::speech_text(r.text,normalized);
                     wordcard::CachedSpeech saved;

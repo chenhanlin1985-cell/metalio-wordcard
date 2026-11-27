@@ -1,0 +1,13 @@
+{
+  "format": "wordcard-pack",
+  "schema": 3,
+  "type": "story",
+  "id": "rainy-lost-found",
+  "version": "1.1.0",
+  "title": "雨夜失物处",
+  "files": {
+    "content.json": "18ad6be9bb2bed4512c5fd1ef32b25dcb5a7d43b4e96c77deb8af4edd0ffcd42"
+  },
+  "requires": "pet-2024@1.0.0",
+  "storyType": "adventure"
+}

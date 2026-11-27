@@ -83,7 +83,7 @@ std::string read_all(const std::string &p) {
 NativeVocabulary::NativeVocabulary(const std::string &directory) : engine_(catalog_) {
     if (directory.empty())
         return;
-    store_ = directory + "/vocabulary";
+    store_ = directory + "/vocabulary-v2";
     // QA profiles have their own state; all profiles read the same immutable resources.
     const auto marker = directory.rfind("/learning-web");
     if (marker == std::string::npos)
@@ -153,7 +153,7 @@ bool NativeVocabulary::retry_recovery() {
         if (!loaded_) {
             const auto marker = store_.rfind("/learning-web");
             if (marker != std::string::npos) require(catalog_.load(store_.substr(0, marker) + "/vocabulary"), "词库资源无法读取，请检查 SD 卡");
-            load(migration_);
+            load();
         }
         storageBlocked_ = false; recoveryHome_ = false; ++viewSerial_;
         note_ = "检查通过，回到原位置；刚才未完成的操作请重新进行";
@@ -178,7 +178,7 @@ void NativeVocabulary::save_checkpoint() {
         throw VocabularyFault(VocabularyFailure::Storage, "记录快照未保存");
     }
 }
-void NativeVocabulary::load(const VJ &legacy) {
+void NativeVocabulary::load() {
     require(error_.empty(), error_.c_str());
     if (!exists(store_)) {
 #ifdef _WIN32
@@ -191,13 +191,13 @@ void NativeVocabulary::load(const VJ &legacy) {
     int64_t offset = 0;
     if (exists(p) || exists(p + ".bak")) {
         auto frame = decode(read_all(exists(p) ? p : p + ".bak"));
-        state_ = frame.at("state");
+        state_ = std::move(frame.at("state"));
         offset = num(frame, "journalOffset");
     } else {
         require(!exists(journal), "已有答题日志但快照缺失，未新建空白进度");
         if (!(now_ >= 1704067200000LL && now_ <= 4102444800000LL))
             throw VocabularyFault(VocabularyFailure::Clock, "请先校准设备日期与时间");
-        state_ = engine_.create(now_, legacy);
+        state_ = engine_.create(now_);
         save_checkpoint();
     }
     require(num(state_, "schema") == 1 && field(state_, "cards").is_object() &&
@@ -226,6 +226,7 @@ void NativeVocabulary::load(const VJ &legacy) {
             complete = int64_t(in.tellg());
         }
     }
+    for(const auto &word:field(state_,"deckLexicon"))catalog_.restore_deck_word(word);
     const auto &external = field(state_, "externalWords");
     require(external.is_null() || external.is_object(), "生词词典记录损坏");
     if (external.is_object())
@@ -243,20 +244,22 @@ void NativeVocabulary::load(const VJ &legacy) {
     }
     loaded_ = true;
 }
-bool NativeVocabulary::enter(const VJ &legacy, int64_t now) {
+void NativeVocabulary::prepare_profile(int64_t now) {
+    now_ = now;
+    if (!available_ || loaded_ || !error_.empty())
+        return;
+    try {
+        load();
+    } catch (const std::exception &e) {
+        capture_error(e, VocabularyFailure::Data);
+    }
+}
+bool NativeVocabulary::enter(int64_t now) {
     if (!available_)
         return false;
-    now_ = now;
+    prepare_profile(now);
     entered_=true;
     active_ = true;
-    if (!loaded_)
-        migration_ = legacy;
-    if (!loaded_ && error_.empty())
-        try {
-            load(legacy);
-        } catch (const std::exception &e) {
-            capture_error(e, VocabularyFailure::Data);
-        }
     route_ = "home";
     return true;
 }
@@ -289,12 +292,26 @@ bool NativeVocabulary::expose_candidates(const std::string &query) {
     }
     return true;
 }
+#include "story_progress.inc"
+#include "course_progress.inc"
 bool NativeVocabulary::commit(const VJ &a) {
     try {
         require(loaded_, "背词记录未加载；请检查SD卡");
         if (storageBlocked_) throw VocabularyFault(VocabularyFailure::Storage, "存储尚未恢复，请先检查存储");
         VJ events;
         auto next = engine_.reduce(state_, a, now_, events);
+        if(str(a,"type")=="begin"||str(a,"type")=="storySave"||str(a,"type")=="courseSave"){
+            auto remember=[&](const std::string &id){
+                if(field(next,"deckLexicon").contains(id))return;
+                auto word=catalog_.deck_word(id);
+                if(!word.is_null())next["deckLexicon"][id]=std::move(word);
+            };
+            std::vector<std::string> ids;
+            for(const auto &g:field(next,"paused"))for(const auto &id:field(g,"ids"))ids.push_back(str(id));
+            for(const auto &id:field(field(next,"session"),"ids"))ids.push_back(str(id));
+            if(a.contains("answer"))ids.push_back(str(a.at("answer"),"id"));
+            for(const auto &id:ids)remember(id);
+        }
         const auto &beforeSession = field(state_, "session");
         const auto &afterSession = field(next, "session");
         bool audioContextChanged = false;
@@ -307,6 +324,7 @@ bool NativeVocabulary::commit(const VJ &a) {
                  {"action", a},
                  {"events", events},
                  {"patch", VJ::diff(state_, next)}};
+        if(str(a,"type")=="storySave"||str(a,"type")=="courseSave"){frame["action"].erase("run");frame["action"].erase("stamps");}
         const auto journal = store_ + "/events.ndjson";
         struct stat st{};
         const int64_t committed = stat(journal.c_str(), &st) == 0 ? int64_t(st.st_size) : 0;
@@ -355,6 +373,7 @@ std::string NativeVocabulary::status() const {
                            {"source", field(s, "source")},
                            {"id", field(t, "id")},
                            {"kind", field(t, "kind")},
+                           {"card",field(field(field(state_,"cards"),str(t,"id")),str(t,"kind"))},
                            {"learnAt", field(s, "learnAt")},
                            {"answered", field(s, "answered")},
                            {"checked", field(s, "feedback")},

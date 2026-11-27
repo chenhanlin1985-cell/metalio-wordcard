@@ -39,6 +39,11 @@ public:
     uint32_t script_calls()const{return eval_calls_;}
     void native_enabled(bool enabled);
     const std::string &error()const{return error_;}
+#ifndef ESP_PLATFORM
+    void preview_time(int64_t now){preview_time_=now;}
+#endif
+    std::string book_root() const;
+    std::string story_progress(const std::string &request);
     std::string read(const std::string &key,bool &found);
     bool write(const std::string &key,const std::string &value);
     bool import_progress();
@@ -48,7 +53,20 @@ public:
     uint32_t page_builds()const{return page_builds_;}
     uint32_t page_hits()const{return page_hits_;}
 private:
-    JSRuntime *rt_=nullptr;JSContext *ctx_=nullptr;bool ready_=false;
+    int64_t clock_ms() const;
+#ifndef ESP_PLATFORM
+    int64_t preview_time_=0;
+#endif
+    JSRuntime *rt_=nullptr;JSContext *ctx_=nullptr,*book_ctx_=nullptr;bool ready_=false;
+    bool open_books(const std::string &command = {}), book_action(const std::string &command), book_view(WebPage &out);
+    bool book_root_action(const std::string &root);
+    void project_selection(WebPage &page);
+    std::string selection_,shelf_location_="story/0",library_origin_,auxiliary_return_;
+    bool book_imported_=false;
+    bool book_call(const char *method,const std::string *arg=nullptr,std::string *result=nullptr);
+    void close_books();
+    std::string book_audio_text_;
+    int book_audio_serial_=0;
     std::string directory_,error_;
     std::vector<std::string> actions_;
     int64_t deadline_=0,next_yield_us_=0;
@@ -70,6 +88,8 @@ private:
     bool native_enabled_=true,native_dirty_=true,courses_open_=false;
     bool enter_native();
     bool leave_native(const std::string &root_navigation = {});
+    bool open_deck(const std::string &key,const std::string &intent,bool fromShelf=false);
+    std::string deck_stage(const std::string &key) const;
     bool dispatch_native(const std::string&data);
 #ifdef ESP_PLATFORM
     void *owner_=nullptr,*jobs_=nullptr;

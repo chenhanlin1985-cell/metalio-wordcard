@@ -1,4 +1,5 @@
 #include "wordcard_ui.hpp"
+#include "../components/native_learning/include/word_formation.hpp"
 #include <algorithm>
 namespace wordcard {
 void UI::learning_pages(Canvas &c, const View &v) {
@@ -7,6 +8,8 @@ void UI::learning_pages(Canvas &c, const View &v) {
     c.fill({40, 98, 604, 2});
     if (v.screen != Screen::Welcome)
         button(c, {40, 120, 140, 88}, Action::Back, "返回");
+    if (v.settings_origin && (v.screen==Screen::Date || v.screen==Screen::Resources || v.screen==Screen::Stats))
+        button(c,{496,120,148,88}, Action::CloseSettings, v.settings_exit_label());
     auto title = [&](const std::string &s) { c.text(40, 230, s, 2); };
     auto line = [&](int y, const std::string &s) { c.text(40, y, c.ellipsize(s, 604)); };
     auto entry = [&](int y, Action a, const std::string &s, int value = 0) {
@@ -119,8 +122,9 @@ void UI::learning_pages(Canvas &c, const View &v) {
             }
             for (size_t i = 0; i < std::min<size_t>(size_t(scale == 2 ? 3 : 5), words.size()); ++i)
                 c.text(40, 300 + int(i) * (scale == 2 ? 76 : 44), words[i], scale);
-            auto meaning =
-                c.wrap((v.card->ipa.empty() ? "" : v.card->ipa + "\n") + v.card->back, 604);
+            const auto parts = v.player_sentences ? WordFormation{} : word_formation(v.card->front);
+            auto meaning = c.wrap((v.card->ipa.empty() ? "" : v.card->ipa + "\n") + v.card->back +
+                                  (parts.formula.empty() ? "" : "\n" + parts.formula + parts.detail_text()), 604);
             answer_pages_ = std::max(1, int((meaning.size() + 2) / 3));
             const int start = std::min(v.answer_page, answer_pages_ - 1) * 3;
             for (size_t i = start; i < meaning.size() && i < size_t(start + 3); ++i)

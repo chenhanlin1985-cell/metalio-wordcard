@@ -15,6 +15,8 @@
 | TinyUSB / QuickJS-NG / nlohmann-json | 各自 MIT，见 `licenses/` 与 vendor 内许可 |
 | FSRS-6 方程移植 | ts-fsrs 6.0.0，MIT，`licenses/LICENSE-ts-fsrs.txt` |
 
-模型权重、词典、词库、语音及字体未随本仓库分发；它们不自动继承上述 MIT 或 GPL。外部资源包需保留对应的模型说明、Noto OFL、词典与 CEFR-J 来源、Tatoeba/ManyThings 逐句归属等材料；不能把出版教材目录参考当成整册教材授权。
+构词表及对应索引按 CC BY-SA 3.0 分发，来源及中文释义归属见[构词资料说明](resources/vocabulary/word-formation-license.md)。
+
+大型模型权重、词典、音频及字库随本版完整安装包分发；它们不自动继承上述 MIT 或 GPL。外部资源包需保留对应的模型说明、Noto OFL、词典与 CEFR-J 来源、Tatoeba/ManyThings 逐句归属等材料；不能把出版教材目录参考当成整册教材授权。
 
 源码内的旧课程为项目编写的兼容练习，不是出版社教材或多邻国/百词斩产品内容的完整开源版本。生成关机插画的原始素材与编码器已随源码保留。具体第三方固定版本见 [UPSTREAM.md](docs/UPSTREAM.md)。

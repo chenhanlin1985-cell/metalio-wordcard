@@ -14,13 +14,13 @@ namespace wordcard { bool vocabulary_storage_fault(const char *op) {
 void ck(bool b,const std::string&s){++checks;if(!b)throw std::runtime_error(s);}
 std::string read(const fs::path&p){std::ifstream f(p,std::ios::binary);return {std::istreambuf_iterator<char>(f),{}};}
 void write(const fs::path&p,const std::string&s){std::ofstream f(p,std::ios::binary);f<<s;}
-VJ state(const fs::path&p){auto frame=VJ::parse(str(VJ::parse(read(p/"vocabulary/state.json")),"data"));auto s=frame["state"];std::ifstream in(p/"vocabulary/events.ndjson",std::ios::binary);if(in){in.seekg(num(frame,"journalOffset"));std::string line;while(std::getline(in,line))s=s.patch(VJ::parse(str(VJ::parse(line),"data"))["patch"]);}return s;}
+VJ state(const fs::path&p){auto frame=VJ::parse(str(VJ::parse(read(p/"vocabulary-v2/state.json")),"data"));auto s=frame["state"];std::ifstream in(p/"vocabulary-v2/events.ndjson",std::ios::binary);if(in){in.seekg(num(frame,"journalOffset"));std::string line;while(std::getline(in,line))s=s.patch(VJ::parse(str(VJ::parse(line),"data"))["patch"]);}return s;}
 bool text(const WebPage&p,const std::string&s){for(auto b:p.blocks)if(b.text.find(s)!=std::string::npos)return true;return false;}
 int main(int argc,char**argv){try{
- ck(argc==4,"catalog, font, fresh output required");const int64_t now=1793880000000LL;fs::path out=argv[3],profile=out/"learning-web";
+ ck(argc==4,"catalog, font, fresh output required");const int64_t now=1793880000000LL;fs::path out=argv[3],profile=out/"learning-web",store=profile/"vocabulary-v2";
  ck(!fs::exists(out),"fresh isolated fixture only");fs::create_directories(out/"vocabulary");fs::create_directories(profile);
  for(auto n:{"catalog.json","catalog.tsv","catalog.ndjson"})fs::copy_file(fs::path(argv[1])/n,out/"vocabulary"/n);
- auto model=std::make_unique<NativeVocabulary>(profile.generic_string());ck(model->enter(VJ(),now),"enter");
+ auto model=std::make_unique<NativeVocabulary>(profile.generic_string());model->prepare_profile(now);ck(model->enter(now),"enter");
  auto status=[&]{return VJ::parse(model->status());};
  auto dispatch=[&](VJ a){ck(model->dispatch(a.dump()),"dispatch handled");};
  auto action=[&](const char* name){dispatch(VJ{{"action",name}});};
@@ -38,7 +38,7 @@ int main(int argc,char**argv){try{
  ck(state(profile)==original,"invalid imports never change progress");
  write(out/"my-words.txt","apple\nbook\nwater\nhome\nwork\n");click("读取单词表");click("加入我的单词本");click("学习这些生词");
  ck(str(status()["batch"],"source")=="notebook","custom learning source");
- auto before=state(profile);auto batch=status()["batch"];auto journal=read(profile/"vocabulary/events.ndjson");
+ auto before=state(profile);auto batch=status()["batch"];auto journal=read(profile/"vocabulary-v2/events.ndjson");
  VJ next;{auto p=model->page();for(auto b:p.blocks)if(b.primary&&b.enabled)next=VJ::parse(p.actions[b.action]);}ck(next.is_object(),"visible learn next");
  model->tick(0);dispatch(next);ck(model->page().route=="recovery"&&model->page().title=="请校准时间","invalid clock explains cause");
  capture("02-clock");for(int i=0;i<3;++i){click("已校准，检查时间");ck(model->page().route=="recovery"&&state(profile)==before,"rechecking invalid clock does not fabricate progress");}
@@ -46,29 +46,29 @@ int main(int argc,char**argv){try{
  model->tick(now);dispatch(next);ck(str(status(),"courseError").empty(),"correct clock allows explicit next");
  before=state(profile);batch=status()["batch"];{auto p=model->page();for(auto b:p.blocks)if(b.primary&&b.enabled)next=VJ::parse(p.actions[b.action]);}
  model->tick(now-600000);dispatch(next);model->tick(now);action("v-close-error");ck(state(profile)==before&&status()["batch"]==batch,"clock check does not replay failed next");
- fs::rename(profile/"vocabulary",profile/"held");dispatch(next);ck(model->page().title=="这一步未能保存","missing media reports storage");capture("03-storage");
+ fs::rename(store,profile/"held");dispatch(next);ck(model->page().title=="这一步未能保存","missing media reports storage");capture("03-storage");
  for(int i=0;i<3;++i){click("检查存储");ck(model->page().route=="recovery"&&status()["batch"]==batch,"persistent media failure is bounded and keeps original question");}
  click("返回首页");ck(model->page().route=="home"&&status()["batch"]==batch,"storage error has non-writing home exit");
- fs::rename(profile/"held",profile/"vocabulary");action("v-check-recovery");ck(str(status(),"courseError").empty()&&state(profile)==before,"same card recovery does not advance learning");
- dispatch(VJ{{"action","v-do"},{"type","learnNotebook"}});ck(status()["batch"]==batch,"resume original custom group");before=state(profile);journal=read(profile/"vocabulary/events.ndjson");
+ fs::rename(profile/"held",store);action("v-check-recovery");ck(str(status(),"courseError").empty()&&state(profile)==before,"same card recovery does not advance learning");
+ dispatch(VJ{{"action","v-do"},{"type","learnNotebook"}});ck(status()["batch"]==batch,"resume original custom group");before=state(profile);journal=read(profile/"vocabulary-v2/events.ndjson");
  {auto p=model->page();for(auto b:p.blocks)if(b.primary&&b.enabled)next=VJ::parse(p.actions[b.action]);}
- partial=1;truncateFailures=1;dispatch(next);ck(read(profile/"vocabulary/events.ndjson").size()>journal.size(),"injected write left partial tail");
+ partial=1;truncateFailures=1;dispatch(next);ck(read(profile/"vocabulary-v2/events.ndjson").size()>journal.size(),"injected write left partial tail");
  ck(model->page().title=="这一步未能保存","partial write visible");model->back();dispatch(next);ck(status()["batch"]==batch,"pending repair blocks further commits");
- action("v-check-recovery");ck(str(status(),"courseError").empty()&&read(profile/"vocabulary/events.ndjson")==journal&&state(profile)==before,"repair restores exact committed prefix without replay");
+ action("v-check-recovery");ck(str(status(),"courseError").empty()&&read(profile/"vocabulary-v2/events.ndjson")==journal&&state(profile)==before,"repair restores exact committed prefix without replay");
  dispatch(next);ck(num(state(profile),"revision")==num(before,"revision")+1,"explicit retry advances exactly once after repair");
  // A different/older card cannot receive the pending in-memory state.
- before=state(profile);journal=read(profile/"vocabulary/events.ndjson");{auto p=model->page();for(auto b:p.blocks)if(b.primary&&b.enabled)next=VJ::parse(p.actions[b.action]);}fs::rename(profile/"vocabulary",profile/"held");dispatch(next);
- fs::create_directories(profile/"vocabulary");write(profile/"vocabulary/state.json",read(profile/"held/state.json"));action("v-check-recovery");
- ck(!str(status(),"courseError").empty()&&!fs::exists(profile/"vocabulary/events.ndjson"),"replacement/older card is not overwritten");
- fs::rename(profile/"vocabulary",profile/"other-card");fs::rename(profile/"held",profile/"vocabulary");action("v-check-recovery");ck(state(profile)==before,"original card recovers unchanged");
+ before=state(profile);journal=read(profile/"vocabulary-v2/events.ndjson");{auto p=model->page();for(auto b:p.blocks)if(b.primary&&b.enabled)next=VJ::parse(p.actions[b.action]);}fs::rename(store,profile/"held");dispatch(next);
+ fs::create_directories(store);write(profile/"vocabulary-v2/state.json",read(profile/"held/state.json"));action("v-check-recovery");
+ ck(!str(status(),"courseError").empty()&&!fs::exists(profile/"vocabulary-v2/events.ndjson"),"replacement/older card is not overwritten");
+ fs::rename(store,profile/"other-card");fs::rename(profile/"held",store);action("v-check-recovery");ck(state(profile)==before,"original card recovers unchanged");
  // Corrupt checkpoint: escape to recovery home and keep exact bytes; never reset.
- model.reset();auto checkpoint=read(profile/"vocabulary/state.json");write(profile/"vocabulary/state.json","broken-checkpoint");
- model=std::make_unique<NativeVocabulary>(profile.generic_string());model->enter(VJ(),now);capture("04-corrupt-record");model->back();ck(model->page().title=="学习暂不可用","unloaded profile has recovery home");
- for(int i=0;i<2;++i)action("v-check-recovery");ck(read(profile/"vocabulary/state.json")=="broken-checkpoint"&&read(profile/"vocabulary/events.ndjson")==journal,"bad records are never erased on retry");
- write(profile/"vocabulary/state.json",checkpoint);action("v-check-recovery");ck(str(status(),"courseError").empty()&&state(profile)==before,"repaired checkpoint reloads old progress");
+ model.reset();auto checkpoint=read(profile/"vocabulary-v2/state.json");write(profile/"vocabulary-v2/state.json","broken-checkpoint");
+ model=std::make_unique<NativeVocabulary>(profile.generic_string());model->prepare_profile(now);model->enter(now);capture("04-corrupt-record");model->back();ck(model->page().title=="学习暂不可用","unloaded profile has recovery home");
+ for(int i=0;i<2;++i)action("v-check-recovery");ck(read(profile/"vocabulary-v2/state.json")=="broken-checkpoint"&&read(profile/"vocabulary-v2/events.ndjson")==journal,"bad records are never erased on retry");
+ write(profile/"vocabulary-v2/state.json",checkpoint);action("v-check-recovery");ck(str(status(),"courseError").empty()&&state(profile)==before,"repaired checkpoint reloads old progress");
  // First use with no RTC: date setting and settings remain accessible; no invented session.
- auto fresh=out/"learning-web-new";fs::create_directories(fresh);model=std::make_unique<NativeVocabulary>(fresh.generic_string());model->enter(VJ(),0);capture("05-first-use-clock");
- ck(!fs::exists(fresh/"vocabulary/state.json"),"invalid first-use date does not write invented progress");model->back();model->tick(now);action("v-check-recovery");ck(str(status(),"courseError").empty()&&state(fresh)["seen"].empty(),"first-use calibration creates only empty genuine progress");
+ auto fresh=out/"learning-web-new";fs::create_directories(fresh);model=std::make_unique<NativeVocabulary>(fresh.generic_string());model->enter(0);capture("05-first-use-clock");
+ ck(!fs::exists(fresh/"vocabulary-v2/state.json"),"invalid first-use date does not write invented progress");model->back();model->tick(now);action("v-check-recovery");ck(str(status(),"courseError").empty()&&state(fresh)["seen"].empty(),"first-use calibration creates only empty genuine progress");
  std::ofstream(out/"checks.json")<<VJ{{"passed",true},{"checks",checks},{"synthetic",true},{"physicalFaultsInjected",false},{"partialWriteAndRollbackFailureInjected",true}}.dump(2);
  std::cout<<"PASS recovery "<<checks<<" checks\n";return 0;
 }catch(const std::exception&e){std::cerr<<e.what()<<'\n';return 1;}}

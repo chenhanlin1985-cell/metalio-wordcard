@@ -41,6 +41,7 @@ public:
         enabled_=true;
     }
     void prepare(const WebPage&page){
+        if(needs_view_state(page))return;
 #ifdef ESP_PLATFORM
         std::lock_guard<std::mutex> lock(mutex_);
         if(!enabled_||!pixels_)return;
@@ -52,7 +53,7 @@ public:
     }
     bool build(const WebPage&page,const std::function<bool()>&cancel){
         {std::lock_guard<std::mutex> lock(mutex_);ready_=false;}
-        if(!pixels_||!font_.ready()||cancel())return false;
+        if(needs_view_state(page)||!pixels_||!font_.ready()||cancel())return false;
         View v;v.screen=Screen::WebLearning;v.web=page;
         v.dictionary_shift=page.shift;v.dictionary_symbols=page.symbols;v.dictionary_ready=page.can_submit;
         for(const auto&b:page.blocks)if(b.kind=="button"&&b.area!="foot"&&v.dictionary_recent.size()<2)v.dictionary_recent.push_back(b.text);
@@ -69,12 +70,18 @@ public:
     }
     uint32_t built()const{return built_;}uint32_t hits()const{return hits_;}uint32_t cancelled()const{return cancelled_;}
     static bool equal(const WebPage&a,const WebPage&b){
+        if(a.home_new_words!=b.home_new_words||a.home_new_target!=b.home_new_target)return false;
         if(a.secondary!=b.secondary||a.title!=b.title||a.typed!=b.typed||a.prompt!=b.prompt||a.route!=b.route||a.key!=b.key||a.toast!=b.toast||a.error!=b.error||a.speech_note!=b.speech_note||a.gap_mask!=b.gap_mask||a.actions!=b.actions||a.keyboard!=b.keyboard||a.shift!=b.shift||a.symbols!=b.symbols||a.can_submit!=b.can_submit||a.corrupt!=b.corrupt||a.blocks.size()!=b.blocks.size()||a.top.size()!=b.top.size()||a.tabs.size()!=b.tabs.size())return false;
-        for(size_t i=0;i<a.blocks.size();++i){const auto&x=a.blocks[i];const auto&y=b.blocks[i];if(x.kind!=y.kind||x.text!=y.text||x.area!=y.area||x.action!=y.action||x.enabled!=y.enabled||x.selected!=y.selected||x.primary!=y.primary||x.role!=y.role||x.detail!=y.detail)return false;}
+        for(size_t i=0;i<a.blocks.size();++i){const auto&x=a.blocks[i];const auto&y=b.blocks[i];if(x.kind!=y.kind||x.text!=y.text||x.area!=y.area||x.action!=y.action||x.enabled!=y.enabled||x.selected!=y.selected||x.primary!=y.primary||x.role!=y.role||x.detail!=y.detail||x.picture!=y.picture||x.picture_source!=y.picture_source||x.picture_width!=y.picture_width||x.picture_height!=y.picture_height)return false;}
         auto controls=[](const auto&x,const auto&y){for(size_t i=0;i<x.size();++i)if(x[i].text!=y[i].text||x[i].action!=y[i].action||x[i].selected!=y[i].selected||x[i].enabled!=y[i].enabled)return false;return true;};
         return controls(a.top,b.top)&&controls(a.tabs,b.tabs);
     }
 private:
+    static bool needs_view_state(const WebPage &page) {
+        // The header or exit button on these pages needs the real foreground view.
+        return (page.route=="home" || page.route=="settings" || page.route=="paused") &&
+               page.key.rfind("vocabulary:",0)==0;
+    }
     uint8_t*pixels_=nullptr;Font font_,extra_;UI ui_;WebPage page_;bool ready_=false;
     std::mutex mutex_;std::atomic_uint32_t built_{0},hits_{0},cancelled_{0};
     bool enabled_=false;

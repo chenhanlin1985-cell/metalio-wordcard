@@ -88,6 +88,7 @@ bool AudioPlayer::submit(int mode, const std::string &path, const std::string &t
         return false;
     cancel_ = false;
     Request r;
+    r.submitted_us=esp_timer_get_time();
     r.client_token=client_token;
     r.mode = mode;
     r.reuse=reuse;
@@ -224,6 +225,7 @@ bool AudioPlayer::write(const int16_t *samples, size_t count,uint32_t gain) {
             stereo[i * 2] = stereo[i * 2 + 1] = wordcard::speech_i2s_sample(samples[pos+i],v,gain);
         size_t sent = 0;
         auto err = i2s_channel_write(tx_, stereo, n * 8, &sent, 300);
+        if(first_write_){first_write_=false;ESP_LOGI(TAG,"AUDIO_TIMING token=%lu first_i2s_us=%lld gain=%lu volume=%d",(unsigned long)active_client_token_,(long long)(esp_timer_get_time()-request_began_us_),(unsigned long)gain,v);}
         if (err != ESP_OK || sent != n * 8) {
             ESP_LOGE(TAG, "I2S write failed %s bytes=%u", esp_err_to_name(err), unsigned(sent));
             return false;

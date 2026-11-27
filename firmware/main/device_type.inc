@@ -81,14 +81,34 @@ void Canvas::text_px(int x,int y,const std::string&s,int px){
   }x+=(g.advance*px+sz/2)/sz;
  }
 }
-std::vector<std::string> Canvas::wrap_px(const std::string&s,int max,int px)const{
+std::vector<std::string> Canvas::wrap_px(const std::string&s,int max,int px,int slot,bool keep_punctuation)const{
+ auto measure=[&](const std::string &part){
+  const int fallback=text_width_px(part,px);
+  if(!slot || !font_.folio())return fallback;
+  int width=0;
+  for(size_t i=0;i<part.size();){
+   const auto glyph=font_.folio()->exact_glyph(next(part,i),slot,slot==236?2:4);
+   if(!glyph.bitmap)return fallback;
+   width+=glyph.advance;
+  }
+  return std::max(width,fallback);
+ };
  std::vector<std::string> lines;std::string line;int used=0;
  auto flush=[&]{while(!line.empty()&&line.back()==' ')line.pop_back();lines.push_back(line);line.clear();used=0;};
  for(size_t i=0;i<s.size();){const auto start=i;const auto cp=next(s,i);if(cp=='\n'){flush();continue;}if(cp=='\r')continue;
-  if(cp==' '||cp=='\t'){const int w=text_width_px(" ",px);if(!line.empty()&&used+w<=max){line+=' ';used+=w;}else if(!line.empty())flush();continue;}
+  if(cp==' '||cp=='\t'){const int w=measure(" ");if(!line.empty()&&used+w<=max){line+=' ';used+=w;}else if(!line.empty())flush();continue;}
   if(cp>32&&cp<0x3000)while(i<s.size()){size_t end=i;const auto n=next(s,end);if(n<=32||n>=0x3000)break;i=end;}
-  const auto token=s.substr(start,i-start);const int w=text_width_px(token,px);if(used+w>max&&!line.empty())flush();
+  // Keep a closing CJK mark on the same line as the preceding character.
+  if(keep_punctuation || slot)while(i<s.size()){
+   size_t end=i;
+   switch(next(s,end)){
+    case 0x3001:case 0x3002:case 0xff0c:case 0xff1a:case 0xff1b:case 0xff1f:case 0xff01:
+    case 0xff09:case 0x300b:case 0x300d:case 0x3011:case 0x201d:i=end;continue;
+   }
+   break;
+  }
+  const auto token=s.substr(start,i-start);const int w=measure(token);if(used+w>max&&!line.empty())flush();
   if(w<=max){line+=token;used+=w;continue;}
-  for(size_t j=0;j<token.size();){const auto a=j;next(token,j);const auto part=token.substr(a,j-a);const int pw=text_width_px(part,px);if(used+pw>max&&!line.empty())flush();line+=part;used+=pw;}
+  for(size_t j=0;j<token.size();){const auto a=j;next(token,j);const auto part=token.substr(a,j-a);const int pw=measure(part);if(used+pw>max&&!line.empty())flush();line+=part;used+=pw;}
  }if(!line.empty()||lines.empty())lines.push_back(line);return lines;
 }

@@ -2,6 +2,7 @@
 #include "native_json.hpp"
 #include "native_page.hpp"
 #include <functional>
+#include <set>
 #include <unordered_map>
 namespace wordcard {
 using VJ = StudyJson;
@@ -26,11 +27,25 @@ class VocabularyCatalog {
     void install_external(const VJ &word);
     void remove_external(const std::string &id);
     VJ external = VJ::object();
-    VJ metadata;
+    struct Deck {std::string stage, title, signature; std::vector<std::string> ids; std::set<std::string> members; std::unordered_map<std::string,std::string> senses;};
+    struct StoryBinding {
+        std::string edition;
+        bool grades_words=false, uses_deck=false;
+        std::unordered_map<std::string,std::string> senses;
+    } story;
+    void open_story(const std::string &key,const std::string &digest,const std::string &deckKey,const std::string &deckDigest);
+    std::map<std::string,Deck> decks;
+    bool contains_word(const std::string &stage,const std::string &id) const;
+    void restore_deck_word(const VJ &word);
+    VJ deck_word(const std::string &id) const;
+    VJ metadata, shopCues;
     std::vector<Entry> entries;
     std::string directory;
 
   private:
+    void load_decks(const std::string &root);
+    // Keep SD entries compact. Only the displayed or newly studied word needs a JSON tree.
+    std::unordered_map<std::string,std::string> deck_words_;
     std::unordered_map<std::string, size_t> index_;
     mutable std::unordered_map<std::string, VJ> cache_;
 };
@@ -38,16 +53,19 @@ class VocabularyEngine {
   public:
     explicit VocabularyEngine(const VocabularyCatalog &c) : catalog(c) {}
     const VocabularyCatalog &catalog;
-    VJ create(int64_t now, const VJ &legacy = VJ()) const;
+    VJ create(int64_t now) const;
     VJ reduce(const VJ &original, const VJ &action, int64_t now, VJ &events) const;
     VJ due(const VJ &s, int64_t now) const;
     // Explicit native entry points reserve unfinished cards across parked groups.
     VJ available_due(const VJ &s, int64_t now) const;
+    VJ shop_due(const VJ &s,int64_t now) const;
+    VJ review_tasks(const VJ &s, int64_t now, const std::string &scope) const;
     VJ available_new(const VJ &s) const;
     VJ available_notebook(const VJ &s) const;
+    VJ practice(const VJ &ids,const std::string &mode,int64_t now) const;
     VJ continue_preview(const VJ &s, int64_t now) const;
     bool current_word_matches(const VJ &s, const std::string &word) const;
-    VJ resumable(const VJ &s, const std::string &intent) const;
+    VJ resumable(const VJ &s, const std::string &intent, const std::string &scope = "all") const;
     VJ current(const VJ &s) const;
     VJ gap(const VJ &task) const;
     VJ choices(const VJ &task, const VJ &session) const;
@@ -56,19 +74,22 @@ class VocabularyEngine {
 
   private:
     mutable std::unordered_map<std::string, VJ> choiceCache_;
+    void change_study_mode(VJ &s,VJ &group,const std::string &mode,int64_t now) const;
     VJ session(VJ &s, const VJ &ids, const std::string &source, int64_t now,
-               const std::string &mode) const;
+               const std::string &mode, bool associative = false) const;
     void touch(VJ &s, const std::string &id, int64_t now, VJ &events, const std::string &type,
                const VJ &detail = VJ::object()) const;
     bool enough(const VJ &s, const std::string &id, int64_t now) const;
     void advance(VJ &s, int64_t now, VJ &events) const;
+    void content_answer(VJ &s,const VJ &a,const std::string &source,VJ &corrections,int64_t now,VJ &events) const;
     void memory(VJ &s, const VJ &task, bool correct, bool assisted, int64_t now, VJ &events) const;
 };
 class NativeVocabulary {
   public:
     explicit NativeVocabulary(const std::string &learningDirectory);
     bool available() const { return available_; }
-    bool enter(const VJ &legacy, int64_t now);
+    void prepare_profile(int64_t now);
+    bool enter(int64_t now);
     bool active() const { return active_; }
     void leave() { active_ = false; }
     bool resume() { if(!entered_) return false; active_=true; return true; }
@@ -80,6 +101,13 @@ class NativeVocabulary {
     bool back();
     bool import_word(const VJ &word);
     bool expose_lookup(const std::string &word);
+    VJ story_progress(const VJ &request);
+    void bind_course(const VJ &catalog,const std::string &edition);
+    void ensure_loaded(int64_t now);
+    VJ course_cursor() const;
+    void project_course(VJ &course) const;
+    bool save_course(const VJ &course,const VJ &lessonTask);
+
     bool prepare_word_list();
     bool accept_word_list(uint64_t token);
     void stop_audio();
@@ -88,16 +116,34 @@ class NativeVocabulary {
     bool playback(int serial, bool success);
     WebPage page();
     std::string status() const;
+    VJ library_rows() const;
 
   private:
+    std::map<std::string,std::string> courseSenses_;
+    std::set<std::string> courseLessonWords_;
     VocabularyCatalog catalog_;
     VocabularyEngine engine_;
     std::string store_, route_ = "home", return_ = "home", lookup_, query_, error_, note_,
                         audioPath_, audioText_;
     struct BackFrame { std::string route, lookup, query; };
     std::vector<BackFrame> backStack_;
-    std::string stageChoice_, lastImportedWord_, lastImportedId_;
-    VJ state_, pendingAudio_, migration_;
+    std::string stageChoice_, modeChoice_, lastImportedWord_, lastImportedId_, reviewScope_ = "current";
+    std::string journeyStamp_, historyFilter_, historyInput_;
+    std::vector<std::string> historyIds_, browseIds_;
+    size_t historyPage_=0, browseAt_=0;
+    bool currentHistory_=false;
+    VJ practice_,historyGroups_;
+    size_t groupPage_=0;
+    void load_history_groups();
+    const VJ &answer_state() const { return route_=="history-quiz"?practice_:state_; }
+    bool study_action(const VJ &a);
+    void load_history();
+    std::vector<std::string> stamp_ids() const;
+    VJ album_stamps() const;
+    int shopDemoScene_=0;
+    std::string shopPostcardWord_, shopPostcardAnswer_;
+    size_t journeyPage_ = 0, galleryPage_ = 0;
+    VJ state_, pendingAudio_;
     VJ wordList_ = VJ::array(), wordListIssues_ = VJ::array();
     uint64_t wordListToken_ = 0;
     size_t wordListExisting_ = 0;
@@ -119,7 +165,8 @@ class NativeVocabulary {
     WebPage recovery_page();
     bool commit(const VJ &action);
     bool expose_candidates(const std::string &query);
-    void load(const VJ &legacy);
+    bool expose_journey(const std::string &route);
+    void load();
     void save_checkpoint();
     void go(const std::string &route);
     void navigate(const std::string &route);

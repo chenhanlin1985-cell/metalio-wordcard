@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(web_firmware_host C CXX)
+add_compile_options(/MP4)
 add_executable(display_refresh_budget "${CMAKE_CURRENT_SOURCE_DIR}/../../tests/display_refresh_budget_test.cpp")
 target_compile_features(display_refresh_budget PRIVATE cxx_std_17)
 target_include_directories(display_refresh_budget PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../firmware/main")
@@ -11,6 +12,10 @@ set(QJS_BUILD_LIBC OFF CACHE BOOL "" FORCE)
 add_library(qjs STATIC "${R}/firmware/components/learning_web/vendor/quickjs.c" "${R}/firmware/components/learning_web/vendor/libregexp.c" "${R}/firmware/components/learning_web/vendor/libunicode.c" "${R}/firmware/components/learning_web/vendor/dtoa.c")
 target_compile_definitions(qjs PRIVATE _GNU_SOURCE __STDC_NO_ATOMICS__=1 QUICKJS_NG_BUILD NDEBUG _CRT_SECURE_NO_WARNINGS)
 target_compile_options(qjs PRIVATE /utf-8 /std:c11)
+add_executable(pack_vm pack_vm.cpp)
+target_compile_options(pack_vm PRIVATE /utf-8 /EHsc /bigobj)
+target_include_directories(pack_vm PRIVATE "${R}/firmware/components/learning_web/vendor")
+target_link_libraries(pack_vm PRIVATE qjs)
 add_executable(webhost "${R}/tests/web_firmware_test.cpp"
  "${R}/firmware/components/learning_web/learning_web.cpp"
  "${R}/firmware/components/learning_web/generated/web_bundle.cpp"
@@ -68,6 +73,7 @@ add_full_ui_test(assessment_ui assessment_test.cpp)
 add_full_ui_test(learning_review learning_review_test.cpp)
 add_full_ui_test(course_dictionary course_dictionary_test.cpp)
 add_full_ui_test(native_facade native_facade_test.cpp)
+add_full_ui_test(content_navigation content_navigation_test.cpp)
 add_full_ui_test(vocabulary_ui vocabulary_ui_test.cpp)
 add_full_ui_test(menu_navigation menu_navigation_test.cpp)
 add_executable(vocabulary_host "${R}/tests/vocabulary_host.cpp"
@@ -114,6 +120,11 @@ add_full_ui_test(custom_words custom_words_test.cpp)
 
 add_full_ui_test(recovery recovery_test.cpp)
 target_compile_definitions(recovery PRIVATE WORDCARD_TEST_STORAGE)
+add_full_ui_test(vocabulary_journey vocabulary_journey_test.cpp)
+add_full_ui_test(vocabulary_scenes vocabulary_scenes_test.cpp)
+add_full_ui_test(vocabulary_association vocabulary_association_test.cpp)
+add_full_ui_test(example_translations example_translations_test.cpp)
+add_full_ui_test(vocabulary_modes vocabulary_modes_test.cpp)
 
 # Fast, resource-free checks. Full UI tests take external resource arguments.
 enable_testing()

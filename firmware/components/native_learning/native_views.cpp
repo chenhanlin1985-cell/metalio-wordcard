@@ -1,4 +1,5 @@
 #include "native_study.hpp"
+#include "word_formation.hpp"
 #include <ctime>
 #include <sstream>
 namespace wordcard {
@@ -37,6 +38,13 @@ struct View {
         b.area = "body";
         b.detail = detail;
         o.blocks.push_back(b);
+    }
+    void example(const J &word, const J &audio) {
+        const auto sentence = str(word,"example");
+        if (sentence.empty()) return;
+        line(sentence, "card-example", false, str(word,"exampleZh"));
+        const auto path = str(audio,sentence);
+        if (!path.empty()) o.blocks.back().example_audio = "web-course-v1/" + path;
     }
     void button(const std::string &t, J data, bool primary = false, bool enabled = true,
                 const std::string &role = "", bool selected = false, const std::string &area = "body",
@@ -268,12 +276,11 @@ void NativeStudy::batchPage(WebPage &out) {
     }
     if (phase == "learn") {
         const auto &w = model_.word(str(s["ids"][size_t(num(s, "learnAt"))]));
-        v.line(str(w, "word"), "word", true);
+        v.line(str(w, "word"), "card-word", true);
         v.line(str(w, "ipa"), "ipa");
         v.line(str(w, "meaning"), "meaning");
         v.button("单词录音 / 停止", J{{"action", "w-audio"}, {"text", w["word"]}}, false, true, "audio");
-        v.line(str(w, "example"), "example");
-        v.button("例句录音 / 停止", J{{"action", "w-audio"}, {"text", w["example"]}}, false, true, "audio");
+        v.example(w, data()["audio"]);
         v.line("先认识整组，之后再检查词义和拼写。", "detail");
         v.foot("上一个", J{{"action", "w-learn"}, {"delta", -1}}, false, num(s, "learnAt") != 0);
         v.foot(size_t(num(s, "learnAt")) + 1 == count ? "学完本组，开始检查" : "下一个词",
@@ -322,12 +329,12 @@ void NativeStudy::batchPage(WebPage &out) {
             header = (kind == "gap" ? "补字母" : kindLabel(kind)) + "反馈";
         }
         v.line(title, "", true);
-        v.line(str(w, "word"), "word");
+        v.line(str(w, "word"), "card-word");
         v.line(str(w, "ipa"), "ipa");
         v.line(str(w, "meaning"), "meaning");
         if (kind != "meaning")
             v.line("你的输入：" + (str(r, "typed").empty() ? "未输入" : str(r, "typed")), "detail");
-        v.line(str(w, "example"), "example");
+        v.example(w, data()["audio"]);
         v.button("单词录音 / 停止", J{{"action", "w-audio"}, {"text", w["word"]}}, false, true, "audio");
         v.line(note, "detail");
         v.foot(button, J{{"action", "w-next"}}, true);
@@ -418,8 +425,12 @@ void NativeStudy::quizPage(WebPage &out) {
             v.button("录音 / 停止", J{{"action", "audio"}, {"text", w["word"]}}, false, true, "audio");
             v.line(str(w, "ipa"), "ipa");
             v.line(str(w, "meaning"), "meaning");
-            v.line(str(w, "example"), "example");
-            v.button("录音 / 停止", J{{"action", "audio"}, {"text", w["example"]}}, false, true, "audio");
+            const auto parts = word_formation(str(w,"word"));
+            if (!parts.formula.empty()) {
+                v.line((parts.compound ? "复合词   " : "构词   ") + parts.formula, "card-parts");
+                for (const auto &part : parts.parts) v.line(part.line(),"card-part");
+            }
+            v.example(w, data()["audio"]);
             v.button(has(model_.state["notebook"], id) ? "已加入生词本" : "加入生词本",
                      J{{"action", "add"}, {"id", id}});
         }
@@ -440,7 +451,7 @@ void NativeStudy::quizPage(WebPage &out) {
                 audio();
                 v.line(str(t, "text"));
             } else if (kind == "meaning")
-                v.line(str(t, "text"), "example");
+                v.line(str(t, "text"), "example-pair", false, str(t, "exampleZh"));
         }
         v.foot(num(s, "at") + 1 == int64_t(s["queue"].size()) && s["errors"].empty()
                    ? (str(s, "purpose") == "focus" ? "完成本组" : "完成本课")
@@ -613,7 +624,7 @@ void NativeStudy::lookupPage(WebPage &out) {
     }
     const bool saved =
         has(model_.state["notebook"], w["id"]) || has(field(model_.state, "extraNotebook"), w["id"]);
-    v.line(str(w, "word"), "word", true);
+    v.line(str(w, "word"), "card-word", true);
     v.line(str(w, "ipa"), "ipa");
     v.button("录音 / 停止", J{{"action", "audio"}, {"text", w["word"]}}, false, true, "audio");
     v.line(str(w, "meaning"), "meaning");
@@ -621,8 +632,7 @@ void NativeStudy::lookupPage(WebPage &out) {
     v.line(model_.sourceTitle(
                J{{"type", source.rfind("bridge:", 0) == 0 ? "bridge" : "course"}, {"id", source.substr(7)}}),
            "detail");
-    v.line(str(w, "example"), "example");
-    v.button("录音 / 停止", J{{"action", "audio"}, {"text", w["example"]}}, false, true, "audio");
+    v.example(w, data()["audio"]);
     v.line(saved ? "已在生词本，可从复习入口集中练习。" : "加入生词本，之后集中复习。");
     v.foot(saved ? "移出生词本" : "加入生词本", J{{"action", saved ? "remove-word" : "add"}, {"id", w["id"]}},
            true);

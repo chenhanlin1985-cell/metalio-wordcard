@@ -1,0 +1,267 @@
+{
+  "id": "wrong-platform",
+  "title": "错站台的票",
+  "en": "The Ticket on Platform Two",
+  "intro": "二号站台的水洼里漂来一只纸船。梅捞起来一看，有个人恐怕要赶不上车了。",
+  "author": "小小单词卡",
+  "attribution": "PET 口袋绘本系列原创短篇 · 第二篇",
+  "source": "https://github.com/chenhanlin1985-cell/metalio-wordcard",
+  "returnWords": {
+    "pet-0809": "n. 邻居",
+    "pet-0989": "adj. 好奇的",
+    "pet-0011": "n. 口袋"
+  },
+  "scenes": [
+    {
+      "en": "At the station, May and her neighbour waited on platform two. A paper boat bumped her shoe. She fished it out of a puddle and got her sleeves wet.",
+      "zh": "梅和邻居在车站的二号站台等车。一只纸船碰了碰她的鞋。她伸手把船从水洼里捞出来，袖口也湿了。"
+    },
+    {
+      "en": "Curious, May opened up the boat. It was a ticket! Someone had paid a child's fare to Little Bay. In one corner was a tiny drawing. May smiled.",
+      "zh": "梅觉得好奇，就把纸船展开了。原来是张车票！去小湾镇的，买的是儿童票。票角上还有一幅小画。梅看了直笑。"
+    },
+    {
+      "en": "“Sorry for the delay,” came an announcement. “The train to Little Bay Harbour will now leave from platform three.” Off went the crowd. May took the little ticket with her.",
+      "zh": "“列车晚点了，很抱歉。”站内广播响起来，“开往小湾港的列车改在三号站台发车。”人群动了起来。梅带上那张小车票，跟了过去。"
+    },
+    {
+      "en": "From the bridge, May spotted a small passenger beside a suitcase. He was turning his pocket inside out. His dad looked confused. “But how can a ticket sail away?”",
+      "zh": "梅从天桥上望下去，看见一个小乘客站在行李箱旁，把口袋都翻了出来。他爸爸一脸困惑。“可车票怎么会漂走呢？”"
+    },
+    {
+      "en": "May hurried down. She put her finger over the drawing. “What's on your ticket?” “A whale with no tail! There wasn't room under the price.” May lifted her finger. Exactly!",
+      "zh": "梅赶紧跑下桥，用手指盖住那幅画。“你的票上画着什么？”“一条没尾巴的鲸鱼！价钱底下那点地方，画不下了。”梅抬起手指。还真是！"
+    },
+    {
+      "en": "May gave it back. The boy took a seat by the window. “Going to fold it again, Captain?” May called. He slipped it into his pocket. “Today my boat's taking the train!”",
+      "zh": "梅把票还给他。男孩上车，坐到了窗边。“船长，还要把它折起来吗？”梅喊道。男孩把票揣进口袋。“今天，我的船坐火车！”"
+    }
+  ],
+  "terms": [
+    [
+      "1143",
+      "station",
+      1,
+      "n. 车站",
+      "梅和邻居一开始去哪里等火车？想起表示整个铁路车站的词。",
+      "机场",
+      "码头"
+    ],
+    [
+      "1614",
+      "platform",
+      1,
+      "n. 站台",
+      "广播把发车地点从二号改到三号。乘客站着等车的地方叫什么？",
+      "车厢",
+      "车票"
+    ],
+    [
+      "1545",
+      "boat",
+      1,
+      "n. 船；小船",
+      "车票在水洼里漂过来时，被折成了什么？",
+      "纸飞机",
+      "木筏"
+    ],
+    [
+      "1716",
+      "wet",
+      1,
+      "adj. 湿的",
+      "从水里捞出纸船，梅的袖口变得怎样了？",
+      "脏的",
+      "干燥的"
+    ],
+    [
+      "1295",
+      "ticket",
+      2,
+      "n. 票；车票",
+      "纸船展开，竟是一张坐火车要用的东西。",
+      "收据",
+      "明信片"
+    ],
+    [
+      "1675",
+      "fare",
+      2,
+      "n. 车费；票价",
+      "票上收的是儿童车费。哪一个词专指乘车要付的钱？",
+      "折扣",
+      "罚金"
+    ],
+    [
+      "0348",
+      "drawing",
+      2,
+      "n. 图画",
+      "票角上让梅笑起来的，是有人用笔画的一幅什么？",
+      "地图",
+      "照片"
+    ],
+    [
+      "1592",
+      "delay",
+      3,
+      "n. 延误；晚点",
+      "车没有按原定时间出发，广播先为什么事道歉？",
+      "取消",
+      "行程"
+    ],
+    [
+      "1537",
+      "announcement",
+      3,
+      "n. 广播通知",
+      "乘客同时听到换站台的那条公开通知，用哪个词？",
+      "私信",
+      "邀请"
+    ],
+    [
+      "1611",
+      "train",
+      3,
+      "n. 火车",
+      "结尾男孩说他的小船今天也要坐这种交通工具。",
+      "公交车",
+      "渡船"
+    ],
+    [
+      "1593",
+      "harbour",
+      3,
+      "n. 港口",
+      "广播说火车开往哪种能让船只停靠的地方？",
+      "机场",
+      "湖泊"
+    ],
+    [
+      "1547",
+      "bridge",
+      4,
+      "n. 桥；此处指天桥",
+      "梅站在连接两个站台的什么上面，才一眼看见了男孩？",
+      "隧道",
+      "楼梯"
+    ],
+    [
+      "1590",
+      "passenger",
+      4,
+      "n. 乘客",
+      "那个丢票的小男孩，按他坐火车的身份叫什么？",
+      "司机",
+      "售票员"
+    ],
+    [
+      "1564",
+      "suitcase",
+      4,
+      "n. 行李箱",
+      "男孩翻口袋时，脚边放着可以拎着旅行的什么箱子？",
+      "包裹",
+      "背包"
+    ],
+    [
+      "0972",
+      "confused",
+      4,
+      "adj. 困惑的",
+      "爸爸想不通一张票怎么会漂走。他当时是什么神情？",
+      "生气的",
+      "放心的"
+    ],
+    [
+      "0621",
+      "finger",
+      5,
+      "n. 手指",
+      "梅用身体的哪个部位把票角的小画盖住了？",
+      "手腕",
+      "手掌"
+    ],
+    [
+      "1218",
+      "price",
+      5,
+      "n. 价格；标价",
+      "鲸鱼的尾巴画不下，因为票上标价的数字下面没地方了。表示物品标价的通用词是什么？",
+      "日期",
+      "座号"
+    ],
+    [
+      "1678",
+      "window",
+      6,
+      "n. 窗；此处指车窗",
+      "男孩坐在它旁边，还能看见站台上的梅。",
+      "车门",
+      "走道"
+    ],
+    [
+      "0073",
+      "fold",
+      6,
+      "v. 折叠",
+      "要把展开的票重新变成纸船，得对纸做什么？",
+      "剪开",
+      "撕碎"
+    ],
+    [
+      "1806",
+      "captain",
+      6,
+      "n. 船长",
+      "梅开玩笑，把这只小纸船的主人称作什么？",
+      "船员",
+      "乘务员"
+    ]
+  ],
+  "panelBounds": [[7,7,623,422],[631,7,1248,422],[7,432,623,833],[631,432,1248,833],[7,842,623,1247],[631,842,1248,1247]],
+  "examples": {
+    "station":"May was at the station with her neighbour.\n梅和邻居在车站等车。",
+    "platform":"They waited on platform two.\n她们在二号站台等车。",
+    "boat":"A paper boat bumped her shoe.\n一只纸船碰了碰她的鞋。",
+    "wet":"May got her sleeves wet.\n梅把袖口弄湿了。",
+    "ticket":"The paper boat was a train ticket.\n这只纸船原来是一张火车票。",
+    "fare":"Someone had paid a child's fare to Little Bay.\n有人买了一张去小湾镇的儿童票。",
+    "drawing":"In one corner was a tiny drawing.\n票角上有一幅小画。",
+    "delay":"The announcement began with an apology for the delay.\n广播一开头就为晚点道了歉。",
+    "announcement":"An announcement told everyone to change platforms.\n一条广播通知让大家换站台。",
+    "train":"The train would leave from platform three.\n火车要从三号站台发车。",
+    "harbour":"The train was going to Little Bay Harbour.\n列车开往小湾港。",
+    "bridge":"From the bridge, May could see both platforms.\n梅站在天桥上，两个站台都看得见。",
+    "passenger":"A small passenger stood beside a suitcase.\n一个小乘客站在行李箱旁。",
+    "suitcase":"The boy was standing beside a suitcase.\n男孩站在一只行李箱旁。",
+    "confused":"His dad looked confused.\n他爸爸一脸困惑。",
+    "finger":"May put her finger over the drawing.\n梅用手指盖住了那幅画。",
+    "price":"There wasn't room under the price for the whale's tail.\n标价下面的那点空白，画不下鲸鱼尾巴。",
+    "window":"The boy took a seat by the window.\n男孩在车窗边坐了下来。",
+    "fold":"Would he fold his ticket into a boat again?\n他还会把车票折成纸船吗？",
+    "captain":"May called him the captain of the little paper boat.\n梅喊他小纸船的船长。"
+  },
+  "recallOrder": [
+    "platform",
+    "drawing",
+    "confused",
+    "fold",
+    "fare",
+    "bridge",
+    "wet",
+    "announcement",
+    "captain",
+    "suitcase",
+    "harbour",
+    "ticket",
+    "finger",
+    "station",
+    "delay",
+    "passenger",
+    "window",
+    "price",
+    "train",
+    "boat"
+  ]
+}

@@ -1,0 +1,305 @@
+{
+  "id": "pocket-receipt",
+  "title": "口袋里的收据",
+  "en": "The Receipt in the Pocket",
+  "author": "小小单词卡",
+  "attribution": "PET 口袋绘本系列原创短篇 · 第三篇",
+  "source": "https://github.com/chenhanlin1985-cell/metalio-wordcard",
+  "intro": "两件一模一样的大衣，两张收据。梅得把大衣还对人，还得替一位爸爸保住生日礼物的秘密。",
+  "returnWords": {
+    "pet-0809": "n. 邻居",
+    "pet-0011": "n. 口袋",
+    "pet-1295": "n. 票；此处指火车票",
+    "pet-1218": "n. 价格；价钱"
+  },
+  "scenes": [
+    {
+      "en": "After a concert in the music shop, May's neighbour reached for her coat. Another customer caught the same sleeve. “Hang on,” he said. “I think that's mine.”",
+      "zh": "乐器店里的音乐会散场了。梅的邻居伸手去拿大衣，另一位顾客也抓住了那只袖子。“等等，”他说，“这件好像是我的。”"
+    },
+    {
+      "en": "The shop assistant lifted a second coat off the hook. Same thick wool. Same big buttons. May checked the label inside each one. Even the size was the same.",
+      "zh": "店员从挂钩上取下第二件大衣。一样厚实的羊毛，一样的大纽扣。梅看了看两件衣服里面的标签，连尺码都一样。"
+    },
+    {
+      "en": "In each pocket May found a receipt. The man hugged his parcel. “Mine says what I bought for my daughter's birthday,” he whispered. Behind him, a little girl stood on tiptoe.",
+      "zh": "梅在两个口袋里各找到一张收据。男人抱紧包裹，小声说：“我的那张上写着我给女儿买的生日礼物。”他身后，一个小女孩正踮着脚尖看。"
+    },
+    {
+      "en": "May kept each slip on its coat and hid the names of the items with her train ticket. Same date. Same price. Both items cost twelve pounds. Now what?",
+      "zh": "梅把两张收据各留在各自的大衣上，再用火车票遮住商品名。日期相同，价钱也一样。两样东西都花了十二英镑。这下怎么办？"
+    },
+    {
+      "en": "“Cash or credit card?” May asked. Her neighbour pulled a card from her purse. “I gave them twenty pounds,” said the man. Only one receipt showed eight pounds in change.",
+      "zh": "“付现金还是刷信用卡？”梅问。邻居从钱包里抽出卡。男人说：“我给了他们二十英镑。”只有一张收据上写着找零八英镑。"
+    },
+    {
+      "en": "May picked up the coat with the cash receipt to return it to the man. His parcel bumped the door. BOOM! “I know which instrument you bought!” His daughter drummed on her knees.",
+      "zh": "梅拿起装着现金小票的那件大衣，递还给那位爸爸。他手里的包裹碰到了门。咚！“我知道你买的是什么乐器啦！”女儿说着，用两只手在膝盖上敲起鼓来。"
+    }
+  ],
+  "terms": [
+    [
+      "0307",
+      "concert",
+      1,
+      "n. 音乐会",
+      "乐器店里的演奏刚刚结束，听众起身拿外套。他们听的是一场什么？",
+      "排练",
+      "讲座"
+    ],
+    [
+      "0310",
+      "music",
+      1,
+      "n. 音乐",
+      "这家店卖乐器，也让人聚在一起听演奏。用哪个词说人们刚才听的音乐？",
+      "戏剧",
+      "绘画"
+    ],
+    [
+      "0043",
+      "coat",
+      1,
+      "n. 大衣；外套",
+      "散场后，邻居和另一位顾客同时伸手去拿的衣物是什么？",
+      "围巾",
+      "毛衣"
+    ],
+    [
+      "1193",
+      "customer",
+      1,
+      "n. 顾客",
+      "那位爸爸在店里买了礼物。他在这家店的身份是什么？",
+      "店主",
+      "送货员"
+    ],
+    [
+      "0062",
+      "sleeve",
+      1,
+      "n. 袖子",
+      "两人都抓住了大衣上套住胳膊的那一部分。它叫什么？",
+      "衣领",
+      "口袋"
+    ],
+    [
+      "1211",
+      "shop assistant",
+      2,
+      "n. 店员",
+      "从挂钩上取下第二件大衣、帮顾客处理麻烦的人，职业是什么？",
+      "顾客",
+      "裁缝"
+    ],
+    [
+      "0086",
+      "wool",
+      2,
+      "n. 羊毛",
+      "两件大衣摸起来都一样厚实。文中说它们用的是什么纤维？",
+      "丝绸",
+      "皮革"
+    ],
+    [
+      "0048",
+      "label",
+      2,
+      "n. 衣物标签",
+      "梅要找尺码，于是翻看了缝在两件衣服里面的小布条。",
+      "挂钩",
+      "衣架"
+    ],
+    [
+      "0056",
+      "size",
+      2,
+      "n. 尺码；大小",
+      "梅希望一件大、一件小，结果标签上的哪项信息也一样？",
+      "品牌",
+      "图案"
+    ],
+    [
+      "1226",
+      "receipt",
+      3,
+      "n. 收据；购物小票",
+      "两个口袋里各有一张付款后拿到的小票。哪一个词指这种凭据？",
+      "购物清单",
+      "价目表"
+    ],
+    [
+      "0128",
+      "parcel",
+      3,
+      "n. 包裹",
+      "爸爸紧紧抱着它，怕女儿猜到里面包的是什么。",
+      "购物篮",
+      "手提包"
+    ],
+    [
+      "1466",
+      "birthday",
+      3,
+      "n. 生日",
+      "爸爸瞒着女儿买礼物，是为了庆祝她一年一度的什么日子？",
+      "假期",
+      "毕业典礼"
+    ],
+    [
+      "1494",
+      "date",
+      4,
+      "n. 日期",
+      "梅看小票，想知道哪天买的。她核对的是哪一项？",
+      "地址",
+      "店名"
+    ],
+    [
+      "1185",
+      "cost",
+      4,
+      "v. 价钱为；花费",
+      "两样东西的价钱都是十二英镑。用哪个动词说某件东西值多少钱？",
+      "储蓄",
+      "赚取"
+    ],
+    [
+      "1204",
+      "cash",
+      5,
+      "n. 现金",
+      "爸爸递出了二十英镑纸币。他用什么方式付的钱？",
+      "信贷",
+      "汇款"
+    ],
+    [
+      "1189",
+      "credit card",
+      5,
+      "n. 信用卡",
+      "邻居拿出了一张可以先消费、后还款的卡。两个英文词是什么？",
+      "借书证",
+      "优惠券"
+    ],
+    [
+      "0020",
+      "purse",
+      5,
+      "n. 女式小钱包",
+      "邻居把付款用的卡收在哪个装零钱和卡的小钱包里？",
+      "公文包",
+      "行李箱"
+    ],
+    [
+      "1212",
+      "change",
+      5,
+      "n. 找零；找回的钱",
+      "东西卖十二英镑，付了二十英镑。退回来的八英镑叫什么？",
+      "折扣",
+      "押金"
+    ],
+    [
+      "1191",
+      "return",
+      6,
+      "v. 归还",
+      "找到衣主以后，梅要把两件大衣交还给他们。这个动作怎么说？",
+      "借用",
+      "保管"
+    ],
+    [
+      "0349",
+      "instrument",
+      6,
+      "n. 乐器",
+      "还没拆包，女孩就听出里面可能是一面鼓。鼓属于哪一类用来演奏的东西？",
+      "工具",
+      "玩具"
+    ]
+  ],
+  "recallOrder": [
+    "receipt",
+    "sleeve",
+    "cash",
+    "instrument",
+    "size",
+    "customer",
+    "parcel",
+    "credit card",
+    "wool",
+    "date",
+    "return",
+    "concert",
+    "change",
+    "label",
+    "birthday",
+    "shop assistant",
+    "cost",
+    "purse",
+    "music",
+    "coat"
+  ],
+  "examples": {
+    "concert": "The concert was over when May's neighbour reached for her coat.\n邻居伸手拿大衣时，音乐会已经结束了。",
+    "music": "They had been listening to music in the shop.\n他们刚刚在店里听音乐。",
+    "coat": "Two people reached for the same coat.\n两个人伸手去拿同一件大衣。",
+    "customer": "Another customer caught the same sleeve.\n另一位顾客也抓住了那只袖子。",
+    "sleeve": "The man had one hand on the sleeve.\n那位爸爸一只手还抓着袖子。",
+    "shop assistant": "The shop assistant took down the other coat.\n店员取下了另一件大衣。",
+    "wool": "Both coats were made of thick wool.\n两件大衣都是用厚实的羊毛做的。",
+    "label": "May checked the label inside each coat.\n梅查看了每件大衣里面的标签。",
+    "size": "Both coats were the same size.\n两件大衣的尺码一样。",
+    "receipt": "May found a receipt in each pocket.\n梅在每个口袋里都找到了一张收据。",
+    "parcel": "The man held his parcel close.\n男人紧紧抱着他的包裹。",
+    "birthday": "He wanted his daughter's birthday present to be a surprise.\n他想把女儿的生日礼物留作惊喜。",
+    "date": "The receipts showed the same date.\n两张收据上写着相同的日期。",
+    "cost": "Both items cost twelve pounds.\n两样东西的价钱都是十二英镑。",
+    "cash": "The father paid in cash.\n爸爸付的是现金。",
+    "credit card": "May's neighbour used a credit card.\n梅的邻居刷了信用卡。",
+    "purse": "She pulled a card from her purse.\n她从小钱包里抽出一张卡。",
+    "change": "He got eight pounds in change.\n他拿到了八英镑的找零。",
+    "return": "May could finally return the coats to their owners.\n梅终于能把大衣还给各自的主人了。",
+    "instrument": "One bump told the girl which instrument was inside.\n包裹一碰，女孩就猜到里面是哪种乐器了。"
+  },
+  "panelBounds": [
+    [
+      5,
+      5,
+      625,
+      424
+    ],
+    [
+      630,
+      5,
+      1249,
+      424
+    ],
+    [
+      5,
+      429,
+      625,
+      835
+    ],
+    [
+      630,
+      429,
+      1249,
+      835
+    ],
+    [
+      5,
+      840,
+      625,
+      1249
+    ],
+    [
+      630,
+      840,
+      1249,
+      1249
+    ]
+  ]
+}

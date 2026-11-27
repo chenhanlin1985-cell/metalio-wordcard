@@ -21,9 +21,9 @@ std::string read(const fs::path &path) {
     return std::string(std::istreambuf_iterator<char>(in), {});
 }
 VJ state(const fs::path &profile) {
-    auto frame = VJ::parse(str(VJ::parse(read(profile / "vocabulary/state.json")), "data"));
+    auto frame = VJ::parse(str(VJ::parse(read(profile / "vocabulary-v2/state.json")), "data"));
     auto result = frame["state"];
-    std::ifstream in(profile / "vocabulary/events.ndjson", std::ios::binary);
+    std::ifstream in(profile / "vocabulary-v2/events.ndjson", std::ios::binary);
     if (in) {
         in.seekg(num(frame, "journalOffset"));
         std::string line;
@@ -47,11 +47,11 @@ void dispatch(NativeVocabulary &model, const VJ &action) {
     check(str(status(model), "courseError").empty(), "Native action succeeds");
 }
 void checkpoint(const fs::path &profile, const VJ &data) {
-    fs::create_directories(profile / "vocabulary");
+    fs::create_directories(profile / "vocabulary-v2");
     const auto bytes = VJ{{"state", data}, {"journalOffset", 0}}.dump();
     uint32_t hash = 2166136261u;
     for (unsigned char c : bytes) hash = (hash ^ c) * 16777619u;
-    std::ofstream(profile / "vocabulary/state.json", std::ios::binary)
+    std::ofstream(profile / "vocabulary-v2/state.json", std::ios::binary)
         << VJ{{"data", bytes}, {"checksum", hash}}.dump() << '\n';
 }
 }
@@ -67,11 +67,12 @@ int main(int argc, char **argv) {
         check(catalog.load(resources.generic_string()), "Production catalog loads");
         const auto curatedCount = catalog.entries.size();
         auto external = payload("quizzacious", "测试词义\n保留中文、换行和 IPA", "kwɪˈzeɪʃəs");
-        const auto id = str(external, "id");
+
         check(std::none_of(catalog.entries.begin(), catalog.entries.end(), [&](const auto &entry) {
             return entry.word == str(external, "word");
         }), "External fixture is not curated");
         catalog.install_external(external);
+        const auto id = catalog.entries.back().id;
         const auto full = catalog.get(id);
         check(catalog.entries.size() == curatedCount + 1 && catalog.entry(id) != nullptr,
               "External word is indexed");
@@ -83,7 +84,7 @@ int main(int argc, char **argv) {
               str(full, "ipa") == str(external, "ipa"), "Definition and real IPA are preserved");
         check(str(full["audio"], "kind") == "generated" &&
               str(full["audio"], "text") == str(external, "word") &&
-              str(full["audio"], "path") == "audio/external-" + id.substr(14) + ".wav",
+              str(full["audio"], "path") == "audio/external-" + str(external,"id").substr(14) + ".wav",
               "Stable generated audio path and text use normal fallback");
         catalog.install_external(external);
         check(catalog.entries.size() == curatedCount + 1, "Repeated install is unique");
@@ -98,7 +99,7 @@ int main(int argc, char **argv) {
         rejects(bad, "Unsafe external ID is rejected without mutation");
         bad = external; bad["word"] = "another-word";
         rejects(bad, "ID must match exact case-sensitive word hash");
-        bad = external; bad["meaning"] = "changed definition";
+        bad = external; bad["id"]=id; bad["meaning"] = "changed definition";
         rejects(bad, "Installed definitions cannot be overwritten");
         bad = payload("bounded-external"); bad["meaning"] = std::string(4001, 'x');
         rejects(bad, "Oversize meaning is rejected without truncation");
@@ -112,7 +113,8 @@ int main(int argc, char **argv) {
         rejects(bad, "Numeric definition is not coerced");
         auto missingIpa = payload("no-ipa-external"); missingIpa.erase("ipa");
         catalog.install_external(missingIpa);
-        check(str(catalog.get(str(missingIpa, "id")), "ipa").empty(), "Missing IPA stays absent");
+        const auto missingIpaId=catalog.entries.back().id;
+        check(str(catalog.get(missingIpaId), "ipa").empty(), "Missing IPA stays absent");
         std::string longDefinition = "\n；  ";
         for (int i = 0; i < 900; ++i) longDefinition += "释义";
         // Stay inside the real input budget while exercising a multibyte cut.
@@ -120,21 +122,23 @@ int main(int argc, char **argv) {
         longDefinition += "；第二义必须完整保留";
         const auto lengthy = payload("lengthy-definition", longDefinition);
         catalog.install_external(lengthy);
-        const auto lengthyCard = catalog.get(str(lengthy, "id"));
+        const auto lengthyId=catalog.entries.back().id;
+        const auto lengthyCard = catalog.get(lengthyId);
         check(str(lengthyCard, "dictionaryDefinition") == longDefinition &&
               str(lengthyCard, "meaning").size() <= 80 &&
               str(lengthyCard, "meaning").find("…") != std::string::npos,
               "Long dictionary text is retained with a bounded training sense");
         check(VJ::parse(lengthyCard.dump()) == lengthyCard, "Short sense never splits a UTF-8 code point");
         catalog.install_external(lengthyCard);
-        check(catalog.get(str(lengthy, "id")) == lengthyCard,
+        check(catalog.get(lengthyId) == lengthyCard,
               "Canonical long definition registers identically after persistence");
         const auto english = payload("english-definition", std::string(70, 'x') + " extraordinarily long remainder");
         catalog.install_external(english);
-        check(str(catalog.get(str(english, "id")), "meaning") == std::string(70, 'x') + "…",
+        const auto englishId=catalog.entries.back().id;
+        check(str(catalog.get(englishId), "meaning") == std::string(70, 'x') + "…",
               "Training sense truncation retains whole English words");
         catalog.remove_external(id);
-        check(!catalog.entry(id) && catalog.entry(str(missingIpa, "id")) != nullptr,
+        check(!catalog.entry(id) && catalog.entry(missingIpaId) != nullptr,
               "Rollback preserves subsequent indices");
         catalog.install_external(external);
 
@@ -142,7 +146,7 @@ int main(int argc, char **argv) {
             const auto profile = out / (std::string("learning-web-") + name);
             fs::create_directories(profile);
             auto model = std::make_unique<NativeVocabulary>(profile.generic_string());
-            check(model->enter(VJ(), Now), "Native synthetic profile opens");
+            check(model->enter(Now), "Native synthetic profile opens");
             check(str(status(*model), "courseError").empty(), "Native profile loads without error");
             return model;
         };
@@ -160,11 +164,11 @@ int main(int argc, char **argv) {
               str(status(*model), "lastImportedId") == id, "Success receipt identifies imported word");
         check(model->import_word(external), "Repeated dictionary add succeeds");
         check(state(profile)["notebook"] == VJ::array({id}), "Duplicate add has one notebook entry");
-        bad = external; bad["meaning"] = "replacement";
+        bad = external; bad["id"]=id; bad["meaning"] = "replacement";
         const auto committed = state(profile);
-        const auto journal = read(profile / "vocabulary/events.ndjson");
+        const auto journal = read(profile / "vocabulary-v2/events.ndjson");
         check(!model->import_word(bad), "Changed existing definition fails");
-        check(state(profile) == committed && read(profile / "vocabulary/events.ndjson") == journal,
+        check(state(profile) == committed && read(profile / "vocabulary-v2/events.ndjson") == journal,
               "Rejected import preserves every state and log byte");
         check(!status(*model).contains("lastImportedId"), "Failed import clears success receipt");
         check(model->import_word(external), "Valid retry clears prior import error");
@@ -206,16 +210,20 @@ int main(int argc, char **argv) {
         auto restored = open("reviewed");
         check(state(out / "learning-web-reviewed") == reviewed,
               "External definitions install before saved card IDs are validated");
+        dispatch(*restored, VJ{{"action", "v-go"}, {"value", "notebook"}});
+        dispatch(*restored, VJ{{"action", "v-go"}, {"value", "review"}});
         dispatch(*restored, VJ{{"action", "v-start"}, {"intent", "review"}});
         check(str(status(*restored)["batch"], "source") == "review", "Imported cards use native due review");
 
         auto curated = open("curated");
         const auto existing = catalog.entries.front();
-        check(curated->import_word(payload(existing.word)), "Exact curated spelling imports");
+        check(curated->import_word(payload(existing.word,existing.pos.empty()?existing.meaning:existing.pos+" "+existing.meaning)), "Exact curated spelling imports");
         const auto curatedState = state(out / "learning-web-curated");
         check(curatedState["notebook"] == VJ::array({existing.id}) &&
               !curatedState.contains("externalWords") && str(status(*curated), "lastImportedId") == existing.id,
               "Exact catalog match preserves original ID without external schema");
+        check(curated->import_word(payload(existing.word,"另一种释义")), "Different definition accepted");
+        check(str(status(*curated),"lastImportedId")!=existing.id, "Different sense isolated");
         std::string upper;
         for (const auto &entry : catalog.entries) {
             if (!entry.eligible || entry.word.size() < 2) continue;
@@ -229,23 +237,23 @@ int main(int argc, char **argv) {
         require(!upper.empty(), "Needs case-sensitive fixture");
         const auto uppercase = payload(upper);
         check(curated->import_word(uppercase) &&
-              str(status(*curated), "lastImportedId") == str(uppercase, "id"),
+              str(status(*curated), "lastImportedId").rfind(str(uppercase, "id")+"/",0)==0,
               "Different capitalization never merges with curated lowercase word");
 
         auto failed = open("write-failure");
         const auto failProfile = out / "learning-web-write-failure";
-        const auto originalSnapshot = read(failProfile / "vocabulary/state.json");
-        fs::create_directory(failProfile / "vocabulary/events.ndjson");
+        const auto originalSnapshot = read(failProfile / "vocabulary-v2/state.json");
+        fs::create_directory(failProfile / "vocabulary-v2/events.ndjson");
         check(!failed->import_word(external), "Journal write failure rejects import");
-        check(read(failProfile / "vocabulary/state.json") == originalSnapshot &&
+        check(read(failProfile / "vocabulary-v2/state.json") == originalSnapshot &&
               num(status(*failed), "revision") == 0 && !status(*failed).contains("lastImportedId"),
               "Failed persistent write leaves progress and receipt unchanged");
-        fs::remove(failProfile / "vocabulary/events.ndjson");
+        fs::remove(failProfile / "vocabulary-v2/events.ndjson");
         auto corrected = external; corrected["meaning"] = "重试后正确释义";
         dispatch(*failed, VJ{{"action", "v-check-recovery"}});
         check(num(status(*failed), "revision") == 0, "Checking restored storage does not replay the failed import");
         dispatch(*failed, VJ{{"action", "v-import"}, {"value", corrected.dump()}});
-        check(str(state(failProfile)["externalWords"][id], "dictionaryDefinition") == "重试后正确释义",
+        check(str(state(failProfile)["externalWords"][str(status(*failed),"lastImportedId")], "dictionaryDefinition") == "重试后正确释义",
               "Failed import rolls memory registration back and allows corrected retry");
         std::cout << checks << " external dictionary checks passed\n";
         return 0;

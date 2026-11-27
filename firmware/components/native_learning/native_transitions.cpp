@@ -248,33 +248,35 @@ bool NativeModel::mutate(J &x, const std::string &m, const J &a) {
                 x["batchLog"] = array();
             x["batchLog"].push_back(r);
             limit(x["batchLog"], 30);
-            if (field(x, "batchMemory").is_null())
-                x["batchMemory"] = object();
-            auto &memory = x["batchMemory"];
-            for (const auto &id : r["ids"]) {
-                const auto key = str(id);
-                const auto old = field(x["memory"], key);
-                if (!old.is_null() && field(field(memory, key), "meaning").is_null())
-                    memory[key]["meaning"] =
-                        J{{"stage", num(old, "stage")}, {"due", old["due"]}, {"last", 0}};
-            }
-            updateMemory(memory, r);
-            for (const auto &id : r["ids"]) {
-                const auto key = str(id);
-                if (str(word(key), "source").rfind("course:", 0) != 0)
-                    continue;
-                const auto v = field(field(r["results"], key), "meaning"),
-                           mem = field(field(memory, key), "meaning");
-                if (!mem.is_null() && (!v.is_null() || str(r, "deferredKind") == "meaning")) {
-                    J old = field(x["memory"], key);
-                    if (old.is_null())
-                        old = object();
-                    old["success"] = v.is_null() ? num(old, "success")
-                                     : actual(v) ? num(old, "success") + 1
-                                                 : 0;
-                    old["stage"] = mem["stage"];
-                    old["due"] = mem["due"];
-                    x["memory"][key] = old;
+            if(!shared_words){
+                if (field(x, "batchMemory").is_null())
+                    x["batchMemory"] = object();
+                auto &memory = x["batchMemory"];
+                for (const auto &id : r["ids"]) {
+                    const auto key = str(id);
+                    const auto old = field(x["memory"], key);
+                    if (!old.is_null() && field(field(memory, key), "meaning").is_null())
+                        memory[key]["meaning"] =
+                            J{{"stage", num(old, "stage")}, {"due", old["due"]}, {"last", 0}};
+                }
+                updateMemory(memory, r);
+                for (const auto &id : r["ids"]) {
+                    const auto key = str(id);
+                    if (str(word(key), "source").rfind("course:", 0) != 0)
+                        continue;
+                    const auto v = field(field(r["results"], key), "meaning"),
+                               mem = field(field(memory, key), "meaning");
+                    if (!mem.is_null() && (!v.is_null() || str(r, "deferredKind") == "meaning")) {
+                        J old = field(x["memory"], key);
+                        if (old.is_null())
+                            old = object();
+                        old["success"] = v.is_null() ? num(old, "success")
+                                         : actual(v) ? num(old, "success") + 1
+                                                     : 0;
+                        old["stage"] = mem["stage"];
+                        old["due"] = mem["due"];
+                        x["memory"][key] = old;
+                    }
                 }
             }
             if (flag(b, "courseOwner") && flag(s, "unified") && field(s, "lesson") == field(b, "courseOwner"))

@@ -9,6 +9,7 @@ class NativeModel {
   public:
     explicit NativeModel(const J &data);
     J state;
+    bool shared_words=false;
     int64_t now = 0;
     const J &data() const { return data_; }
     const J &word(std::string id) const;
